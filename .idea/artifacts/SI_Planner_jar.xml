@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="SI-Planner:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SI_Planner_jar</output-path>
+    <root id="root">
+      <element id="archive" name="SI-Planner.jar">
+        <element id="module-output" name="SI-Planner" />
+      </element>
+      <element id="library" level="application" name="lib" />
+    </root>
+  </artifact>
+</component>
