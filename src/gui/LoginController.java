@@ -1,10 +1,13 @@
 package gui;
 
+import com.sun.tools.javac.Main;
 import gui.Controller;
+import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
@@ -27,6 +30,10 @@ public class LoginController extends gui.Controller
     private TextField server;
     @FXML
     private TextField database;
+    @FXML
+    private Label errorlabel;
+
+    private String errortext;
 
     private boolean submitted;
 
@@ -35,21 +42,27 @@ public class LoginController extends gui.Controller
     public LoginController() throws IOException
     {
         super();
-
+        this.errortext = errortext;
+        assert(server != null && password != null && username != null && dbType != null && errorlabel != null);
+        dbType.getItems().add("MySQL");
+        dbType.setValue("MySQL");
+    }
+    public void setError(String error){
+        errorlabel.setText(error);
     }
 
     public void login(ActionEvent actionEvent)
     {
-        super.getStage().close();
-        this.submitted = true;
+        if(program.AppFacade.tryLogin(this))
+        {
+            this.submitted = true;
+            super.getStage().close();
+        }
     }
 
     @Override
     protected void onLoaded(URL url, ResourceBundle resourceBundle)
     {
-        assert(server != null && password != null && username != null && dbType != null);
-        dbType.getItems().add("MySQL");
-        dbType.setValue("MySQL");
 
     }
 

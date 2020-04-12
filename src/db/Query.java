@@ -27,15 +27,14 @@ public class Query
         rows = new ArrayList<>();
         while(resultSet.next()){
             HashMap<String,Object> rowMap = new HashMap();
-            for(int i=0;i<resultSetMetaData.getColumnCount();i++){
-
-                switch(resultSetMetaData.getColumnType(i+1))
+            for(int i=1;i-1<resultSetMetaData.getColumnCount();i++){
+                switch(resultSetMetaData.getColumnType(i))
                 {
                     case COL_VARCHAR:
-                        rowMap.put(resultSetMetaData.getColumnLabel(i+1), resultSet.getString(i+1));
+                        rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getString(i));
                         break;
                     case COL_INTEGER:
-                        rowMap.put(resultSetMetaData.getColumnLabel(i+1), resultSet.getInt(i+1));
+                        rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
                         break;
                 }
             }

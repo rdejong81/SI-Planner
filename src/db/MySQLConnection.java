@@ -24,4 +24,9 @@ public class MySQLConnection extends SQLConnection
         return new Query(this,String.format("select * from %s;",table));
     }
 
+    public Query selectAllRowsLike(String table, String column, String pattern) throws SQLException
+    {
+        return new Query(this,String.format("select * from %s where %s like '%s'",table,column,pattern));
+    }
+
 }

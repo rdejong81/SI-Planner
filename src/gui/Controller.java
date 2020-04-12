@@ -1,5 +1,7 @@
 package gui;
 
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,12 +32,15 @@ public abstract class Controller implements Initializable
     {
         loader = new FXMLLoader();
         loader.setLocation(getClass().getResource(this.getWindowFXML()));
+
         loader.setController(this);
-        Stage newStage = new Stage();
         Parent newParent = loader.<Parent>load();
+
+        Stage newStage = new Stage();
         newStage.setTitle(this.getWindowTitle());
         newStage.setScene(new Scene(newParent));
         this.stage = newStage;
+
     }
 
     @Override
