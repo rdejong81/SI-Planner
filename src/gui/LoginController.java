@@ -63,7 +63,7 @@ public class LoginController extends gui.Controller
     @Override
     protected void onLoaded(URL url, ResourceBundle resourceBundle)
     {
-
+        // todo check if still needed.
     }
 
     @Override
