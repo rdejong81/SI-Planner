@@ -1,19 +1,23 @@
 package gui;
 
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public abstract class Controller implements Initializable
 {
-
 
     private Stage stage;
 
@@ -22,6 +26,22 @@ public abstract class Controller implements Initializable
     @FXML
     private Pane pane;
 
+    private FXMLLoader loader;
+
+    Controller() throws IOException
+    {
+        loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource(this.getWindowFXML()));
+
+        loader.setController(this);
+        Parent newParent = loader.<Parent>load();
+
+        Stage newStage = new Stage();
+        newStage.setTitle(this.getWindowTitle());
+        newStage.setScene(new Scene(newParent));
+        this.stage = newStage;
+
+    }
 
     @Override
     final public void initialize(URL url, ResourceBundle resourceBundle)
@@ -49,6 +69,16 @@ public abstract class Controller implements Initializable
     }
 
     abstract protected void onLoaded(URL url, ResourceBundle resourceBundle);
+    abstract protected void onClosed();
+
+    final public void showAndWait()
+    {
+        this.stage.showAndWait();
+        this.onClosed();
+    }
+
+    abstract protected String getWindowFXML();
+    abstract public String getWindowTitle();
 
     public Stage getStage()
     {

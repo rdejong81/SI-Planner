@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="pane" prefHeight="227.0" prefWidth="334.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label layoutX="42.0" layoutY="118.0" text="Login name:" />
+      <TextField fx:id="server" layoutX="117.0" layoutY="52.0" text="localhost" />
+      <TextField fx:id="username" layoutX="117.0" layoutY="114.0" text="root" />
+      <Label layoutX="56.0" layoutY="151.0" text="Password:" />
+      <PasswordField fx:id="password" layoutX="117.0" layoutY="146.0" />
+      <Label layoutX="22.0" layoutY="57.0" text="Database server:" />
+      <ChoiceBox fx:id="dbType" layoutX="117.0" layoutY="21.0" />
+      <Label layoutX="26.0" layoutY="25.0" text="Database type:" />
+      <Button accessibleText="rr" defaultButton="true" layoutX="20.0" layoutY="183.0" mnemonicParsing="false" onAction="#login" text="Login" />
+      <Label layoutX="22.0" layoutY="86.0" text="Database name:" />
+      <TextField fx:id="database" layoutX="117.0" layoutY="83.0" text="siplanner" />
+      <Label fx:id="errorlabel" alignment="TOP_LEFT" layoutX="117.0" layoutY="176.0" prefHeight="51.0" prefWidth="216.0" text="" textFill="RED" wrapText="true" />
+   </children>
+</AnchorPane>
