@@ -1,5 +1,6 @@
 package program;
 
+import data.EmployeeList;
 import db.MySQLConnection;
 import db.Query;
 import gui.LoginController;
@@ -10,7 +11,8 @@ import java.util.HashMap;
 
 public class AppFacade
 {
-    static MySQLConnection db;
+    static public MySQLConnection db;
+    static public EmployeeList employees;
 
     static public boolean ShowLogin() throws IOException, SQLException
     {
@@ -18,7 +20,7 @@ public class AppFacade
         login.showAndWait();
         if (login.getCancelled()) return false;
 
-        /* todo start the rest of the program */
+        employees = new EmployeeList();
 
             return true;
         }
@@ -32,7 +34,7 @@ public class AppFacade
                 Query q = db.selectAllRowsLike("employees","sqlLogin",loginController.getUserName());
                 for (HashMap<String, Object> row : q.getRows())
                 {
-                    System.out.printf("Login successful: %d %s\n", row.get("id"), row.get("sqlLogin"));
+                    System.out.printf("Login successful: %d %s\n", (int)row.get("id"), (String)row.get("sqlLogin"));
                     return true;
                 }
             loginController.setError("Unknown application user - sql login succeeded but not allowed to use this application.");
