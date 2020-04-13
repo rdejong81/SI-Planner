@@ -4,8 +4,9 @@
     <root id="root">
       <element id="archive" name="SI-Planner.jar">
         <element id="module-output" name="SI-Planner" />
+        <element id="library" level="application" name="lib" />
       </element>
-      <element id="library" level="application" name="lib" />
+      <element id="library" level="project" name="Connector J 8" />
     </root>
   </artifact>
 </component>

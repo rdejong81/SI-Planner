@@ -1,9 +1,11 @@
 package db;
 
 import java.sql.*;
+import java.util.HashMap;
 
 abstract public class SQLConnection
 {
+
     private String connectString;
     private String database;
     private String user;
@@ -55,6 +57,14 @@ abstract public class SQLConnection
     public abstract Query selectAllRows(String table) throws SQLException;
 
     public abstract Query selectAllRowsLike(String table, String column, String pattern) throws SQLException;
+
+    public abstract Query insertRow(String table, HashMap<String,Object> row) throws SQLException;
+
+    public abstract void createUser(String username, String password) throws SQLException;
+
+    public abstract void deleteRow(String table, int id) throws SQLException;
+
+    public abstract boolean canCreateUser();
 
 
 }

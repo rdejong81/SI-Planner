@@ -7,8 +7,9 @@ public class Main extends Application
     @Override
     public void start(Stage primaryStage) throws Exception
     {
-        program.AppFacade.ShowLogin();
-
+        if(program.AppFacade.ShowLogin()) {
+            program.AppFacade.showMain();
+        }
     }
 
 
