@@ -1,12 +1,15 @@
 package data;
 
 import db.Query;
+import program.AppFacade;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+
+import static data.Employee.*;
 
 public class EmployeeList
 {
@@ -16,10 +19,10 @@ public class EmployeeList
     {
         employees = new ArrayList<>();
         // Load entries from database upon creation of the list.
-        Query q = program.AppFacade.db.selectAllRows("employees");
+        Query q = program.AppFacade.db.selectAllRows(TABLE_EMPLOYEES);
         for (HashMap<String, Object> row : q.getRows())
         {
-            employees.add(new Employee((int)row.get("id"),(String)row.get("name"),(String)row.get("sqlLogin")));
+            employees.add(new Employee((int)row.get("id"),(String)row.get(TABLE_EMPLOYEES_ROW_NAME),(String)row.get(TABLE_EMPLOYEES_ROW_SQLLOGIN)));
         }
 
     }
@@ -33,7 +36,16 @@ public class EmployeeList
     {
         for (Employee employee : employees)
         {
-            if (employee.getId() == id) return employees.remove(employee);
+            if (employee.getId() == id) {
+                try
+                {
+                    AppFacade.db.deleteRow(TABLE_EMPLOYEES, id);
+                } catch(Exception e){
+                    System.err.println("Unable to remove employee from database: "+e.getMessage());
+                    return false;
+                }
+                return employees.remove(employee);
+            }
         }
         return false;
     }

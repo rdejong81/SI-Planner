@@ -1,0 +1,23 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="SI-Planner">
+    <output-path>$PROJECT_DIR$/out/artifacts/SI_Planner</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="Main" />
+        <option name="description" value="" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="nativeBundle" value="exe" />
+        <option name="title" value="test" />
+        <option name="vendor" value="test" />
+        <option name="version" value="1.0" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="SI_Planner.jar">
+        <element id="module-output" name="SI-Planner" />
+        <element id="library" level="application" name="lib" />
+      </element>
+      <element id="library" level="project" name="Connector J 8" />
+    </root>
+  </artifact>
+</component>

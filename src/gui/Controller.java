@@ -52,7 +52,6 @@ public abstract class Controller implements Initializable
     final public void initialize(URL url, ResourceBundle resourceBundle)
     {
         onLoaded(url,resourceBundle);
-
     }
 
     abstract protected void onLoaded(URL url, ResourceBundle resourceBundle);
