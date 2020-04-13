@@ -51,4 +51,10 @@ abstract public class SQLConnection
     {
         return connection;
     }
+
+    public abstract Query selectAllRows(String table) throws SQLException;
+
+    public abstract Query selectAllRowsLike(String table, String column, String pattern) throws SQLException;
+
+
 }
