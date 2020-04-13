@@ -1,6 +1,7 @@
 package gui;
 
 import com.sun.tools.javac.Main;
+import db.DBType;
 import gui.Controller;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -15,6 +16,8 @@ import javafx.scene.layout.Pane;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import static db.MySQLConnection.MYSQL_TYPE_STR;
 
 public class LoginController extends gui.Controller
 {
@@ -41,17 +44,17 @@ public class LoginController extends gui.Controller
 
     public LoginController() throws IOException
     {
-        super();
+        super("LoginWindow.fxml","Login to SI-Planner");
         this.errortext = errortext;
         assert(server != null && password != null && username != null && dbType != null && errorlabel != null);
-        dbType.getItems().add("MySQL");
-        dbType.setValue("MySQL");
-    }
+        dbType.getItems().add(MYSQL_TYPE_STR);
+        dbType.setValue(MYSQL_TYPE_STR);
+     }
     public void setError(String error){
         errorlabel.setText(error);
     }
 
-    public void login(ActionEvent actionEvent)
+    public void loginButtonPress(ActionEvent actionEvent)
     {
         if(program.AppFacade.tryLogin(this))
         {
@@ -63,7 +66,7 @@ public class LoginController extends gui.Controller
     @Override
     protected void onLoaded(URL url, ResourceBundle resourceBundle)
     {
-        // todo check if still needed.
+
     }
 
     @Override
@@ -72,16 +75,9 @@ public class LoginController extends gui.Controller
         if(!this.submitted) this.cancelled=true;
     }
 
-    @Override
-    protected String getWindowFXML()
-    {
-        return "LoginWindow.fxml";
-    }
-
-    @Override
-    public String getWindowTitle()
-    {
-        return "Login";
+    public DBType getDBType(){
+        if(dbType.getValue() == MYSQL_TYPE_STR) return DBType.MYSQL;
+        return DBType.MYSQL;
     }
 
     public String getUserName(){

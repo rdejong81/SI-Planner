@@ -15,6 +15,7 @@ public class EmployeeList
     public EmployeeList() throws SQLException
     {
         employees = new ArrayList<>();
+        // Load entries from database upon creation of the list.
         Query q = program.AppFacade.db.selectAllRows("employees");
         for (HashMap<String, Object> row : q.getRows())
         {

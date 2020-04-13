@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,44 +29,30 @@ public abstract class Controller implements Initializable
 
     private FXMLLoader loader;
 
-    Controller() throws IOException
+    Controller(String fxml, String windowTitle) throws IOException
     {
         loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource(this.getWindowFXML()));
+        loader.setLocation(getClass().getResource(fxml));
 
-        loader.setController(this);
+       // override creation of controller instance, use current instance instead of creating a new one.
+        loader.setControllerFactory(c -> {
+            return this;
+        });
+
         Parent newParent = loader.<Parent>load();
 
-        Stage newStage = new Stage();
-        newStage.setTitle(this.getWindowTitle());
-        newStage.setScene(new Scene(newParent));
-        this.stage = newStage;
+        stage = new Stage();
+        scene = new Scene(newParent);
+        stage.setTitle(windowTitle);
+        stage.setScene(scene);
 
     }
 
     @Override
     final public void initialize(URL url, ResourceBundle resourceBundle)
     {
-        pane.sceneProperty().addListener(
-                (scene, oldScene, newScene) ->
-                {
-                    if (oldScene == null && newScene != null)
-                    {
-                        this.scene = newScene;
+        onLoaded(url,resourceBundle);
 
-                        this.scene.windowProperty().addListener(
-                                (stage, oldStage, newStage) ->
-                                {
-                                    if (oldStage == null && newStage != null)
-                                    {
-                                        this.stage = (Stage) newStage;
-                                        this.onLoaded(url,resourceBundle);
-                                    }
-                                }
-                        );
-                    }
-                }
-        );
     }
 
     abstract protected void onLoaded(URL url, ResourceBundle resourceBundle);
@@ -76,9 +63,6 @@ public abstract class Controller implements Initializable
         this.stage.showAndWait();
         this.onClosed();
     }
-
-    abstract protected String getWindowFXML();
-    abstract public String getWindowTitle();
 
     public Stage getStage()
     {
