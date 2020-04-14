@@ -4,8 +4,12 @@
 
 package gui;
 
+import org.fusesource.jansi.Ansi;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import static org.fusesource.jansi.Ansi.ansi;
 
 public class TempMenu
 {
@@ -13,7 +17,7 @@ public class TempMenu
 
     public TempMenu(String[] options, String prompt, String menuName) {
 
-        System.out.println("\u001B[46m=======================================================\u001B[0m");
+        System.out.println("\u001b[2J\u001B[46m=======================================================\u001B[0m");
         System.out.printf("\u001B[46m%32s%23s\u001B[0m\n",menuName,"");
         System.out.println("\u001B[46m=======================================================\u001B[0m");
         System.out.println("");
