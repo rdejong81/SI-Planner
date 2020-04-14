@@ -7,6 +7,7 @@
         <element id="library" level="application" name="lib" />
       </element>
       <element id="library" level="project" name="Connector J 8" />
+      <element id="library" level="project" name="jansi" />
     </root>
   </artifact>
 </component>
