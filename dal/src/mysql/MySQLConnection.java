@@ -1,4 +1,7 @@
-package db;
+package mysql;
+
+import db.Query;
+import db.SQLConnection;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -6,7 +9,7 @@ import java.util.HashMap;
 
 public class MySQLConnection extends SQLConnection
 {
-    final public static String MYSQL_TYPE_STR = "MySQL";
+    final public static String MYSQL_TYPE_STR = "mysql";
 
     public MySQLConnection(String server, String database, String user, String password) throws SQLException, ClassNotFoundException
     {
@@ -45,7 +48,7 @@ public class MySQLConnection extends SQLConnection
             }
             if (value instanceof String)
             {
-                values.add("'" + (String) value + "'");
+                values.add("'" + value + "'");
             }
         }
 

@@ -19,7 +19,7 @@ public class EmployeeList
     {
         employees = new ArrayList<>();
         // Load entries from database upon creation of the list.
-        Query q = program.AppFacade.db.selectAllRows(TABLE_EMPLOYEES);
+        Query q = AppFacade.db.selectAllRows(TABLE_EMPLOYEES);
         for (HashMap<String, Object> row : q.getRows())
         {
             employees.add(new Employee((int)row.get("id"),(String)row.get(TABLE_EMPLOYEES_ROW_NAME),(String)row.get(TABLE_EMPLOYEES_ROW_SQLLOGIN)));

@@ -1,17 +1,12 @@
 package gui;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,7 +24,7 @@ public abstract class Controller implements Initializable
 
     private FXMLLoader loader;
 
-    Controller(String fxml, String windowTitle) throws IOException
+    protected Controller(String fxml, String windowTitle) throws IOException
     {
         loader = new FXMLLoader();
         loader.setLocation(getClass().getResource(fxml));
@@ -39,7 +34,7 @@ public abstract class Controller implements Initializable
             return this;
         });
 
-        Parent newParent = loader.<Parent>load();
+        Parent newParent = loader.load();
 
         stage = new Stage();
         scene = new Scene(newParent);
@@ -76,6 +71,10 @@ public abstract class Controller implements Initializable
     public Pane getPane()
     {
         return pane;
+    }
+
+    protected FXMLLoader getLoader(){
+        return loader;
     }
 
 }

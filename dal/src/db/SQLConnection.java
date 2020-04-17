@@ -13,7 +13,7 @@ abstract public class SQLConnection
     private String password;
     private Connection connection;
 
-    SQLConnection(String server, String database, String user, String password) throws ClassNotFoundException
+    protected SQLConnection(String server, String database, String user, String password) throws ClassNotFoundException
     {
         this.user = user;
         this.password = password;

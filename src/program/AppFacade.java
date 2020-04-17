@@ -2,10 +2,13 @@ package program;
 
 import data.Employee;
 import data.EmployeeList;
-import db.MySQLConnection;
+import db.DBType;
+import gui.Controller;
+import gui.IGuiRunUseCase;
+import mysql.MySQLConnection;
 import db.Query;
 import db.SQLConnection;
-import gui.LoginController;
+import login.LoginController;
 import gui.TempInput;
 import gui.TempMenu;
 
@@ -21,7 +24,9 @@ public class AppFacade
 
     static public boolean ShowLogin() throws IOException, SQLException
     {
-        LoginController login = new LoginController();
+        HashMap<String, Enum> dbTypes = new HashMap<>();
+        dbTypes.put("MySQL",DBType.MYSQL);
+        LoginController login = new LoginController(new TryLoginCallback(),dbTypes);
         login.showAndWait();
         if (login.getCancelled()) return false;
 
@@ -30,43 +35,56 @@ public class AppFacade
         return true;
     }
 
-    static public boolean tryLogin(LoginController loginController)
+    static class TryLoginCallback implements IGuiRunUseCase
     {
-        try
+
+        @Override
+        public Boolean runUseCase(Controller window)
         {
-            switch (loginController.getDBType())
+            LoginController loginController = (LoginController)window;
+
+            try
             {
-                case MYSQL:
-                    db = new MySQLConnection(loginController.getServer(), loginController.getDatabase(), loginController.getUserName(), loginController.getPassword());
-            }
-
-
-            Query q = db.selectAllRows("employees");
-            ArrayList<HashMap<String,Object>> rows = q.getRows();
-            // If first logged on SQL user, add as employee.
-            if(rows.isEmpty()) {
-                new Employee(loginController.getUserName(),loginController.getUserName());
-                System.out.printf("First application user %s created as employee.",loginController.getUserName());
-                return true;
-            }
-
-            for (HashMap<String, Object> row : rows)
-            {
-                if(loginController.getUserName().equals(row.get("sqlLogin")))
+                try
                 {
-                    System.out.printf("Login successful: %d %s\n", (int) row.get("id"), (String) row.get("sqlLogin"));
+                    switch ((DBType) loginController.getDBType())
+                    {
+                        case MYSQL:
+                            db = new MySQLConnection(loginController.getServer(), loginController.getDatabase(), loginController.getUserName(), loginController.getPassword());
+                            break;
+
+                    }
+                } catch (java.lang.NullPointerException e){
+                    throw new Exception("No database type chosen.");
+                }
+
+
+                Query q = db.selectAllRows("employees");
+                ArrayList<HashMap<String,Object>> rows = q.getRows();
+                // If first logged on SQL user, add as employee.
+                if(rows.isEmpty()) {
+                    new Employee(loginController.getUserName(),loginController.getUserName());
+                    System.out.printf("First application user %s created as employee.",loginController.getUserName());
                     return true;
                 }
+
+                for (HashMap<String, Object> row : rows)
+                {
+                    if(loginController.getUserName().equals(row.get("sqlLogin")))
+                    {
+                        System.out.printf("Login successful: %d %s\n", row.get("id"), row.get("sqlLogin"));
+                        return true;
+                    }
+                }
+                loginController.setError("Unknown application user - sql login succeeded but not allowed to use this application.");
+                return false;
+
+            } catch (Exception e)
+            {
+                loginController.setError(e.getMessage());
+                return false;
             }
-            loginController.setError("Unknown application user - sql login succeeded but not allowed to use this application.");
-            return false;
-
-        } catch (Exception e)
-        {
-            loginController.setError(e.getMessage());
-            return false;
         }
-
     }
 
     static public void showMain(){
@@ -127,5 +145,18 @@ public class AppFacade
         showEmployees();
         int choice = TempInput.askInt("Enter employee Id number to remove",1,Integer.MAX_VALUE);
         employees.removeEmployee(choice);
+    }
+
+    static public void manageCustomers(){
+        String[] menuOptions = {"Add customer", "Remove customer", "Show customer", "Return to main menu"};
+        TempMenu menu = new TempMenu(menuOptions,"Make your choice","Customers");
+        switch(menu.getChoice()){
+            case 1 : addEmployee(); manageCustomers(); break;
+            case 2 : removeEmployee(); manageCustomers(); break;
+            case 3 : showEmployees(); manageCustomers(); break;
+            case 4 : return;
+        }
+
+
     }
 }

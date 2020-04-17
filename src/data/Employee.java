@@ -1,9 +1,9 @@
 package data;
 
 import db.Query;
+import program.AppFacade;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Employee
@@ -31,14 +31,14 @@ public class Employee
         HashMap<String,Object> map = new HashMap<>();
         map.put(TABLE_EMPLOYEES_ROW_NAME,name);
         map.put(TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin);
-        Query query = program.AppFacade.db.insertRow(TABLE_EMPLOYEES,map);
+        Query query = AppFacade.db.insertRow(TABLE_EMPLOYEES,map);
         id = (int)query.getCreatedKey();
     }
     // Create new employee with SQL Login
     public Employee(String name, String sqlLogin,String password) throws SQLException
     {
         this(name,sqlLogin);
-        program.AppFacade.db.createUser(sqlLogin,password);
+        AppFacade.db.createUser(sqlLogin,password);
     }
 
     public String getName()

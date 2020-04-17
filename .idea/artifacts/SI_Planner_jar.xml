@@ -2,11 +2,19 @@
   <artifact name="SI-Planner:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SI_Planner_jar</output-path>
     <root id="root">
+      <element id="archive" name="dal.jar">
+        <element id="module-output" name="dal" />
+      </element>
+      <element id="archive" name="gui.jar">
+        <element id="module-output" name="gui" />
+      </element>
       <element id="archive" name="SI-Planner.jar">
         <element id="module-output" name="SI-Planner" />
-        <element id="library" level="application" name="lib" />
       </element>
       <element id="library" level="project" name="Connector J 8" />
+      <element id="directory" name="javafx">
+        <element id="library" level="application" name="javafx" />
+      </element>
       <element id="library" level="project" name="jansi" />
     </root>
   </artifact>

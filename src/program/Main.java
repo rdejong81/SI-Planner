@@ -1,3 +1,5 @@
+package program;
+
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.fusesource.jansi.AnsiConsole;
@@ -9,8 +11,8 @@ public class Main extends Application
     public void start(Stage primaryStage) throws Exception
     {
         AnsiConsole.systemInstall();
-        if(program.AppFacade.ShowLogin()) {
-            program.AppFacade.showMain();
+        if(AppFacade.ShowLogin()) {
+            AppFacade.showMain();
         }
         AnsiConsole.systemUninstall();
     }
