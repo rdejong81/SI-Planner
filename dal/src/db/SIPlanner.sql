@@ -1,6 +1,23 @@
+ALTER TABLE projects DROP FOREIGN KEY FKprojects193985;
+ALTER TABLE attribute_values DROP FOREIGN KEY FKattribute_629872;
+ALTER TABLE templates DROP FOREIGN KEY FKtemplates583413;
+ALTER TABLE attribute_definitions DROP FOREIGN KEY FKattribute_168032;
+ALTER TABLE employees_customers DROP FOREIGN KEY FKemployees_764185;
+ALTER TABLE employees_customers DROP FOREIGN KEY FKemployees_781482;
+ALTER TABLE tasks DROP FOREIGN KEY FKtasks510016;
+ALTER TABLE time DROP FOREIGN KEY FKtime535173;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS time;
+DROP TABLE IF EXISTS templates;
+DROP TABLE IF EXISTS attribute_definitions;
+DROP TABLE IF EXISTS attribute_values;
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS employees_customers;
+DROP TABLE IF EXISTS tasks;
 CREATE TABLE customers (
   id   int(10) NOT NULL AUTO_INCREMENT, 
-  name varchar(255) NOT NULL, 
+  name char(255) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE projects (
   id              int(10) NOT NULL AUTO_INCREMENT, 

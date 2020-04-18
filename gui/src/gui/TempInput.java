@@ -9,10 +9,10 @@ public class TempInput
     public static String AskText(String question, int minimumLength)
     {
         boolean isDone = false;
-        String answer = new String();
+        String answer = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        while (isDone == false)
+        while (!isDone)
         {
             System.out.println(question);
 
@@ -27,7 +27,7 @@ public class TempInput
             {
             }
 
-            if (isDone == false)
+            if (!isDone)
             {
                 System.out.println("Wrong input, please try again.");
             }
@@ -42,7 +42,7 @@ public class TempInput
         int answer = 0;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        while (isDone == false)
+        while (!isDone)
         {
             System.out.printf("%s  : ",question);
 
@@ -57,7 +57,7 @@ public class TempInput
             {
             }
 
-            if (isDone == false)
+            if (!isDone)
             {
                 System.out.println("Wrong input. please try again.");
             }

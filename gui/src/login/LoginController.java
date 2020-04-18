@@ -1,23 +1,18 @@
-package gui;
+package login;
 
-import com.sun.tools.javac.Main;
-import db.DBType;
-import gui.Controller;
-import javafx.application.Application;
+import gui.IGuiRunUseCase;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
-import static db.MySQLConnection.MYSQL_TYPE_STR;
 
 public class LoginController extends gui.Controller
 {
@@ -42,13 +37,20 @@ public class LoginController extends gui.Controller
 
     private boolean cancelled;
 
-    public LoginController() throws IOException
+    private IGuiRunUseCase loginUseCase;
+
+    private HashMap<String,Enum> dbTypes;
+
+    public LoginController(IGuiRunUseCase loginUseCase, HashMap<String,Enum> dbTypes) throws IOException
     {
         super("LoginWindow.fxml","Login to SI-Planner");
-        this.errortext = errortext;
         assert(server != null && password != null && username != null && dbType != null && errorlabel != null);
-        dbType.getItems().add(MYSQL_TYPE_STR);
-        dbType.setValue(MYSQL_TYPE_STR);
+
+        for(String type : dbTypes.keySet()) {
+            dbType.getItems().add(type);
+        }
+        this.loginUseCase = loginUseCase;
+        this.dbTypes = dbTypes;
      }
     public void setError(String error){
         errorlabel.setText(error);
@@ -56,7 +58,7 @@ public class LoginController extends gui.Controller
 
     public void loginButtonPress(ActionEvent actionEvent)
     {
-        if(program.AppFacade.tryLogin(this))
+        if(loginUseCase.runUseCase(this))
         {
             this.submitted = true;
             super.getStage().close();
@@ -75,9 +77,11 @@ public class LoginController extends gui.Controller
         if(!this.submitted) this.cancelled=true;
     }
 
-    public DBType getDBType(){
-        if(dbType.getValue() == MYSQL_TYPE_STR) return DBType.MYSQL;
-        return DBType.MYSQL;
+    public Enum getDBType(){
+        for(String type : dbTypes.keySet()) {
+            if(dbType.getValue().equals(type)) return dbTypes.get(type);
+        }
+        return null;
     }
 
     public String getUserName(){

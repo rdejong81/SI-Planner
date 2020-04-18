@@ -13,7 +13,7 @@ abstract public class SQLConnection
     private String password;
     private Connection connection;
 
-    SQLConnection(String server, String database, String user, String password) throws ClassNotFoundException
+    protected SQLConnection(String server, String database, String user, String password) throws ClassNotFoundException
     {
         this.user = user;
         this.password = password;
@@ -54,11 +54,12 @@ abstract public class SQLConnection
         return connection;
     }
 
-    public abstract Query selectAllRows(String table) throws SQLException;
+    public abstract QueryResult selectAllRows(String table) throws SQLException;
+    public abstract QueryResult selectIds(String table) throws SQLException;
+    public abstract QueryResult selectTableColumns(String table) throws SQLException;
+    public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
 
-    public abstract Query selectAllRowsLike(String table, String column, String pattern) throws SQLException;
-
-    public abstract Query insertRow(String table, HashMap<String,Object> row) throws SQLException;
+    public abstract QueryResult insertRow(String table, HashMap<String,Object> row) throws SQLException;
 
     public abstract void createUser(String username, String password) throws SQLException;
 
