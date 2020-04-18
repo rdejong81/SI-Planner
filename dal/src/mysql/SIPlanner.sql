@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS employees_customers;
 DROP TABLE IF EXISTS tasks;
 CREATE TABLE customers (
   id   int(10) NOT NULL AUTO_INCREMENT, 
-  name char(255) NOT NULL, 
+  name varchar(255) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE projects (
   id              int(10) NOT NULL AUTO_INCREMENT, 
