@@ -1,6 +1,17 @@
 package data;
 
-public class CustomerList
+import java.sql.SQLException;
+
+public class CustomerList extends DataEntityList
 {
+
+    public CustomerList() throws SQLException
+    {
+        super(new Customer(-1));
+
+    }
+
+
+
 
 }

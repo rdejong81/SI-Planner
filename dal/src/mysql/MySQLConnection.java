@@ -1,6 +1,6 @@
 package mysql;
 
-import db.Query;
+import db.QueryResult;
 import db.SQLConnection;
 
 import java.sql.SQLException;
@@ -25,19 +25,42 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public Query selectAllRows(String table) throws SQLException
+    public QueryResult selectIds(String table) throws SQLException
     {
-        return new Query(this, String.format("select * from %s;", table));
+        return new QueryResult(this, String.format("select id from %s;", table));
     }
 
     @Override
-    public Query selectAllRowsLike(String table, String column, String pattern) throws SQLException
+    public QueryResult selectAllRows(String table) throws SQLException
     {
-        return new Query(this, String.format("select * from %s where %s like '%s'", table, column, pattern));
+        return new QueryResult(this, String.format("select * from %s;", table));
     }
 
     @Override
-    public Query insertRow(String table, HashMap<String, Object> row) throws SQLException
+    public QueryResult selectTableColumns(String table) throws SQLException
+    {
+        QueryResult results = new QueryResult(this,String.format("SHOW COLUMNS FROM %s;",table));
+       /* results.getResultSet().beforeFirst();
+
+            while(results.getResultSet().next())
+            {
+                String columnName = results.getResultSet().getString("Field");
+                columns.put()
+            }
+
+*/
+
+        return results;
+    }
+
+    @Override
+    public QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException
+    {
+        return new QueryResult(this, String.format("select * from %s where %s like '%s'", table, column, pattern));
+    }
+
+    @Override
+    public QueryResult insertRow(String table, HashMap<String, Object> row) throws SQLException
     {
         ArrayList<String> values = new ArrayList<>();
         for (Object value : row.values())
@@ -55,7 +78,7 @@ public class MySQLConnection extends SQLConnection
         String statement = String.format("insert into %s (%s) values (%s)", table,
                 String.join(",", row.keySet()),
                 String.join(",", values));
-        return new Query(this, statement);
+        return new QueryResult(this, statement);
     }
 
     @Override
@@ -63,15 +86,15 @@ public class MySQLConnection extends SQLConnection
     {
         String statement = String.format("create user '%s'@'%%' identified by '%s'", username, password);
         String statement2 = String.format("grant all privileges on %s.* to '%s'@'%%'", super.getDatabase(), username);
-        new Query(this, statement);
-        new Query(this, statement2);
-        new Query(this,"FLUSH PRIVILEGES");
+        new QueryResult(this, statement);
+        new QueryResult(this, statement2);
+        new QueryResult(this,"FLUSH PRIVILEGES");
     }
 
     @Override
     public void deleteRow(String table, int id) throws SQLException
     {
-        new Query(this,String.format("delete from %s where id=%d",table,id));
+        new QueryResult(this,String.format("delete from %s where id=%d",table,id));
     }
 
     @Override
@@ -79,9 +102,9 @@ public class MySQLConnection extends SQLConnection
     {
         try
         {
-            Query query = new Query(this, "show grants for CURRENT_USER");
+            QueryResult queryResult = new QueryResult(this, "show grants for CURRENT_USER");
 
-            for(HashMap<String, Object> row : query.getRows()){
+            for(HashMap<String, Object> row : queryResult.getRows()){
                 for(Object value : row.values())
                 {
                     if(value.toString().contains("CREATE USER")) return true;
