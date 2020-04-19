@@ -13,6 +13,9 @@ public class Employee extends DataEntity
     final public static String TABLE_EMPLOYEES_ROW_SQLLOGIN="sqlLogin";
     final public static String TABLE_EMPLOYEES_ROW_NAME="name";
 
+    private String name;
+    private String sqlLogin;
+
     // Create employee based on existing database record.
     protected Employee(int id)
     {
@@ -20,35 +23,68 @@ public class Employee extends DataEntity
     }
 
     // Create new employee in database
-    public Employee(HashMap<String, Object> row) throws SQLException
+    public Employee(String name, String sqlLogin) throws SQLException
     {
         this(-1);
-        QueryResult queryResult = AppFacade.db.insertRow(TABLE_EMPLOYEES,row);
+        this.sqlLogin = sqlLogin;
+        this.name = name;
+        QueryResult queryResult = AppFacade.db.insertRow(TABLE_EMPLOYEES,readFields());
         id = (int) queryResult.getCreatedKey();
         loadEntityData();
     }
     // Create new employee with SQL Login
-    public Employee(HashMap<String, Object> row,String password) throws SQLException
+    public Employee(String name, String sqlLogin,String password) throws SQLException
     {
-        this(row);
-        AppFacade.db.createUser((String)row.get(TABLE_EMPLOYEES_ROW_SQLLOGIN),password);
+        this(name,sqlLogin);
+        AppFacade.db.createUser(sqlLogin,password);
     }
 
 
     public String getName()
     {
-        return (String)rowData.get(TABLE_EMPLOYEES_ROW_NAME);
+        return name;
     }
 
     public String getSqlLogin()
     {
-        return (String)rowData.get(TABLE_EMPLOYEES_ROW_SQLLOGIN);
+        return sqlLogin;
     }
 
+
+    @Override
+    public void updateField(String fieldName, Object fieldValue)
+    {
+        switch (fieldName)
+        {
+            case TABLE_EMPLOYEES_ROW_SQLLOGIN: sqlLogin=(String)fieldValue;
+            case TABLE_EMPLOYEES_ROW_NAME: name=(String)fieldValue;
+        }
+    }
+
+    @Override
+    public Map<String, Object> readFields()
+    {
+        return Map.of(
+                TABLE_EMPLOYEES_ROW_NAME,name,
+                TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin
+        );
+    }
 
     @Override
     public DataEntity factoryCreateFromId(int id)
     {
         return new Employee(id);
+    }
+
+    public void setName(String name) throws SQLException
+    {
+        AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_NAME,name);
+        this.name = name;
+    }
+
+    public void setSqlLogin(String sqlLogin) throws SQLException
+    {
+        AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin);
+        this.sqlLogin = sqlLogin;
     }
 }

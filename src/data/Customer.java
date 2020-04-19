@@ -11,8 +11,8 @@ import program.AppFacade;
 
 public class Customer extends DataEntity
 {
+    private ArrayList<Employee> employees;
     private String name;
-    ArrayList<Employee> employees;
 
     final public static String TABLE_CUSTOMERS="customers";
     final public static String TABLE_CUSTOMERS_ROW_NAME="name";
@@ -21,18 +21,33 @@ public class Customer extends DataEntity
     // Create based on existing db record.
     protected Customer(int id){
         super(id,TABLE_CUSTOMERS);
+    }
 
-
+    // Create new db record
+    public Customer(String name) throws SQLException
+    {
+        this(-1);
+        this.name = name;
+        QueryResult queryResult = AppFacade.db.insertRow(TABLE_CUSTOMERS,readFields());
+        id = (int) queryResult.getCreatedKey();
+        loadEntityData();
     }
 
 
-    // Create new db record
-    public Customer(HashMap<String, Object> row) throws SQLException
+    @Override
+    public void updateField(String fieldName, Object fieldValue)
     {
-        this(-1);
-        QueryResult queryResult = AppFacade.db.insertRow(TABLE_CUSTOMERS,row);
-        id = (int) queryResult.getCreatedKey();
-        loadEntityData();
+        switch (fieldName){
+            case TABLE_CUSTOMERS_ROW_NAME: name = (String)fieldValue; break;
+        }
+    }
+
+    @Override
+    public Map<String, Object> readFields()
+    {
+        return Map.of(
+                TABLE_CUSTOMERS_ROW_NAME,name
+        );
     }
 
     @Override
@@ -40,4 +55,17 @@ public class Customer extends DataEntity
     {
         return new Customer(id);
     }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name) throws SQLException
+    {
+        AppFacade.db.updateField(getTableName(),id,TABLE_CUSTOMERS_ROW_NAME,name);
+        this.name = name;
+    }
+
+
 }

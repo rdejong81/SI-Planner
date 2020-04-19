@@ -1,15 +1,15 @@
 package data;
 
+import db.ISQLUpdatable;
 import db.QueryResult;
 
+import java.sql.SQLException;
 import java.util.*;
 
-abstract public class DataEntity
+abstract public class DataEntity implements ISQLUpdatable
 {
     final private String tableName;
-    protected HashMap<String, Object> rowData; // from database
-    protected Map<String, Integer> columnData; // from database
-    protected int id;
+    protected Integer id;
 
     DataEntity(int id, String tableName)
     {
@@ -22,17 +22,19 @@ abstract public class DataEntity
     final protected void loadEntityData(){
         try
         {
-            QueryResult results = program.AppFacade.db.selectAllRowsLike(tableName, "id", Integer.toString(id));
-            columnData = results.getColumns();
-            assert(results.getRows().size() == 1);
-            for(HashMap<String,Object> row : results.getRows())
-            {
-                rowData = row;
-            }
+            program.AppFacade.db.selectEntity(this);
+
         } catch(Exception e) {
 
         }
     }
+
+    final protected void saveEntityData() throws SQLException
+    {
+        program.AppFacade.db.updateRow(tableName,id,readFields());
+    }
+
+    abstract public Map<String, Object> readFields(); // used in saving data, or iterating through value data.
 
     final public String getTableName()
     {
@@ -42,16 +44,8 @@ abstract public class DataEntity
     final public int getId()
     {
         return id;
-
     }
 
-    final public Map<String,Integer> getColumns() {
-        return Collections.unmodifiableMap(columnData);
-    }
-
-    final public Map<String,Object> getValues() {
-        return Collections.unmodifiableMap(rowData);
-    }
 
     public abstract DataEntity factoryCreateFromId(int id);
 }

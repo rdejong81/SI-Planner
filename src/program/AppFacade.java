@@ -4,6 +4,7 @@ import data.*;
 import db.DBType;
 import gui.Controller;
 import gui.IGuiRunUseCase;
+import javafx.scene.chart.PieChart;
 import mysql.MySQLConnection;
 import db.QueryResult;
 import db.SQLConnection;
@@ -12,12 +13,11 @@ import gui.TempInput;
 import gui.TempMenu;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import static data.Customer.TABLE_CUSTOMERS_ROW_NAME;
 import static data.Employee.*;
 import static db.QueryResult.*;
 
@@ -69,11 +69,7 @@ public class AppFacade
                 // If first logged on SQL user, add as employee.
                 if (employees.getEntities().isEmpty())
                 {
-                    HashMap<String, Object> newData = new HashMap<>();
-                    newData.put(TABLE_EMPLOYEES_ROW_SQLLOGIN, loginController.getUserName());
-                    newData.put(TABLE_EMPLOYEES_ROW_NAME, loginController.getUserName());
-
-                    employees.addEntity(new Employee(newData));
+                    employees.addEntity(new Employee(loginController.getUserName(),loginController.getUserName()));
                     System.out.printf("First application user %s created as employee.\n", loginController.getUserName());
                     return true;
                 }
@@ -99,7 +95,7 @@ public class AppFacade
 
     static public void showMain()
     {
-        String[] menuOptions = {"Manage Employees", "Exit SI-Planner"};
+        String[] menuOptions = {"Manage Employees", "Manage Customers", "Exit SI-Planner"};
         TempMenu menu = new TempMenu(menuOptions, "Make your choice", "Main Menu");
         switch (menu.getChoice())
         {
@@ -118,39 +114,23 @@ public class AppFacade
 
     static public void addEntity(DataEntityList list)
     {
-        HashMap<String, Object> newEntityData;
-        Map<String, Integer> columns = list.getColumns();
-        newEntityData = new HashMap<>();
-
-        for (String column : columns.keySet())
-        {
-
-            switch (columns.get(column))
-            {
-                case COL_INTEGER:
-                case COL_BIGINT:
-                    if (column.equals("id")) break;
-                    Integer intVal = TempInput.askInt(String.format("Fill in number %s", column), 0, Integer.MAX_VALUE);
-                    newEntityData.put(column, intVal);
-                    break;
-                default:
-                    String strVal = TempInput.AskText(String.format("Fill in %s", column), 2);
-                    newEntityData.put(column, strVal);
-                    break;
-            }
-
-
-        }
 
         try
         {
+            String newName = TempInput.AskText("Enter new name",2);
+
             if (list instanceof CustomerList)
             {
-                list.addEntity(new Customer(newEntityData));
+                list.addEntity(new Customer(newName));
             }
             if (list instanceof EmployeeList)
             {
-                list.addEntity(new Employee(newEntityData));
+                String newLogin = TempInput.AskText("Enter new login name",2);
+                if(db.canCreateUser())
+                {
+                    String newPassword = TempInput.AskText("Enter new password",2);
+                    list.addEntity(new Employee(newName,newLogin,newPassword));
+                } else list.addEntity(new Employee(newName,newLogin));
             }
 
             System.out.printf("%s added", list.getSingularEntityName());
@@ -168,61 +148,85 @@ public class AppFacade
 
         for (DataEntity entity : entities)
         {
-            boolean firstValue = true;
-            boolean firstRowValue = true;
-
             if (firstRow)
             {
-                System.out.printf("\u001B[46m");
-                for (String columnName : list.getColumns().keySet())
-                {
-                    if (!firstRowValue) System.out.printf(" | ");
-                    switch (list.getColumns().get(columnName))
-                    {
-                        case COL_INTEGER:
-                            if (columnName.length() < 5)
-                            {
-                                System.out.printf("%-4s", columnName);
-                                break;
-                            }
-                        default:
-                            System.out.printf("%-20s", columnName);
-                            break;
-                    }
-                    firstRowValue = false;
-                }
+                if(list instanceof CustomerList) System.out.printf("\u001B[46m %-4s | %-20s","ID","Name");
+                if(list instanceof EmployeeList) System.out.printf("\u001B[46m %-4s | %-20s | %-20s","ID","Name","Sql login");
                 System.out.printf("\u001B[0m\n");
             }
 
-            for (String columnName : entity.getColumns().keySet())
-            {
-                Object columnValue = entity.getValues().get(columnName);
-                int columnType = entity.getColumns().get(columnName);
+            if(list instanceof CustomerList) System.out.printf(" %-4s | %-20s\n",entity.getId(),((Customer)entity).getName());
+            if(list instanceof EmployeeList) System.out.printf(" %-4s | %-20s | %-20s\n",
+                    entity.getId(),
+                    ((Employee)entity).getName(),
+                    ((Employee)entity).getSqlLogin());
 
-                if (!firstValue) System.out.printf(" | ");
-                switch (columnType)
-                {
-                    case COL_INTEGER:
-                    case COL_BIGINT:
-                        if (columnName.length() < 5)
-                        {
-                            System.out.printf("%-4d", columnValue);
-                            break;
-                        }
-                    case COL_VARCHAR:
-                    case COL_MEDIUMTEXT:
-                        System.out.printf("%-20s", columnValue);
-                        break;
-                }
-                firstValue = false;
-
-            }
-
-            System.out.println();
             firstRow = false;
         }
 
-        //gui.TempInput.AskText("Enter key to return",0);
+    }
+
+    static public DataEntity selectDataEntity(DataEntityList entities){
+        if(entities.getEntities().isEmpty()) return null;
+
+        ArrayList<String> choices = new ArrayList<>();
+
+        for(DataEntity entity : entities.getEntities())
+        {
+            switch (entities.getSingularEntityName())
+            {
+                case "Employee": choices.add(String.format("%s (%d)",((Employee)entity).getName(),entity.getId())); break;
+                case "Customer": choices.add(String.format("%s (%d)",((Customer)entity).getName(),entity.getId())); break;
+            }
+
+        }
+
+        TempMenu choice = new TempMenu(
+                choices.toArray(String[]::new),
+                "Choose item",
+                "Select "+entities.getSingularEntityName());
+
+        Iterator<DataEntity> it = entities.getEntities().iterator();
+
+        for (int i=0;i<entities.getEntities().size();i++)
+        {
+            DataEntity entity = it.next();
+            if(i+1 == choice.getChoice()) return entity;
+        }
+
+        return null;
+    }
+
+    static public void editDataEntity(DataEntity entity){
+        if (entity==null) return;
+
+        try
+        {
+            if(entity instanceof Customer)
+            {
+                System.out.printf("Current name: %s\n",((Customer) entity).getName());
+                String newName = TempInput.AskText("Enter new name (press enter to keep the same)",0);
+                if(newName.length() > 1) ((Customer) entity).setName(newName);
+
+            }
+
+            if (entity instanceof Employee)
+            {
+                System.out.printf("Current name: %s\n",((Employee) entity).getName());
+                String newName = TempInput.AskText("Enter new name (press enter to keep the same)",0);
+                if(newName.length() > 1) ((Employee) entity).setName(newName);
+
+                System.out.printf("Current SQL login name: %s\n",((Employee) entity).getSqlLogin());
+                String newLogin = TempInput.AskText("Enter new SQL login name",0);
+                if(newLogin.length() > 1) ((Employee) entity).setSqlLogin(newLogin);
+            }
+
+            System.out.printf("%s ID %d modifications complete\n", entity.getClass().getSimpleName(),entity.getId());
+        } catch (Exception e)
+        {
+            System.err.printf("Error: %s. Details: %s\n Modifications cancelled.\n", e.toString(), e.getMessage());
+        }
+
     }
 
     static public void removeDataEntity(DataEntityList list)
@@ -238,7 +242,8 @@ public class AppFacade
     {
         String[] menuOptions = {"Add " + entities.getSingularEntityName().toLowerCase(),
                 "Remove " + entities.getSingularEntityName().toLowerCase(),
-                "Show " + entities.getSingularEntityName().toLowerCase(), "Return to main menu"};
+                "Show " + entities.getSingularEntityName().toLowerCase(),
+                "Edit " + entities.getSingularEntityName().toLowerCase(), "Return to main menu"};
         TempMenu menu = new TempMenu(menuOptions, "Make your choice", entities.getPluralEntityName());
         switch (menu.getChoice())
         {
@@ -256,6 +261,11 @@ public class AppFacade
                 manageEntities(entities);
                 break;
             case 4:
+                editDataEntity(selectDataEntity(entities));
+                gui.TempInput.AskText("Enter key to return", 0);
+                manageEntities(entities);
+                break;
+            case 5:
                 return;
         }
 

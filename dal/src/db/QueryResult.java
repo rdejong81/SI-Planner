@@ -12,7 +12,6 @@ public class QueryResult
     private ResultSet resultSet;
     private ResultSetMetaData resultSetMetaData;
     private ArrayList<HashMap<String, Object>> rows;
-    private HashMap<String, Integer> columns;
     private long createdKey;
 
     public static final int COL_VARCHAR = 12;
@@ -20,7 +19,7 @@ public class QueryResult
     public static final int COL_BIGINT = -5;
     public static final int COL_MEDIUMTEXT = -1;
 
-    public QueryResult(SQLConnection db, String statement) throws SQLException
+    public QueryResult(SQLConnection db, String statement, ISQLUpdatable entity) throws SQLException
     {
         this.statement = db.getConnection().createStatement();
         this.statement.execute(statement, Statement.RETURN_GENERATED_KEYS);
@@ -35,12 +34,6 @@ public class QueryResult
         }
         this.resultSetMetaData = resultSet.getMetaData();
         rows = new ArrayList<>();
-        columns = new HashMap();
-        for (int i = 1; i - 1 < resultSetMetaData.getColumnCount(); i++)
-        {
-            columns.put(resultSetMetaData.getColumnLabel(i), resultSetMetaData.getColumnType(i));
-
-        }
 
         while (resultSet.next())
         {
@@ -52,12 +45,16 @@ public class QueryResult
                     case COL_VARCHAR:
                     case COL_MEDIUMTEXT:
                         rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getString(i));
+                        if(entity != null) entity.updateField(resultSetMetaData.getColumnLabel(i),resultSet.getString(i));
                         break;
                     case COL_INTEGER:
                         rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
+                        if(entity != null) entity.updateField(resultSetMetaData.getColumnLabel(i),resultSet.getInt(i));
                         break;
                     case COL_BIGINT:
                         rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getLong(i));
+                        if(entity != null) entity.updateField(resultSetMetaData.getColumnLabel(i),resultSet.getLong(i));
+                        break;
                 }
             }
             rows.add(rowMap);
@@ -66,13 +63,9 @@ public class QueryResult
 
     }
 
-    public QueryResult(SQLConnection db, String statement,boolean lookup) throws SQLException
+    public QueryResult(SQLConnection db, String statement) throws SQLException
     {
-
-        this.statement = db.getConnection().createStatement();
-        this.statement.execute(statement, Statement.RETURN_GENERATED_KEYS);
-        this.resultSet = this.statement.getResultSet();
-
+        this(db,statement,null);
     }
 
 
@@ -90,8 +83,4 @@ public class QueryResult
         return Collections.unmodifiableCollection(rows);
     }
 
-    final public Map<String, Integer> getColumns()
-    {
-        return Collections.unmodifiableMap(columns);
-    }
 }

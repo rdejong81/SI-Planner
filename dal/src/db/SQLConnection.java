@@ -1,7 +1,7 @@
 package db;
 
 import java.sql.*;
-import java.util.HashMap;
+import java.util.Map;
 
 abstract public class SQLConnection
 {
@@ -56,10 +56,12 @@ abstract public class SQLConnection
 
     public abstract QueryResult selectAllRows(String table) throws SQLException;
     public abstract QueryResult selectIds(String table) throws SQLException;
-    public abstract QueryResult selectTableColumns(String table) throws SQLException;
     public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
+    public abstract void selectEntity(ISQLUpdatable entity) throws SQLException;
+    public abstract QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException;
+    public abstract QueryResult updateField(String table,Integer id, String column, Object value) throws SQLException;
 
-    public abstract QueryResult insertRow(String table, HashMap<String,Object> row) throws SQLException;
+    public abstract QueryResult insertRow(String table, Map<String,Object> row) throws SQLException;
 
     public abstract void createUser(String username, String password) throws SQLException;
 
