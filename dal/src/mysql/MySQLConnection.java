@@ -51,6 +51,12 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
+    public void selectEntity(ISQLUpdatable entity,String column) throws SQLException
+    {
+        new QueryResult(this, String.format("select * from %s where %s=%d", entity.getTableName(),column, entity.getId()),entity);
+    }
+
+    @Override
     public QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException
     {
         ArrayList<String> valuePairs = new ArrayList<>();

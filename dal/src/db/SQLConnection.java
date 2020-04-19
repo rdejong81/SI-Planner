@@ -58,6 +58,8 @@ abstract public class SQLConnection
     public abstract QueryResult selectIds(String table) throws SQLException;
     public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
     public abstract void selectEntity(ISQLUpdatable entity) throws SQLException;
+    public abstract void selectEntity(ISQLUpdatable entity, String column) throws SQLException;
+
     public abstract QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException;
     public abstract QueryResult updateField(String table,Integer id, String column, Object value) throws SQLException;
 

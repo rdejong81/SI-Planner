@@ -4,22 +4,26 @@ import db.QueryResult;
 import program.AppFacade;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Employee extends DataEntity
 {
     final public static String TABLE_EMPLOYEES="employees";
     final public static String TABLE_EMPLOYEES_ROW_SQLLOGIN="sqlLogin";
     final public static String TABLE_EMPLOYEES_ROW_NAME="name";
+    final public static String TABLE_EMPCUST="employees_customers";
+    final public static String TABLE_EMPCUST_ROW_CUSTOMERS_ID="customers_id";
+    final public static String TABLE_EMPCUST_ROW_EMPLOYEES_ID="employees_id";
 
     private String name;
     private String sqlLogin;
+    private ArrayList<Customer> customers;
 
     // Create employee based on existing database record.
     protected Employee(int id)
     {
         super(id,TABLE_EMPLOYEES);
+        this.customers = new ArrayList<>();
     }
 
     // Create new employee in database
@@ -86,5 +90,20 @@ public class Employee extends DataEntity
     {
         AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin);
         this.sqlLogin = sqlLogin;
+    }
+
+    public Collection<Customer> getCustomers()
+    {
+        return Collections.unmodifiableCollection(customers);
+    }
+
+    public void addCustomer(Customer customer)
+    {
+        customers.add(customer);
+    }
+
+    public void removeCustomer(int id)
+    {
+        customers.removeIf(n -> (n.id == id));
     }
 }
