@@ -150,16 +150,28 @@ public class AppFacade
         {
             if (firstRow)
             {
-                if(list instanceof CustomerList) System.out.printf("\u001B[46m %-4s | %-20s","ID","Name");
-                if(list instanceof EmployeeList) System.out.printf("\u001B[46m %-4s | %-20s | %-20s","ID","Name","Sql login");
+                if(list instanceof CustomerList) System.out.printf("\u001B[46m %-4s | %-20s | %-40s","ID","Name","Employees");
+                if(list instanceof EmployeeList) System.out.printf("\u001B[46m %-4s | %-20s | %-20s | %-40s","ID","Name","Sql login","Customers");
                 System.out.printf("\u001B[0m\n");
             }
 
-            if(list instanceof CustomerList) System.out.printf(" %-4s | %-20s\n",entity.getId(),((Customer)entity).getName());
-            if(list instanceof EmployeeList) System.out.printf(" %-4s | %-20s | %-20s\n",
-                    entity.getId(),
-                    ((Employee)entity).getName(),
-                    ((Employee)entity).getSqlLogin());
+            if(list instanceof CustomerList)
+            {
+                ArrayList<String> names = new ArrayList<>();
+                for(DataEntity employee : ((Customer) entity).getEmployees())
+                    names.add(((Employee) employee).getName());
+                System.out.printf(" %-4s | %-20s | %-40s\n",entity.getId(),((Customer)entity).getName(),String.join(",",names));
+            }
+            if(list instanceof EmployeeList) {
+                ArrayList<String> names = new ArrayList<>();
+                for(DataEntity customer : ((Employee) entity).getCustomers())
+                    names.add(((Customer) customer).getName());
+                System.out.printf(" %-4s | %-20s | %-20s | %-40s\n",
+                        entity.getId(),
+                        ((Employee)entity).getName(),
+                        ((Employee)entity).getSqlLogin(),
+                        String.join(",",names));
+            }
 
             firstRow = false;
         }

@@ -3,9 +3,7 @@ package data;
 import db.QueryResult;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import program.AppFacade;
 
@@ -21,6 +19,7 @@ public class Customer extends DataEntity
     // Create based on existing db record.
     protected Customer(int id){
         super(id,TABLE_CUSTOMERS);
+        employees = new ArrayList<>();
     }
 
     // Create new db record
@@ -65,6 +64,19 @@ public class Customer extends DataEntity
     {
         AppFacade.db.updateField(getTableName(),id,TABLE_CUSTOMERS_ROW_NAME,name);
         this.name = name;
+    }
+
+    public Collection<Employee> getEmployees(){
+        return Collections.unmodifiableCollection(employees);
+    }
+
+    public void addEmployee(Employee employee){
+        employees.add(employee);
+    }
+
+    public void removeEmployee(int id)
+    {
+        employees.removeIf(n -> (n.id == id));
     }
 
 
