@@ -46,6 +46,4 @@ abstract public class DataEntity implements ISQLUpdatable
         return id;
     }
 
-
-    public abstract DataEntity factoryCreateFromId(int id);
 }

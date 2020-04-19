@@ -1,5 +1,6 @@
 package data;
 
+import com.sun.jdi.request.DuplicateRequestException;
 import db.QueryResult;
 import program.AppFacade;
 
@@ -11,9 +12,7 @@ public class Employee extends DataEntity
     final public static String TABLE_EMPLOYEES="employees";
     final public static String TABLE_EMPLOYEES_ROW_SQLLOGIN="sqlLogin";
     final public static String TABLE_EMPLOYEES_ROW_NAME="name";
-    final public static String TABLE_EMPCUST="employees_customers";
-    final public static String TABLE_EMPCUST_ROW_CUSTOMERS_ID="customers_id";
-    final public static String TABLE_EMPCUST_ROW_EMPLOYEES_ID="employees_id";
+
 
     private String name;
     private String sqlLogin;
@@ -74,12 +73,6 @@ public class Employee extends DataEntity
         );
     }
 
-    @Override
-    public DataEntity factoryCreateFromId(int id)
-    {
-        return new Employee(id);
-    }
-
     public void setName(String name) throws SQLException
     {
         AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_NAME,name);
@@ -99,11 +92,19 @@ public class Employee extends DataEntity
 
     public void addCustomer(Customer customer)
     {
+        if(customers.contains(customer)) throw new DuplicateRequestException("Already in list");
         customers.add(customer);
+        try
+        {
+            customer.addEmployee(this);
+        }
+        catch (Exception e){
+
+        }
     }
 
-    public void removeCustomer(int id)
+    public boolean removeCustomer(int id)
     {
-        customers.removeIf(n -> (n.id == id));
+        return customers.removeIf(n -> (n.id == id && n.removeEmployee(this.id)));
     }
 }

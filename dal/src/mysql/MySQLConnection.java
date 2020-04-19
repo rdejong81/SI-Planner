@@ -33,6 +33,14 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
+    public QueryResult selectAllRowsIf(String table, String column, Object isValue) throws SQLException
+    {
+        if(isValue instanceof Integer)
+            return new QueryResult(this, String.format("select * from %s where %s=%d;", table,column,isValue));
+        return new QueryResult(this, String.format("select * from %s where %s='%s';", table,column,isValue));
+    }
+
+    @Override
     public QueryResult selectAllRows(String table) throws SQLException
     {
         return new QueryResult(this, String.format("select * from %s;", table));

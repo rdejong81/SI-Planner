@@ -19,12 +19,12 @@ public abstract class DataEntityList
         singularEntityName = entityBase.getClass().getSimpleName();
         pluralEntityName = entityBase.getTableName(); // database table names are plural.
 
-        QueryResult q = AppFacade.db.selectIds(entityBase.getTableName());
+        QueryResult results = AppFacade.db.selectIds(entityBase.getTableName());
 
-        for (HashMap<String, Object> row : q.getRows())
+        for (HashMap<String, Object> row : results.getRows())
         {
-            DataEntity retrievedEntity = entityBase.factoryCreateFromId((Integer)row.get("id"));
-            this.addEntity(retrievedEntity);
+            if(entityBase instanceof Customer) this.addEntity(new Customer((Integer)row.get("id")));
+            if(entityBase instanceof Employee) this.addEntity(new Employee((Integer)row.get("id")));
         }
 
     }

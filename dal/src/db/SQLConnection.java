@@ -56,6 +56,7 @@ abstract public class SQLConnection
 
     public abstract QueryResult selectAllRows(String table) throws SQLException;
     public abstract QueryResult selectIds(String table) throws SQLException;
+    public abstract QueryResult selectAllRowsIf(String table, String column, Object isValue) throws SQLException;
     public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
     public abstract void selectEntity(ISQLUpdatable entity) throws SQLException;
     public abstract void selectEntity(ISQLUpdatable entity, String column) throws SQLException;

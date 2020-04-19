@@ -1,5 +1,6 @@
 package data;
 
+import com.sun.jdi.request.DuplicateRequestException;
 import db.QueryResult;
 
 import java.sql.SQLException;
@@ -7,19 +8,66 @@ import java.util.*;
 
 import program.AppFacade;
 
+import static data.Employee.*;
+import static data.Project.TABLE_PROJECTS;
+import static data.Project.TABLE_PROJECTS_ROW_CUSTOMER;
+
 public class Customer extends DataEntity
 {
     private ArrayList<Employee> employees;
+    private ArrayList<Project> projects;
     private String name;
 
     final public static String TABLE_CUSTOMERS="customers";
     final public static String TABLE_CUSTOMERS_ROW_NAME="name";
+    final public static String TABLE_EMPCUST="employees_customers";
+    final public static String TABLE_EMPCUST_ROW_CUSTOMERS_ID="customers_id";
+    final public static String TABLE_EMPCUST_ROW_EMPLOYEES_ID="employees_id";
 
 
     // Create based on existing db record.
     protected Customer(int id){
         super(id,TABLE_CUSTOMERS);
         employees = new ArrayList<>();
+        projects = new ArrayList<>();
+
+        try
+        {
+            QueryResult projectResults = AppFacade.db.selectAllRowsIf(TABLE_PROJECTS,TABLE_PROJECTS_ROW_CUSTOMER,this.id);
+
+            for (HashMap<String, Object> row : projectResults.getRows())
+            {
+                projects.add(new Project((Integer) row.get("id")));
+            }
+
+        } catch (Exception e){
+
+        }
+
+        try
+        {
+            // load linked employees relations to employees and this customer
+            QueryResult employeeResults = AppFacade.db.selectAllRowsIf(TABLE_EMPCUST,TABLE_EMPCUST_ROW_CUSTOMERS_ID,this.id);
+
+
+            for(Map<String,Object> row : employeeResults.getRows())
+            {
+                if(this.id == ((Integer)row.get(TABLE_EMPCUST_ROW_CUSTOMERS_ID)).intValue())
+                {
+                    for(DataEntity employee : AppFacade.employees.getEntities())
+                    {
+                        if( ((Employee)employee).id == ((Integer)row.get(TABLE_EMPCUST_ROW_EMPLOYEES_ID)).intValue())
+                        {
+                            // make relationship on both sides.
+                            ((Employee) employee).addCustomer(this);
+                            employees.add((Employee) employee);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e){
+
+        }
     }
 
     // Create new db record
@@ -49,12 +97,6 @@ public class Customer extends DataEntity
         );
     }
 
-    @Override
-    public DataEntity factoryCreateFromId(int id)
-    {
-        return new Customer(id);
-    }
-
     public String getName()
     {
         return name;
@@ -70,13 +112,20 @@ public class Customer extends DataEntity
         return Collections.unmodifiableCollection(employees);
     }
 
-    public void addEmployee(Employee employee){
+    public void addEmployee(Employee employee) throws SQLException,DuplicateRequestException
+    {
+        if(employees.contains(employee)) throw new DuplicateRequestException("Already in list");
+        HashMap<String, Object> row = new HashMap<>();
+        row.put(TABLE_EMPCUST_ROW_CUSTOMERS_ID,this.id);
+        row.put(TABLE_EMPCUST_ROW_EMPLOYEES_ID,employee.id);
+        AppFacade.db.insertRow(TABLE_EMPCUST,row);
         employees.add(employee);
+        employee.addCustomer(this);
     }
 
-    public void removeEmployee(int id)
+    public boolean removeEmployee(int id)
     {
-        employees.removeIf(n -> (n.id == id));
+        return employees.removeIf(n -> (n.id == id && n.removeCustomer(this.id)));
     }
 
 
