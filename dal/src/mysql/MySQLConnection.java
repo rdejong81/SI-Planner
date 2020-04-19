@@ -1,11 +1,13 @@
 package mysql;
 
+import db.ISQLUpdatable;
 import db.QueryResult;
 import db.SQLConnection;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MySQLConnection extends SQLConnection
 {
@@ -37,30 +39,41 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public QueryResult selectTableColumns(String table) throws SQLException
-    {
-        QueryResult results = new QueryResult(this,String.format("SHOW COLUMNS FROM %s;",table));
-       /* results.getResultSet().beforeFirst();
-
-            while(results.getResultSet().next())
-            {
-                String columnName = results.getResultSet().getString("Field");
-                columns.put()
-            }
-
-*/
-
-        return results;
-    }
-
-    @Override
     public QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException
     {
         return new QueryResult(this, String.format("select * from %s where %s like '%s'", table, column, pattern));
     }
 
     @Override
-    public QueryResult insertRow(String table, HashMap<String, Object> row) throws SQLException
+    public void selectEntity(ISQLUpdatable entity) throws SQLException
+    {
+        new QueryResult(this, String.format("select * from %s where id=%d", entity.getTableName(), entity.getId()),entity);
+    }
+
+    @Override
+    public QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException
+    {
+        ArrayList<String> valuePairs = new ArrayList<>();
+        for (String column : row.keySet()){
+            if(row.get(column) instanceof Integer) valuePairs.add(String.format("%s=%d",column,row.get(column)));
+            if(row.get(column) instanceof String) valuePairs.add(String.format("%s='%s'",column,row.get(column)));
+        }
+        return new QueryResult(this,String.format("update %s set %s where id=%d", table, String.join(",",valuePairs), id));
+    }
+
+    @Override
+    public QueryResult updateField(String table, Integer id, String column, Object value) throws SQLException
+    {
+        switch(value.getClass().getSimpleName())
+        {
+            case "Integer":return new QueryResult(this,String.format("update %s set %s=%d where id=%d", table, column,value, id));
+            default:return new QueryResult(this,String.format("update %s set %s='%s' where id=%d", table, column,value, id));
+        }
+
+    }
+
+    @Override
+    public QueryResult insertRow(String table, Map<String, Object> row) throws SQLException
     {
         ArrayList<String> values = new ArrayList<>();
         for (Object value : row.values())

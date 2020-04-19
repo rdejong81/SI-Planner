@@ -11,7 +11,6 @@ public abstract class DataEntityList
     private ArrayList<DataEntity> entities;
     private String pluralEntityName;
     private String singularEntityName;
-    private Map<String, Integer> columns;
 
     DataEntityList(DataEntity entityBase) throws SQLException
     {
@@ -19,10 +18,8 @@ public abstract class DataEntityList
 
         singularEntityName = entityBase.getClass().getSimpleName();
         pluralEntityName = entityBase.getTableName(); // database table names are plural.
-        columns = entityBase.columnData;
 
         QueryResult q = AppFacade.db.selectIds(entityBase.getTableName());
-
 
         for (HashMap<String, Object> row : q.getRows())
         {
@@ -69,11 +66,6 @@ public abstract class DataEntityList
     public Collection<DataEntity> getEntities()
     {
         return Collections.unmodifiableCollection(entities);
-    }
-
-    public Map<String,Integer> getColumns()
-    {
-        return Collections.unmodifiableMap(columns);
     }
 
 }
