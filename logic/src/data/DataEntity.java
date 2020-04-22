@@ -1,37 +1,28 @@
 package data;
 
-import db.ISQLUpdatable;
-import db.QueryResult;
+import facade.ISQLConnection;
+import facade.ISQLUpdatable;
 
-import java.sql.SQLException;
 import java.util.*;
 
 abstract public class DataEntity implements ISQLUpdatable
 {
     final private String tableName;
     protected Integer id;
+    protected ISQLConnection sqlConnection;
 
-    DataEntity(int id, String tableName)
+
+    DataEntity(ISQLConnection sqlConnection, int id, String tableName)
     {
         this.id = id;
         this.tableName = tableName;
+        this.sqlConnection = sqlConnection;
         loadEntityData();
 
     }
 
     final protected void loadEntityData(){
-        try
-        {
-            program.AppFacade.db.selectEntity(this);
-
-        } catch(Exception e) {
-
-        }
-    }
-
-    final protected void saveEntityData() throws SQLException
-    {
-        program.AppFacade.db.updateRow(tableName,id,readFields());
+            sqlConnection.selectEntity(this);
     }
 
     abstract public Map<String, Object> readFields(); // used in saving data, or iterating through value data.
@@ -45,5 +36,7 @@ abstract public class DataEntity implements ISQLUpdatable
     {
         return id;
     }
+
+
 
 }

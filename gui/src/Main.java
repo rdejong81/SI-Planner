@@ -1,8 +1,10 @@
-package program;
-
+import facade.DoLogin;
+import gui.ConsoleIO;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import login.LoginController;
 import org.fusesource.jansi.AnsiConsole;
+import facade.AppFacade;
 
 public class Main extends Application
 {
@@ -11,8 +13,10 @@ public class Main extends Application
     public void start(Stage primaryStage) throws Exception
     {
         AnsiConsole.systemInstall();
-        if(AppFacade.ShowLogin()) {
-            AppFacade.showMain();
+        DoLogin doLogin = new DoLogin();
+
+        if(doLogin.DoLogin(new LoginController())) {
+            AppFacade.showMain(new ConsoleIO(),doLogin.getSqlConnection());
         }
         AnsiConsole.systemUninstall();
     }

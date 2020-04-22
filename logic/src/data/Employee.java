@@ -1,17 +1,20 @@
 package data;
 
 import com.sun.jdi.request.DuplicateRequestException;
-import db.QueryResult;
-import program.AppFacade;
+
+import facade.IQueryResult;
+import facade.ISQLConnection;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class Employee extends DataEntity
 {
+
     final public static String TABLE_EMPLOYEES="employees";
     final public static String TABLE_EMPLOYEES_ROW_SQLLOGIN="sqlLogin";
     final public static String TABLE_EMPLOYEES_ROW_NAME="name";
+
 
 
     private String name;
@@ -19,27 +22,27 @@ public class Employee extends DataEntity
     private ArrayList<Customer> customers;
 
     // Create employee based on existing database record.
-    protected Employee(int id)
+    protected Employee(ISQLConnection sqlConnection,int id)
     {
-        super(id,TABLE_EMPLOYEES);
+        super(sqlConnection,id,TABLE_EMPLOYEES);
         this.customers = new ArrayList<>();
     }
 
     // Create new employee in database
-    public Employee(String name, String sqlLogin) throws SQLException
+    public Employee(ISQLConnection sqlConnection,String name, String sqlLogin)
     {
-        this(-1);
+        this(sqlConnection,-1);
         this.sqlLogin = sqlLogin;
         this.name = name;
-        QueryResult queryResult = AppFacade.db.insertRow(TABLE_EMPLOYEES,readFields());
+        IQueryResult queryResult = sqlConnection.insertRow(TABLE_EMPLOYEES,readFields());
         id = (int) queryResult.getCreatedKey();
         loadEntityData();
     }
     // Create new employee with SQL Login
-    public Employee(String name, String sqlLogin,String password) throws SQLException
+    public Employee(ISQLConnection sqlConnection,String name, String sqlLogin,String password)
     {
-        this(name,sqlLogin);
-        AppFacade.db.createUser(sqlLogin,password);
+        this(sqlConnection,name,sqlLogin);
+        sqlConnection.createUser(sqlLogin,password);
     }
 
 
@@ -73,15 +76,15 @@ public class Employee extends DataEntity
         );
     }
 
-    public void setName(String name) throws SQLException
+    public void setName(String name)
     {
-        AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_NAME,name);
+        sqlConnection.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_NAME,name);
         this.name = name;
     }
 
-    public void setSqlLogin(String sqlLogin) throws SQLException
+    public void setSqlLogin(String sqlLogin)
     {
-        AppFacade.db.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin);
+        sqlConnection.updateField(getTableName(),id,TABLE_EMPLOYEES_ROW_SQLLOGIN,sqlLogin);
         this.sqlLogin = sqlLogin;
     }
 

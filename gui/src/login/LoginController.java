@@ -1,12 +1,13 @@
 package login;
 
-import gui.IGuiRunUseCase;
+import facade.ILoginProcessor;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import facade.ILoginController;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,10 +15,8 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 
 
-public class LoginController extends gui.Controller
+public class LoginController extends gui.Controller implements ILoginController
 {
-
-
     @FXML
     private ChoiceBox<String> dbType;
     @FXML
@@ -37,28 +36,24 @@ public class LoginController extends gui.Controller
 
     private boolean cancelled;
 
-    private IGuiRunUseCase loginUseCase;
+    private ILoginProcessor loginProcessor;
 
-    private HashMap<String,Enum> dbTypes;
+    private HashMap<String,Integer> dbTypes;
 
-    public LoginController(IGuiRunUseCase loginUseCase, HashMap<String,Enum> dbTypes) throws IOException
+    public LoginController() throws IOException
     {
         super("LoginWindow.fxml","Login to SI-Planner");
         assert(server != null && password != null && username != null && dbType != null && errorlabel != null);
 
-        for(String type : dbTypes.keySet()) {
-            dbType.getItems().add(type);
-        }
-        this.loginUseCase = loginUseCase;
-        this.dbTypes = dbTypes;
+        this.dbTypes = new HashMap<>();
      }
-    public void setError(String error){
+    public void loginError(String error){
         errorlabel.setText(error);
     }
 
     public void loginButtonPress(ActionEvent actionEvent)
     {
-        if(loginUseCase.runUseCase(this))
+        if(loginProcessor.tryLogin(this))
         {
             this.submitted = true;
             super.getStage().close();
@@ -77,11 +72,19 @@ public class LoginController extends gui.Controller
         if(!this.submitted) this.cancelled=true;
     }
 
-    public Enum getDBType(){
+    public int getDBType(){
+        if(dbType.getValue() == null) return -1;
         for(String type : dbTypes.keySet()) {
             if(dbType.getValue().equals(type)) return dbTypes.get(type);
         }
-        return null;
+        return -1;
+    }
+
+    @Override
+    public void showAndWait(ILoginProcessor loginProcessor)
+    {
+        this.loginProcessor = loginProcessor;
+        showAndWait();
     }
 
     public String getUserName(){
@@ -98,6 +101,13 @@ public class LoginController extends gui.Controller
 
     public String getDatabase(){
         return database.getText();
+    }
+
+    @Override
+    public void addDatabaseType(String type, int typeValue)
+    {
+        dbTypes.put(type,typeValue);
+        dbType.getItems().add(type);
     }
 
     public boolean getCancelled(){

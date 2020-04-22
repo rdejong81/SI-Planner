@@ -1,9 +1,12 @@
 package db;
 
+import facade.ISQLConnection;
+import facade.ISQLUpdatable;
+
 import java.sql.*;
 import java.util.Map;
 
-abstract public class SQLConnection
+abstract public class SQLConnection implements ISQLConnection
 {
 
     private String connectString;
@@ -13,7 +16,7 @@ abstract public class SQLConnection
     private String password;
     private Connection connection;
 
-    protected SQLConnection(String server, String database, String user, String password) throws ClassNotFoundException
+    protected SQLConnection(String server, String database, String user, String password)
     {
         this.user = user;
         this.password = password;
@@ -55,20 +58,20 @@ abstract public class SQLConnection
     }
 
     public abstract QueryResult selectAllRows(String table) throws SQLException;
-    public abstract QueryResult selectIds(String table) throws SQLException;
-    public abstract QueryResult selectAllRowsIf(String table, String column, Object isValue) throws SQLException;
+    public abstract QueryResult selectIds(String table);
+    public abstract QueryResult selectAllRowsIf(String table, String column, Object isValue);
     public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
-    public abstract void selectEntity(ISQLUpdatable entity) throws SQLException;
-    public abstract void selectEntity(ISQLUpdatable entity, String column) throws SQLException;
+    public abstract void selectEntity(ISQLUpdatable entity);
+    public abstract void selectEntity(ISQLUpdatable entity, String column);
 
     public abstract QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException;
-    public abstract QueryResult updateField(String table,Integer id, String column, Object value) throws SQLException;
+    public abstract QueryResult updateField(String table,Integer id, String column, Object value);
 
-    public abstract QueryResult insertRow(String table, Map<String,Object> row) throws SQLException;
+    public abstract QueryResult insertRow(String table, Map<String,Object> row);
 
-    public abstract void createUser(String username, String password) throws SQLException;
+    public abstract void createUser(String username, String password);
 
-    public abstract void deleteRow(String table, int id) throws SQLException;
+    public abstract void deleteRow(String table, int id);
 
     public abstract boolean canCreateUser();
 

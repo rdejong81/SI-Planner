@@ -1,6 +1,6 @@
 package mysql;
 
-import db.ISQLUpdatable;
+import facade.ISQLUpdatable;
 import db.QueryResult;
 import db.SQLConnection;
 
@@ -27,13 +27,13 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public QueryResult selectIds(String table) throws SQLException
+    public QueryResult selectIds(String table)
     {
         return new QueryResult(this, String.format("select id from %s;", table));
     }
 
     @Override
-    public QueryResult selectAllRowsIf(String table, String column, Object isValue) throws SQLException
+    public QueryResult selectAllRowsIf(String table, String column, Object isValue)
     {
         if(isValue instanceof Integer)
             return new QueryResult(this, String.format("select * from %s where %s=%d;", table,column,isValue));
@@ -53,19 +53,19 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public void selectEntity(ISQLUpdatable entity) throws SQLException
+    public void selectEntity(ISQLUpdatable entity)
     {
         new QueryResult(this, String.format("select * from %s where id=%d", entity.getTableName(), entity.getId()),entity);
     }
 
     @Override
-    public void selectEntity(ISQLUpdatable entity,String column) throws SQLException
+    public void selectEntity(ISQLUpdatable entity,String column)
     {
         new QueryResult(this, String.format("select * from %s where %s=%d", entity.getTableName(),column, entity.getId()),entity);
     }
 
     @Override
-    public QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException
+    public QueryResult updateRow(String table, Integer id, Map<String, Object> row)
     {
         ArrayList<String> valuePairs = new ArrayList<>();
         for (String column : row.keySet()){
@@ -76,7 +76,7 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public QueryResult updateField(String table, Integer id, String column, Object value) throws SQLException
+    public QueryResult updateField(String table, Integer id, String column, Object value)
     {
         switch(value.getClass().getSimpleName())
         {
@@ -87,7 +87,7 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public QueryResult insertRow(String table, Map<String, Object> row) throws SQLException
+    public QueryResult insertRow(String table, Map<String, Object> row)
     {
         ArrayList<String> values = new ArrayList<>();
         for (Object value : row.values())
@@ -109,7 +109,7 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public void createUser(String username, String password) throws SQLException
+    public void createUser(String username, String password)
     {
         String statement = String.format("create user '%s'@'%%' identified by '%s'", username, password);
         String statement2 = String.format("grant all privileges on %s.* to '%s'@'%%'", super.getDatabase(), username);
@@ -119,7 +119,7 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public void deleteRow(String table, int id) throws SQLException
+    public void deleteRow(String table, int id)
     {
         new QueryResult(this,String.format("delete from %s where id=%d",table,id));
     }

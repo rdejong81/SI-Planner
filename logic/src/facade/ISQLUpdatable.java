@@ -2,7 +2,7 @@
  *  Used for communication to DataEntities from SQL Select results.
  */
 
-package db;
+package facade;
 
 public interface ISQLUpdatable
 {

@@ -1,12 +1,33 @@
+/*
+ * This is temporary console UI until GUI is implemented.
+ */
 
 package gui;
+
+import facade.IConsoleIO;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class TempInput
+public class ConsoleIO implements IConsoleIO
 {
-    public static String AskText(String question, int minimumLength)
+
+    public int chooseFromMenu(String[] options, String prompt, String menuName) {
+
+        System.out.println("\u001b[2J\u001B[46m=======================================================\u001B[0m");
+        System.out.printf("\u001B[46m%32s%23s\u001B[0m\n",menuName,"");
+        System.out.println("\u001B[46m=======================================================\u001B[0m");
+        System.out.println();
+        for(int i=1;i-1<options.length;i++)
+        {
+            System.out.printf("\u001B[32m%3d\u001B[0m. %s\n",i,options[i-1]);
+        }
+
+        System.out.println();
+        return askInt(prompt,1,options.length);
+    }
+
+    public String AskText(String question, int minimumLength)
     {
         boolean isDone = false;
         String answer = "";
@@ -36,7 +57,7 @@ public class TempInput
         return answer;
     }
 
-    public static int askInt(String question, int minimum, int maximum)
+    public int askInt(String question, int minimum, int maximum)
     {
         boolean isDone = false;
         int answer = 0;
@@ -65,4 +86,8 @@ public class TempInput
 
         return answer;
     }
+
+
+
+
 }

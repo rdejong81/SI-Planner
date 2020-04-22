@@ -1,6 +1,7 @@
 package data;
 
-import program.AppFacade;
+import facade.AppFacade;
+import facade.ISQLConnection;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -14,9 +15,9 @@ public class Project extends DataEntity
     final public static String TABLE_PROJECTS_ROW_CUSTOMER="customer_id";
 
     // Create based on existing db record.
-    protected Project(int id)
+    protected Project(ISQLConnection sqlConnection, int id)
     {
-        super(id, TABLE_PROJECTS);
+        super(sqlConnection,id, TABLE_PROJECTS);
     }
 
 
@@ -41,9 +42,9 @@ public class Project extends DataEntity
         return name;
     }
 
-    public void setName(String name) throws SQLException
+    public void setName(String name)
     {
-        AppFacade.db.updateField(getTableName(),id,TABLE_PROJECTS_ROW_NAME,name);
+        sqlConnection.updateField(getTableName(),id,TABLE_PROJECTS_ROW_NAME,name);
         this.name = name;
     }
 
