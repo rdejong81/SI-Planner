@@ -3,8 +3,6 @@ package data;
 import facade.IQueryResult;
 import facade.ISQLConnection;
 
-import java.io.InvalidClassException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -104,7 +102,7 @@ public class DataEntityList<T extends DataEntity> implements Iterable<T>
     }
 
     @Override
-    public void forEach(Consumer action)
+    public void forEach(Consumer<? super T> action)
     {
         entities.forEach(action);
     }

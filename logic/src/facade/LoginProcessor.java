@@ -9,21 +9,22 @@ import javax.security.auth.login.FailedLoginException;
 import static data.DataEntityList.allCustomers;
 import static data.Employee.TABLE_EMPLOYEES;
 import static data.Employee.TABLE_EMPLOYEES_ROW_SQLLOGIN;
-import static db.DatabaseFactory.DATABASE_DRIVERS;
-import static db.DatabaseFactory.SQLFactoryCreate;
 import static data.DataEntityList.allEmployees;
 
 // class is package private
 class LoginProcessor implements ILoginProcessor
 {
     private ISQLConnection sqlConnection;
+    private ISQLConnectionFactory sqlConnectionFactory;
     private boolean connected;
 
-    LoginProcessor(ILoginController loginController) {
+    LoginProcessor(ILoginController loginController, ISQLConnectionFactory sqlConnectionFactory) {
 
-        for(String dbType : DATABASE_DRIVERS.keySet())
+        this.sqlConnectionFactory = sqlConnectionFactory;
+
+        for(String dbType : sqlConnectionFactory.getDatabaseDrivers().keySet())
         { // populate available database drivers
-            loginController.addDatabaseType(dbType,DATABASE_DRIVERS.get(dbType));
+            loginController.addDatabaseType(dbType,sqlConnectionFactory.getDatabaseDrivers().get(dbType));
         }
 
         loginController.showAndWait(this);
@@ -35,7 +36,7 @@ class LoginProcessor implements ILoginProcessor
     {
         try
         {
-            sqlConnection = SQLFactoryCreate(loginController.getDBType(),
+            sqlConnection = sqlConnectionFactory.SQLFactoryCreate(loginController.getDBType(),
                     loginController.getServer(), loginController.getDatabase(),
                     loginController.getUserName(), loginController.getPassword());
 

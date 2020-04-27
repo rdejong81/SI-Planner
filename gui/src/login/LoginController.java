@@ -8,6 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import facade.ILoginController;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.net.URL;
@@ -40,10 +42,13 @@ public class LoginController extends gui.Controller implements ILoginController
 
     private HashMap<String,Integer> dbTypes;
 
-    public LoginController() throws IOException
+    public LoginController()
     {
         super("LoginWindow.fxml","Login to SI-Planner");
         assert(server != null && password != null && username != null && dbType != null && errorlabel != null);
+        this.getStage().setResizable(false);
+
+        this.getStage().initModality(Modality.APPLICATION_MODAL);
 
         this.dbTypes = new HashMap<>();
      }
@@ -58,6 +63,12 @@ public class LoginController extends gui.Controller implements ILoginController
             this.submitted = true;
             super.getStage().close();
         }
+    }
+
+    @Override
+    protected void onResize(double height, double width)
+    {
+
     }
 
     @Override

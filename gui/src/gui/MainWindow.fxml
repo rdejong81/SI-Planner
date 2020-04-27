@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import calendar.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="820.0" prefWidth="1010.0" xmlns="http://javafx.com/javafx/14" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainWindowController">
+   <children>
+      <MenuBar layoutX="-1.0" prefHeight="25.0" prefWidth="600.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <GridPane prefHeight="802.0" prefWidth="1010.0" VBox.vgrow="ALWAYS">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="867.0" minWidth="10.0" prefWidth="609.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="563.0" minWidth="7.0" prefWidth="401.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints maxHeight="614.0" minHeight="10.0" prefHeight="106.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="614.0" minHeight="10.0" prefHeight="446.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="354.0" minHeight="0.0" prefHeight="243.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+             <ScrollPane prefHeight="515.0" prefWidth="618.0" GridPane.rowSpan="2">
+               <content>
+               <CalendarView fx:id="calendar" />
+               </content>
+               <GridPane.margin>
+                  <Insets left="5.0" />
+               </GridPane.margin></ScrollPane>
+            <GridPane prefHeight="278.0" prefWidth="594.0" GridPane.rowIndex="2">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="292.0" minWidth="10.0" prefWidth="258.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="407.0" minWidth="10.0" prefWidth="162.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="407.0" minWidth="10.0" prefWidth="248.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints maxHeight="142.0" minHeight="10.0" prefHeight="41.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="201.0" minHeight="10.0" prefHeight="201.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <DatePickerExpanded fx:id="datePicker" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="219.0" prefWidth="270.0" GridPane.halignment="CENTER" GridPane.rowSpan="2" GridPane.valignment="CENTER">
+                     <GridPane.margin>
+                        <Insets left="5.0" />
+                     </GridPane.margin></DatePickerExpanded>
+                  <TreeView prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets bottom="5.0" left="20.0" right="5.0" top="5.0" />
+                     </GridPane.margin>
+                  </TreeView>
+                  <Label text="Projects" GridPane.columnIndex="1">
+                     <GridPane.margin>
+                        <Insets left="20.0" />
+                     </GridPane.margin>
+                  </Label>
+                  <Label text="Employees" GridPane.columnIndex="2">
+                     <GridPane.margin>
+                        <Insets left="20.0" />
+                     </GridPane.margin>
+                  </Label>
+                  <TreeView fx:id="employeeView" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets bottom="5.0" left="20.0" right="5.0" top="5.0" />
+                     </GridPane.margin>
+                  </TreeView>
+               </children>
+            </GridPane>
+            <GridPane GridPane.columnIndex="1">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Button mnemonicParsing="false" onAction="#manageCustomersButtonClicked" text="Manage customers" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <Button mnemonicParsing="false" text="Manage Projects" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Button mnemonicParsing="false" text="Manage employees" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <Button disable="true" mnemonicParsing="false" text="Generate invoice" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+               </children>
+            </GridPane>
+            <TableView prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.rowSpan="2">
+              <columns>
+                <TableColumn prefWidth="75.0" text="C1" />
+                <TableColumn prefWidth="75.0" text="C2" />
+              </columns>
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="10.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+            </TableView>
+         </children>
+      </GridPane>
+   </children>
+</VBox>

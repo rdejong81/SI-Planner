@@ -1,6 +1,6 @@
 package data;
 
-import com.sun.jdi.request.DuplicateRequestException;
+import facade.DuplicateRequestException;
 
 import java.util.*;
 
@@ -58,8 +58,15 @@ public class Customer extends DataEntity
                         if( employee.id == ((Integer)row.get(TABLE_EMPCUST_ROW_EMPLOYEES_ID)).intValue())
                         {
                             // make relationship on both sides.
-                            employee.addCustomer(this);
-                            employees.add(employee);
+                            try
+                            {
+                                employee.addCustomer(this);
+                                employees.add(employee);
+                            } catch (Exception e)
+                            {
+                                // ignore for now.
+                            }
+
                         }
                     }
                 }

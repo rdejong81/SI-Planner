@@ -10,6 +10,11 @@ import static data.DataEntityList.allEmployees;
 public class AppFacade
 {
 
+    static public DataEntityList<Employee> getEmployees()
+    {
+        return allEmployees;
+    }
+
     static public void showMain(IConsoleIO consoleIO,ISQLConnection sqlConnection)
     {
         String[] menuOptions = {"Manage Employees", "Manage Customers", "Exit SI-Planner"};
@@ -195,7 +200,13 @@ public class AppFacade
                     manageEntity(consoleIO,entity);
                     break;
                 case 2:
-                    ((Employee) entity).addCustomer((Customer)selectDataEntity(consoleIO,allCustomers));
+                    try
+                    {
+                        ((Employee) entity).addCustomer((Customer) selectDataEntity(consoleIO, allCustomers));
+                    } catch (Exception e)
+                    {
+
+                    }
                     manageEntity(consoleIO,entity);
                     break;
             }

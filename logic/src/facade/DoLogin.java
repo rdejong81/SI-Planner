@@ -5,9 +5,9 @@ public class DoLogin
     LoginProcessor loginProcessor;
     ISQLConnection sqlConnection;
 
-    public boolean DoLogin (ILoginController loginController)
+    public boolean DoLogin (ILoginController loginController,ISQLConnectionFactory sqlConnectionFactory)
     {
-        loginProcessor = new LoginProcessor(loginController);
+        loginProcessor = new LoginProcessor(loginController,sqlConnectionFactory);
         sqlConnection = loginProcessor.getSqlConnection();
 
         return loginProcessor.getConnected();

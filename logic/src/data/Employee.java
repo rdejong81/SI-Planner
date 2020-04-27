@@ -1,11 +1,10 @@
 package data;
 
-import com.sun.jdi.request.DuplicateRequestException;
+import facade.DuplicateRequestException;
 
 import facade.IQueryResult;
 import facade.ISQLConnection;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class Employee extends DataEntity
@@ -93,7 +92,7 @@ public class Employee extends DataEntity
         return Collections.unmodifiableCollection(customers);
     }
 
-    public void addCustomer(Customer customer)
+    public void addCustomer(Customer customer) throws DuplicateRequestException
     {
         if(customers.contains(customer)) throw new DuplicateRequestException("Already in list");
         customers.add(customer);

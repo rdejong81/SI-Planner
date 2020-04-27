@@ -1,10 +1,13 @@
 package gui;
 
+import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -19,29 +22,48 @@ public abstract class Controller implements Initializable
 
     private Scene scene;
 
-    @FXML
-    private Pane pane;
+    private Parent parent;
 
     private FXMLLoader loader;
 
-    protected Controller(String fxml, String windowTitle) throws IOException
+    protected Controller(String fxml, String windowTitle)
     {
-        loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource(fxml));
+        try
+        {
+            loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource(fxml));
 
-       // override creation of controller instance, use current instance instead of creating a new one.
-        loader.setControllerFactory(c -> {
-            return this;
-        });
+            // override creation of controller instance, use current instance instead of creating a new one.
+            loader.setControllerFactory(c ->
+            {
+                return this;
+            });
 
-        Parent newParent = loader.load();
+            parent = loader.load();
 
-        stage = new Stage();
-        scene = new Scene(newParent);
-        stage.setTitle(windowTitle);
-        stage.setScene(scene);
 
+            stage = new Stage();
+            scene = new Scene(parent);
+            stage.setTitle(windowTitle);
+            stage.setScene(scene);
+
+            ChangeListener<Number> stageSizeListener = (observable, oldValue, newValue) ->
+                    onResize(stage.getHeight(), stage.getWidth());
+
+            stage.widthProperty().addListener(stageSizeListener);
+            stage.heightProperty().addListener(stageSizeListener);
+
+            stage.getIcons().add(new Image(Controller.class.getResourceAsStream("siplanner-small.png")));
+        } catch (IOException e)
+        {
+            //todo handle fxml load error.
+            System.exit(1); // do not continue.
+        }
     }
+
+    abstract protected void onResize(double height, double width);
+
+
 
     @Override
     final public void initialize(URL url, ResourceBundle resourceBundle)
@@ -68,9 +90,9 @@ public abstract class Controller implements Initializable
         return scene;
     }
 
-    public Pane getPane()
+    public Parent getParent()
     {
-        return pane;
+        return parent;
     }
 
     protected FXMLLoader getLoader(){

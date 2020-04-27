@@ -1,18 +1,22 @@
 package db;
 
-import db.SQLConnection;
+import facade.ISQLConnection;
+import facade.ISQLConnectionFactory;
 import mysql.MySQLConnection;
 
 import javax.security.auth.login.FailedLoginException;
 import java.util.Map;
 
-public class DatabaseFactory
+public class DatabaseFactory implements ISQLConnectionFactory
 {
-    final public static Map<String,Integer> DATABASE_DRIVERS = Map.of(
-            "MySQL",1
-    );
 
-    static public SQLConnection SQLFactoryCreate(int type,String server,String database,String user, String password) throws FailedLoginException
+    public Map<String,Integer> getDatabaseDrivers(){
+        return Map.of(
+                "MySQL",1
+        );
+    }
+
+    public ISQLConnection SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException
     {
         try
         {
