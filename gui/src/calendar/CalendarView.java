@@ -1,28 +1,19 @@
 package calendar;
 
-import data.Employee;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.css.Styleable;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TreeItemPropertyValueFactory;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.TextAlignment;
 
-import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 public class CalendarView extends GridPane
 {
@@ -76,14 +67,10 @@ public class CalendarView extends GridPane
                     calenderTimes.add(timeSlot);
 
                     registerDragHandlers(timeSlot, mouseAnchor);
+                    if(counter != 91)
                     this.add(timeSlot.getView(), timeSlot.getDayOfWeek().getValue(), slotIndex);
-                    if(false){
-                        this.setColumnSpan(timeSlot.getView(),2);
-                        first = false;
-                    } else {
-                        //CalendarTime eSlot = new CalendarTime(startTime, slotLength,counter.toString());
-                        //calenderTimes.add(timeSlot);
-                        //this.add(timeSlot.getView(), timeSlot.getDayOfWeek().getValue(), slotIndex);
+                    if(counter == 90 ){
+                        this.setRowSpan(timeSlot.getView(),2);
                     }
                 }
 
@@ -127,7 +114,7 @@ public class CalendarView extends GridPane
             this.add(label, 0, slotIndex);
             slotIndex++ ;
         }
-        this.setGridLinesVisible(true);
+        this.setGridLinesVisible(false);
         this.updateBounds();
 
 

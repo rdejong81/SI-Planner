@@ -1,12 +1,10 @@
 package db;
 
-import facade.ISQLConnection;
-import facade.ISQLUpdatable;
+import Data.IDataSource;
 
 import java.sql.*;
-import java.util.Map;
 
-abstract public class SQLConnection implements ISQLConnection
+abstract public class SQLConnection implements IDataSource
 {
 
     private String connectString;
@@ -57,23 +55,6 @@ abstract public class SQLConnection implements ISQLConnection
         return connection;
     }
 
-    public abstract QueryResult selectAllRows(String table) throws SQLException;
-    public abstract QueryResult selectIds(String table);
-    public abstract QueryResult selectAllRowsIf(String table, String column, Object isValue);
-    public abstract QueryResult selectAllRowsLike(String table, String column, String pattern) throws SQLException;
-    public abstract void selectEntity(ISQLUpdatable entity);
-    public abstract void selectEntity(ISQLUpdatable entity, String column);
-
-    public abstract QueryResult updateRow(String table, Integer id, Map<String, Object> row) throws SQLException;
-    public abstract QueryResult updateField(String table,Integer id, String column, Object value);
-
-    public abstract QueryResult insertRow(String table, Map<String,Object> row);
-
-    public abstract void createUser(String username, String password);
-
-    public abstract void deleteRow(String table, int id);
-
-    public abstract boolean canCreateUser();
 
 
 }

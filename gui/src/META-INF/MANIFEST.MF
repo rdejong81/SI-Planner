@@ -2,6 +2,10 @@ Manifest-Version: 1.0
 Class-Path: javafx\src.zip javafx\javafx-swt.jar javafx\javafx.web.jar j
  avafx\javafx.base.jar javafx\javafx.fxml.jar javafx\javafx.media.jar ja
  vafx\javafx.swing.jar javafx\javafx.controls.jar javafx\javafx.graphics
- .jar jansi-1.18.jar dal.jar logic.jar
+ .jar jansi-1.18.jar dal.jar logic.jar view-11.8.3.jar controlsfx-11.0.0
+ .jar ikonli-javafx-11.3.4.jar ikonli-fontawesome-pack-11.3.4.jar ikonli
+ -core-11.3.4.jar ical4j-3.0.10.jar javax.mail-1.6.2.jar slf4j-api-1.7.2
+ 5.jar activation-1.1.jar commons-codec-1.11.jar commons-collections4-4.
+ 1.jar commons-lang3-3.8.1.jar
 Main-Class: Main
 

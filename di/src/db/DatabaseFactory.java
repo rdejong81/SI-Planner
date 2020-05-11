@@ -1,6 +1,6 @@
 package db;
 
-import facade.ISQLConnection;
+import Data.IDataSource;
 import facade.ISQLConnectionFactory;
 import mysql.MySQLConnection;
 
@@ -16,7 +16,7 @@ public class DatabaseFactory implements ISQLConnectionFactory
         );
     }
 
-    public ISQLConnection SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException
+    public IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException
     {
         try
         {

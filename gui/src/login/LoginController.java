@@ -125,4 +125,9 @@ public class LoginController extends gui.Controller implements ILoginController
         return cancelled;
     }
 
+    @Override
+    public void refreshData()
+    {
+
+    }
 }

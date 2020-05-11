@@ -1,11 +1,10 @@
 import db.DatabaseFactory;
-import facade.DoLogin;
-import gui.ConsoleIO;
+import gui.Controller;
 import gui.MainWindowController;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import login.LoginController;
-import org.fusesource.jansi.AnsiConsole;
 import facade.AppFacade;
 import splash.SplashLoader;
 
@@ -13,26 +12,22 @@ import java.io.IOException;
 
 public class Main extends Application
 {
-    DoLogin doLogin;
-    MainWindowController window;
-
     @Override
-    public void start(Stage primaryStage) throws Exception
+    public void start(Stage primaryStage)
     {
+        primaryStage.getIcons().add(new Image(Controller.class.getResourceAsStream("siplanner-small.png")));
         new SplashLoader(primaryStage,() -> {
-                if (doLogin.DoLogin(new LoginController(), new DatabaseFactory()))
+
+                if (AppFacade.appFacade.DoLogin(new LoginController()))
                 {
-                    window = new MainWindowController();
-                    window.showAndWait();
-                    //AppFacade.showMain(new ConsoleIO(),doLogin.getSqlConnection());
+                    AppFacade.appFacade.showMain(new MainWindowController());
                 }
-                AnsiConsole.systemUninstall();
 
         },3, (int task) -> {  // program initialization steps.
             switch(task)
             {
-                case 1: AnsiConsole.systemInstall(); return "Loading windows";
-                case 2: doLogin = new DoLogin();
+                case 1: return "Loading windows";
+                case 2: AppFacade.appFacade = new AppFacade(new DatabaseFactory());
 
                     return "Loaded windows...";
                 case 3:

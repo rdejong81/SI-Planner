@@ -1,22 +1,18 @@
 package facade;
 
-import data.Customer;
-import data.DataEntityList;
-import data.Employee;
+
+import Data.Employee;
+import Data.IDataSource;
 
 import javax.security.auth.login.FailedLoginException;
+import java.util.List;
 
-import static data.DataEntityList.allCustomers;
-import static data.Employee.TABLE_EMPLOYEES;
-import static data.Employee.TABLE_EMPLOYEES_ROW_SQLLOGIN;
-import static data.DataEntityList.allEmployees;
 
 // class is package private
 class LoginProcessor implements ILoginProcessor
 {
-    private ISQLConnection sqlConnection;
     private ISQLConnectionFactory sqlConnectionFactory;
-    private boolean connected;
+    IDataSource dataSource;
 
     LoginProcessor(ILoginController loginController, ISQLConnectionFactory sqlConnectionFactory) {
 
@@ -28,7 +24,6 @@ class LoginProcessor implements ILoginProcessor
         }
 
         loginController.showAndWait(this);
-        connected = !loginController.getCancelled() && sqlConnection != null;
     }
 
     @Override
@@ -36,7 +31,7 @@ class LoginProcessor implements ILoginProcessor
     {
         try
         {
-            sqlConnection = sqlConnectionFactory.SQLFactoryCreate(loginController.getDBType(),
+            dataSource = sqlConnectionFactory.SQLFactoryCreate(loginController.getDBType(),
                     loginController.getServer(), loginController.getDatabase(),
                     loginController.getUserName(), loginController.getPassword());
 
@@ -47,39 +42,35 @@ class LoginProcessor implements ILoginProcessor
             loginController.loginError(e.getMessage());
             return false;
         }
-        if(sqlConnection == null)
+        if(dataSource == null)
         {
             loginController.loginError("Unable to connect.");
             return false;
         }
-        // fetch all employees
-        allEmployees = new DataEntityList<>(sqlConnection,Employee.class);
-        allCustomers = new DataEntityList<>(sqlConnection,Customer.class);
+
+        List<Employee> employeeList = dataSource.employeeDao().findAll();
 
         // first user of the database automatically gets to be the first employee
-        if (allEmployees.getEntities().isEmpty())
+        if (employeeList.isEmpty())
         {
-            allEmployees.addEntity(new Employee(sqlConnection,loginController.getUserName(), loginController.getUserName()));
+            dataSource.employeeDao().insertEmployee(new Employee(dataSource,0,loginController.getUserName(), loginController.getUserName()));
             // todo: remove console output from logic layer
             System.out.printf("First application user %s created as employee.\n", loginController.getUserName());
             return true;
         }
 
-        for(Employee employee : allEmployees.getEntities())
+        for(Employee employee : employeeList)
         {
-            if(employee.getSqlLogin().equals(loginController.getUserName())) return true; // login successfull
+            if(employee.getSqlLoginName().equals(loginController.getUserName())) return true;
         }
 
-        IQueryResult queryResult = sqlConnection.selectAllRowsIf(TABLE_EMPLOYEES,TABLE_EMPLOYEES_ROW_SQLLOGIN,loginController.getUserName());
-
         loginController.loginError("Unknown application user - sql login succeeded but not known as employee to use this application.");
+        dataSource = null;
         return false;// login not allowed
     }
-    protected ISQLConnection getSqlConnection(){
-        return sqlConnection;
-    }
-    protected boolean getConnected()
+
+    public IDataSource getDataSource()
     {
-        return connected;
+        return dataSource;
     }
 }

@@ -1,255 +1,109 @@
 package facade;
 
-import data.*;
-
-import java.util.*;
-
-import static data.DataEntityList.allCustomers;
-import static data.DataEntityList.allEmployees;
+import Data.CustomerList;
+import Data.EmployeeList;
+import Data.*;
 
 public class AppFacade
 {
+    static public AppFacade appFacade; // instantiated in main.
+    private IDataSource dataSource;
+    private LoginProcessor loginProcessor;
+    private ILoginController loginController;
+    private ISQLConnectionFactory sqlConnectionFactory;
+    private IWindow mainWindow;
+    private CustomerList customerList;
+    private EmployeeList employeeList;
 
-    static public DataEntityList<Employee> getEmployees()
+    public CustomerList getCustomerList()
     {
-        return allEmployees;
+        return customerList;
     }
 
-    static public void showMain(IConsoleIO consoleIO,ISQLConnection sqlConnection)
+    public EmployeeList getEmployeeList()
     {
-        String[] menuOptions = {"Manage Employees", "Manage Customers", "Exit SI-Planner"};
-        int choice = consoleIO.chooseFromMenu(menuOptions, "Make your choice", "Main Menu");
-        switch (choice)
-        {
-            case 1:
-                manageEntities(consoleIO,sqlConnection,allEmployees);
-                showMain(consoleIO,sqlConnection);
-                break;
-            case 2:
-                manageEntities(consoleIO,sqlConnection,allCustomers);
-                showMain(consoleIO,sqlConnection);
-                break;
-            case 3:
-                break;
-        }
+        return employeeList;
     }
 
-    static public <T extends DataEntity> void addEntity(DataEntityList<T> list,IConsoleIO consoleIO, ISQLConnection sqlConnection)
-    {
-
-        try
-        {
-            String newName = consoleIO.AskText("Enter new name", 2);
-
-            if (list.getSingularEntityName().equals("Customer"))
-            {
-                list.addEntity((T)new Customer(sqlConnection,newName));
-            }
-            if (list.getSingularEntityName().equals("Employee"))
-            {
-                String newLogin = consoleIO.AskText("Enter new login name", 2);
-                if (sqlConnection.canCreateUser())
-                {
-                    String newPassword = consoleIO.AskText("Enter new password", 2);
-                    list.addEntity((T)new Employee(sqlConnection,newName, newLogin, newPassword));
-                } else list.addEntity((T)new Employee(sqlConnection,newName, newLogin));
-            }
-
-            System.out.printf("%s added", list.getSingularEntityName());
-        } catch (Exception e)
-        {
-            System.err.printf("Error: %s. Details: %s\n", e.toString(), e.getMessage());
-        }
+    public AppFacade(ISQLConnectionFactory sqlConnectionFactory){
+        this.sqlConnectionFactory = sqlConnectionFactory;
 
     }
 
-    static public <T extends DataEntity> void showDataEntities(Collection<T> list)
+    public void showMain(IWindow mainWindow)
     {
-        boolean firstRow = true;
-
-        for (T entity : list)
-        {
-            if (firstRow)
-            {
-                if (entity instanceof Customer)
-                    System.out.printf("\u001B[46m %-4s | %-20s | %-40s", "ID", "Name", "Employees");
-                if (entity instanceof Employee)
-                    System.out.printf("\u001B[46m %-4s | %-20s | %-20s | %-40s", "ID", "Name", "Sql login", "Customers");
-                System.out.printf("\u001B[0m\n");
-            }
-
-            if (entity instanceof Customer)
-            {
-                ArrayList<String> names = new ArrayList<>();
-                for (DataEntity employee : ((Customer) entity).getEmployees())
-                    names.add(((Employee) employee).getName());
-                System.out.printf(" %-4s | %-20s | %-40s\n", entity.getId(), ((Customer) entity).getName(), String.join(",", names));
-            }
-            if (entity instanceof Employee)
-            {
-                ArrayList<String> names = new ArrayList<>();
-                for (DataEntity customer : ((Employee) entity).getCustomers())
-                    names.add(((Customer) customer).getName());
-                System.out.printf(" %-4s | %-20s | %-20s | %-40s\n",
-                        entity.getId(),
-                        ((Employee) entity).getName(),
-                        ((Employee) entity).getSqlLogin(),
-                        String.join(",", names));
-            }
-
-            firstRow = false;
-        }
-
+        this.mainWindow = mainWindow;
+        mainWindow.refreshData();
+        mainWindow.showAndWait();
     }
 
-    static public <T extends DataEntity> DataEntity selectDataEntity(IConsoleIO consoleIO, DataEntityList<T> entities)
+    public boolean DoLogin(ILoginController loginController)
     {
-        if (entities.isEmpty()) return null;
-        String entityType="";
+        this.loginController = loginController;
+        loginProcessor = new LoginProcessor(loginController,sqlConnectionFactory);
 
-        ArrayList<String> choices = new ArrayList<>();
-
-        for (DataEntity entity : entities)
+        if(loginProcessor.getDataSource() != null)
         {
-            if(entityType.length()==0) entityType = entity.getClass().getSimpleName();
-
-            switch (entity.getClass().getSimpleName())
-            {
-                case "Employee":
-                    choices.add(String.format("%s (%d)", ((Employee) entity).getName(), entity.getId()));
-                    break;
-                case "Customer":
-                    choices.add(String.format("%s (%d)", ((Customer) entity).getName(), entity.getId()));
-                    break;
-            }
-
+            dataSource = loginProcessor.getDataSource();
+            employeeList = new EmployeeList();
+            customerList = new CustomerList();
+            return true;
         }
 
-        int choice = consoleIO.chooseFromMenu(
-                choices.toArray(String[]::new),
-                "Choose item",
-                "Select " + entityType);
+        return false;
+    }
 
-        Iterator<T> it = entities.iterator();
-
-        for (int i = 0; i < entities.size(); i++)
+    public Customer addCustomer(String name, String shortName)
+    {
+        for(Customer customer : customerList.getCustomers()) {
+            if(customer.getName().equals(name) || customer.getShortName().equals(shortName)) return null;
+        }
+        Customer newCustomer = new Customer(dataSource,0, name, shortName);
+        if(customerList.addCustomer(newCustomer))
         {
-            DataEntity entity = it.next();
-            if (i + 1 == choice) return entity;
+            mainWindow.refreshData();
+            return newCustomer;
         }
 
         return null;
     }
 
-    static public void editDataEntity(IConsoleIO consoleIO,DataEntity entity)
+    public boolean removeCustomer(Customer customer){
+        if(customerList.removeCustomer(customer)) {
+            mainWindow.refreshData();
+            return true;
+        }
+        return false;
+    }
+
+    public Employee addEmployee(String name, String loginName)
     {
-        if (entity == null) return;
-
-        try
+        for(Employee employee : employeeList.getEmployees()) {
+            if(employee.getName().equals(name) || employee.getSqlLoginName().equals(loginName)) return null;
+        }
+        Employee newEmployee = new Employee(dataSource,0, name, loginName);
+        if(employeeList.addEmployee(newEmployee))
         {
-            if (entity instanceof Customer)
-            {
-                System.out.printf("Current name: %s\n", ((Customer) entity).getName());
-                String newName = consoleIO.AskText("Enter new name (press enter to keep the same)", 0);
-                if (newName.length() > 1) ((Customer) entity).setName(newName);
-
-            }
-
-            if (entity instanceof Employee)
-            {
-                System.out.printf("Current name: %s\n", ((Employee) entity).getName());
-                String newName = consoleIO.AskText("Enter new name (press enter to keep the same)", 0);
-                if (newName.length() > 1) ((Employee) entity).setName(newName);
-
-                System.out.printf("Current SQL login name: %s\n", ((Employee) entity).getSqlLogin());
-                String newLogin = consoleIO.AskText("Enter new SQL login name", 0);
-                if (newLogin.length() > 1) ((Employee) entity).setSqlLogin(newLogin);
-            }
-
-            System.out.printf("%s ID %d modifications complete\n", entity.getClass().getSimpleName(), entity.getId());
-        } catch (Exception e)
-        {
-            System.err.printf("Error: %s. Details: %s\n Modifications cancelled.\n", e.toString(), e.getMessage());
+            mainWindow.refreshData();
+            return newEmployee;
         }
 
+        return null;
     }
 
-    static public <T extends DataEntity> void removeDataEntity(IConsoleIO consoleIO,DataEntityList<T> list)
-    {
-        showDataEntities(list.getEntities());
-        int choice = consoleIO.askInt("Enter Id number to remove", 1, Integer.MAX_VALUE);
-        list.removeEntity(choice);
-
-        consoleIO.AskText("Enter key to return", 0);
-    }
-
-    static public void manageEntity(IConsoleIO consoleIO,DataEntity entity)
-    {
-        if (entity instanceof Employee)
-        {
-            String[] menuOptions = {"Show customers", "Add customers", "Remove customers", "Return"};
-            String title = String.format("Manage %s : %s",
-                    entity.getClass().getSimpleName().toLowerCase(),
-                    ((Employee) entity).getName());
-            int choice = consoleIO.chooseFromMenu(menuOptions,"Make your choice",title);
-
-            switch (choice){
-                case 1:
-                    showDataEntities(((Employee) entity).getCustomers());
-                    consoleIO.AskText("Enter key to return", 0);
-                    manageEntity(consoleIO,entity);
-                    break;
-                case 2:
-                    try
-                    {
-                        ((Employee) entity).addCustomer((Customer) selectDataEntity(consoleIO, allCustomers));
-                    } catch (Exception e)
-                    {
-
-                    }
-                    manageEntity(consoleIO,entity);
-                    break;
-            }
+    public boolean removeEmployee(Employee employee){
+        if(employeeList.removeEmployee(employee)) {
+            mainWindow.refreshData();
+            return true;
         }
-
+        return false;
     }
 
-    static public <T extends DataEntity>void manageEntities(IConsoleIO consoleIO,ISQLConnection sqlConnection,DataEntityList<T> entities)
+
+    public IDataSource getDataSource()
     {
-        String[] menuOptions = {"Add " + entities.getSingularEntityName(),
-                "Remove " + entities.getSingularEntityName(),
-                "Show " + entities.getPluralEntityName(),
-                "Manage " + entities.getSingularEntityName(),
-                "Edit " + entities.getSingularEntityName(), "Return to main menu"};
-        int choice = consoleIO.chooseFromMenu(menuOptions, "Make your choice", entities.getPluralEntityName());
-        switch (choice)
-        {
-            case 1:
-                addEntity(entities,consoleIO,sqlConnection);
-                manageEntities(consoleIO,sqlConnection,entities);
-                break;
-            case 2:
-                removeDataEntity(consoleIO,entities);
-                manageEntities(consoleIO,sqlConnection,entities);
-                break;
-            case 3:
-                showDataEntities(entities.getEntities());
-                consoleIO.AskText("Enter key to return", 0);
-                manageEntities(consoleIO,sqlConnection,entities);
-                break;
-            case 5:
-                editDataEntity(consoleIO,selectDataEntity(consoleIO,entities));
-                consoleIO.AskText("Enter key to return", 0);
-                manageEntities(consoleIO,sqlConnection,entities);
-                break;
-            case 4:
-                manageEntity(consoleIO,selectDataEntity(consoleIO,entities));
-                manageEntities(consoleIO,sqlConnection,entities);
-                break;
-            case 6:
-                break;
-        }
-
-
+        return dataSource;
     }
+
+
 }

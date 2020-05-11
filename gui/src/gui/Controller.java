@@ -1,5 +1,6 @@
 package gui;
 
+import facade.IWindow;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public abstract class Controller implements Initializable
+public abstract class Controller implements Initializable, IWindow
 {
 
     private Stage stage;

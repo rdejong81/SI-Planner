@@ -1,11 +1,11 @@
 package db;
 
 import facade.IQueryResult;
-import facade.ISQLUpdatable;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.*;
 
 public class QueryResult implements IQueryResult
@@ -17,12 +17,7 @@ public class QueryResult implements IQueryResult
     private long createdKey;
     private Exception lastError;
 
-    public static final int COL_VARCHAR = 12;
-    public static final int COL_INTEGER = 4;
-    public static final int COL_BIGINT = -5;
-    public static final int COL_MEDIUMTEXT = -1;
-
-    public QueryResult(SQLConnection db, String statement, ISQLUpdatable entity)
+    public QueryResult(SQLConnection db, String statement)
     {
         rows = new ArrayList<>();
 
@@ -49,22 +44,24 @@ public class QueryResult implements IQueryResult
                 {
                     switch (resultSetMetaData.getColumnType(i))
                     {
-                        case COL_VARCHAR:
-                        case COL_MEDIUMTEXT:
+                        case Types.VARCHAR:
+                        case Types.LONGVARCHAR:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getString(i));
-                            if (entity != null)
-                                entity.updateField(resultSetMetaData.getColumnLabel(i), resultSet.getString(i));
                             break;
-                        case COL_INTEGER:
+                        case Types.BIT:
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getBoolean(i));
+                            break;
+                        case Types.INTEGER:
+                        case Types.TINYINT:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
-                            if (entity != null)
-                                entity.updateField(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
                             break;
-                        case COL_BIGINT:
+                        case Types.BIGINT:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getLong(i));
-                            if (entity != null)
-                                entity.updateField(resultSetMetaData.getColumnLabel(i), resultSet.getLong(i));
                             break;
+                        case Types.TIMESTAMP:
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getTimestamp(i).toLocalDateTime());
+                            break;
+
                     }
                 }
                 rows.add(rowMap);
@@ -75,13 +72,6 @@ public class QueryResult implements IQueryResult
         }
 
     }
-
-    public QueryResult(SQLConnection db, String statement)
-    {
-        this(db,statement,null);
-    }
-
-
 
     public long getCreatedKey()
     {

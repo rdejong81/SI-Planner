@@ -6,8 +6,9 @@ ALTER TABLE employees_customers DROP FOREIGN KEY FKemployees_764185;
 ALTER TABLE employees_customers DROP FOREIGN KEY FKemployees_781482;
 ALTER TABLE tasks DROP FOREIGN KEY FKtasks510016;
 ALTER TABLE time DROP FOREIGN KEY FKtime535173;
+ALTER TABLE time DROP FOREIGN KEY FKtime476502;
 DROP TABLE IF EXISTS customers;
-DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS Projects;
 DROP TABLE IF EXISTS time;
 DROP TABLE IF EXISTS templates;
 DROP TABLE IF EXISTS attribute_definitions;
@@ -16,8 +17,9 @@ DROP TABLE IF EXISTS employees;
 DROP TABLE IF EXISTS employees_customers;
 DROP TABLE IF EXISTS tasks;
 CREATE TABLE customers (
-  id   int(10) NOT NULL AUTO_INCREMENT, 
-  name varchar(255) NOT NULL, 
+  id        int(10) NOT NULL AUTO_INCREMENT, 
+  name      varchar(255) NOT NULL, 
+  shortName varchar(10) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE projects (
   id              int(10) NOT NULL AUTO_INCREMENT, 
@@ -25,20 +27,23 @@ CREATE TABLE projects (
   timesheetNeeded tinyint(1) NOT NULL, 
   name            varchar(255) NOT NULL, 
   color           int(11) NOT NULL, 
+  shortCode       varchar(10) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE time (
-  id       int(10) NOT NULL AUTO_INCREMENT, 
-  tasks_id int(11) NOT NULL, 
-  `start`  timestamp NOT NULL, 
-  `end`    timestamp NOT NULL, 
-  synced   tinyint(1) NOT NULL, 
-  planned  tinyint(1) NOT NULL, 
+  id          int(10) NOT NULL AUTO_INCREMENT, 
+  tasks_id    int(11) NOT NULL, 
+  `start`     timestamp NOT NULL, 
+  `end`       timestamp NOT NULL, 
+  synced      tinyint(1) NOT NULL, 
+  planned     tinyint(1) NOT NULL, 
+  employeesid int(10) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE templates (
   id               int(10) NOT NULL AUTO_INCREMENT, 
   templateDocument blob NOT NULL, 
   documentType     int(11) NOT NULL, 
   customers_id     int(10) NOT NULL, 
+  name             varchar(255) NOT NULL, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE attribute_definitions (
   id            int(11) NOT NULL AUTO_INCREMENT, 
@@ -58,10 +63,9 @@ CREATE TABLE attribute_values (
   doubleValue              double, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE employees (
-  id           int(10) NOT NULL AUTO_INCREMENT, 
-  customers_id int(10), 
-  name         varchar(255) NOT NULL, 
-  sqlLogin     varchar(255) NOT NULL UNIQUE, 
+  id       int(10) NOT NULL AUTO_INCREMENT, 
+  name     varchar(255) NOT NULL, 
+  sqlLogin varchar(255) NOT NULL UNIQUE, 
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE employees_customers (
   employees_id int(10) NOT NULL, 
@@ -82,3 +86,4 @@ ALTER TABLE employees_customers ADD CONSTRAINT FKemployees_764185 FOREIGN KEY (e
 ALTER TABLE employees_customers ADD CONSTRAINT FKemployees_781482 FOREIGN KEY (customers_id) REFERENCES customers (id);
 ALTER TABLE tasks ADD CONSTRAINT FKtasks510016 FOREIGN KEY (projects_id) REFERENCES projects (id);
 ALTER TABLE time ADD CONSTRAINT FKtime535173 FOREIGN KEY (tasks_id) REFERENCES tasks (id);
+ALTER TABLE time ADD CONSTRAINT FKtime476502 FOREIGN KEY (employeesid) REFERENCES employees (id);
