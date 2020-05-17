@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/14" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.ManageCustomersController">
+   <children>
+      <TableView fx:id="customerTableView" layoutX="32.0" layoutY="36.0" prefHeight="281.0" prefWidth="224.0">
+        <columns>
+          <TableColumn fx:id="shortNameColumn" prefWidth="75.0" text="shortName" />
+            <TableColumn fx:id="nameColumn" prefWidth="125.0" text="name" />
+
+        </columns>
+      </TableView>
+      <Button cancelButton="true" layoutX="528.0" layoutY="348.0" mnemonicParsing="false" onAction="#closeButtonClick" text="Close" />
+      <Button layoutX="165.0" layoutY="348.0" mnemonicParsing="false" onAction="#addButtonClick" text="Add customer" />
+      <Button layoutX="32.0" layoutY="348.0" mnemonicParsing="false" onAction="#removeButtonClick" text="Delete customer" />
+      <TabPane layoutX="271.0" layoutY="39.0" prefHeight="281.0" prefWidth="302.0" style="-fx-background-color: lightgrey; -fx-border-color: grey;" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="General">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="53.0" layoutY="44.0" text="Name:" />
+                        <TextField fx:id="nameField" layoutX="105.0" layoutY="40.0" prefHeight="25.0" prefWidth="177.0" />
+                        <TextField fx:id="shortNameField" layoutX="105.0" layoutY="79.0" prefHeight="25.0" prefWidth="91.0" />
+                        <Label layoutX="26.0" layoutY="83.0" text="shortName:" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Employees">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <ListView fx:id="employeeListView" layoutX="15.0" layoutY="25.0" prefHeight="200.0" prefWidth="271.0" />
+                     </children></AnchorPane>
+                </content>
+            </Tab>
+          <Tab text="Attributes">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

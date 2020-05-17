@@ -1,21 +1,22 @@
 <component name="ArtifactManager">
-  <artifact name="SI-Planner:jar">
+  <artifact build-on-make="true" name="SI-Planner:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SI_Planner_jar</output-path>
     <root id="root">
-      <element id="archive" name="dal.jar">
-        <element id="module-output" name="dal" />
-      </element>
-      <element id="archive" name="gui.jar">
+      <element id="archive" name="SI-Planner.jar">
         <element id="module-output" name="gui" />
       </element>
-      <element id="archive" name="SI-Planner.jar">
-        <element id="module-output" name="SI-Planner" />
+      <element id="archive" name="dal.jar">
+        <element id="module-output" name="dal" />
+        <element id="module-output" name="di" />
       </element>
-      <element id="library" level="project" name="Connector J 8" />
-      <element id="directory" name="javafx">
-        <element id="library" level="application" name="javafx" />
+      <element id="archive" name="logic.jar">
+        <element id="module-output" name="logic" />
       </element>
-      <element id="library" level="project" name="jansi" />
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="Connector J 8" />
+        <element id="library" level="application" name="com.calendarfx:view:11.8.3" />
+        <element id="library" level="application" name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" />
+      </element>
     </root>
   </artifact>
 </component>
