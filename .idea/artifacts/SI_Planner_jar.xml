@@ -5,7 +5,6 @@
       <element id="archive" name="SI-Planner.jar">
         <element id="module-output" name="gui" />
       </element>
-      <element id="library" level="project" name="Connector J 8" />
       <element id="archive" name="dal.jar">
         <element id="module-output" name="dal" />
         <element id="module-output" name="di" />
@@ -13,7 +12,11 @@
       <element id="archive" name="logic.jar">
         <element id="module-output" name="logic" />
       </element>
-      <element id="library" level="application" name="com.calendarfx:view:11.8.3" />
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="Connector J 8" />
+        <element id="library" level="application" name="com.calendarfx:view:11.8.3" />
+        <element id="library" level="application" name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" />
+      </element>
     </root>
   </artifact>
 </component>

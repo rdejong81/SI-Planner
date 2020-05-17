@@ -11,17 +11,17 @@ import java.util.Date;
 public class Planning extends DataEntity
 {
     private boolean synced;
-    private IDataSource dataSource;
+    private IPlanningDAO planningDao;
     private ProjectTask projectTask;
     private Employee employee;
     private LocalDateTime start,end;
 
 
-    public Planning(IDataSource dataSource, int id, boolean synced,LocalDateTime start, LocalDateTime end, ProjectTask projectTask, Employee employee)
+    public Planning(IPlanningDAO planningDao, int id, boolean synced,LocalDateTime start, LocalDateTime end, ProjectTask projectTask, Employee employee)
     {
         super(id);
         this.synced = synced;
-        this.dataSource = dataSource;
+        this.planningDao = planningDao;
         this.projectTask = projectTask;
         this.employee = employee;
         this.start = start;
@@ -37,7 +37,7 @@ public class Planning extends DataEntity
     public void setSynced(boolean synced)
     {
         this.synced = synced;
-        dataSource.planningDao().updatePlanning(this);
+        planningDao.updatePlanning(this);
     }
 
     public Employee getEmployee()
@@ -48,7 +48,7 @@ public class Planning extends DataEntity
     public void setEmployee(Employee employee)
     {
         this.employee = employee;
-        dataSource.planningDao().updatePlanning(this);
+        planningDao.updatePlanning(this);
     }
 
     public LocalDateTime getStart()
@@ -59,7 +59,7 @@ public class Planning extends DataEntity
     public void setStart(LocalDateTime start)
     {
         this.start = start;
-        dataSource.planningDao().updatePlanning(this);
+        planningDao.updatePlanning(this);
     }
 
     public LocalDateTime getEnd()
@@ -70,7 +70,7 @@ public class Planning extends DataEntity
     public void setEnd(LocalDateTime end)
     {
         this.end = end;
-        dataSource.planningDao().updatePlanning(this);
+        planningDao.updatePlanning(this);
     }
 
     public ProjectTask getProjectTask(){
@@ -81,7 +81,7 @@ public class Planning extends DataEntity
         this.projectTask.removePlanning(this);
         this.projectTask = projectTask;
         projectTask.addPlanning(this);
-        dataSource.planningDao().updatePlanning(this);
+        planningDao.updatePlanning(this);
     }
 
 }

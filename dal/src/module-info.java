@@ -1,5 +1,5 @@
 module dal {
-    exports mysql;
+    exports MySQL;
 
     requires logic;
     requires java.sql;

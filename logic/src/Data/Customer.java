@@ -12,16 +12,16 @@ public class Customer extends DataEntity
     private String name, shortName;
     private ArrayList<Employee> employees;
     private ArrayList<Project> projects;
-    private IDataSource dataSource;
+    private ICustomerDAO customerDao;
 
-    public Customer(IDataSource dataSource, int id, String name, String shortName)
+    public Customer(ICustomerDAO customerDao, int id, String name, String shortName)
     {
         super(id);
         this.name = name;
         this.shortName = shortName;
         employees = new ArrayList<>();
         projects = new ArrayList<>();
-        this.dataSource = dataSource;
+        this.customerDao = customerDao;
     }
 
     public String getName()
@@ -32,7 +32,7 @@ public class Customer extends DataEntity
     public void setName(String name)
     {
         this.name = name;
-        dataSource.customerDao().updateCustomer(this);
+        customerDao.updateCustomer(this);
     }
 
     public String getShortName()
@@ -43,18 +43,18 @@ public class Customer extends DataEntity
     public void setShortName(String shortName)
     {
         this.shortName = shortName;
-        dataSource.customerDao().updateCustomer(this);
+        customerDao.updateCustomer(this);
     }
 
     public void addEmployee(Employee employee)
     {
         employees.add(employee);
-        dataSource.customerDao().linkEmployee(this,employee);
+        customerDao.linkEmployee(this,employee);
     }
 
     public boolean removeEmployee(Employee employee)
     {
-        return dataSource.customerDao().unlinkEmployee(this,employee) && employees.remove(employee);
+        return customerDao.unlinkEmployee(this,employee) == DaoResult.OP_OK && employees.remove(employee);
     }
 
     public Collection<Employee> getEmployees(){

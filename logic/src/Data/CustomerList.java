@@ -1,15 +1,18 @@
 package Data;
 
-import facade.AppFacade;
+import Facade.AppFacade;
 
 import java.util.*;
 
 public class CustomerList
 {
-    private final List<Customer> customers;
+    private List<Customer> customers;
+    private ICustomerDAO customerDao;
 
-    public CustomerList(){
-        customers = AppFacade.appFacade.getDataSource().customerDao().findAll();
+    public CustomerList(ICustomerDAO customerDao)
+    {
+        this.customerDao = customerDao;
+        customers = customerDao.findAll();
     }
 
     public Collection<Customer> getCustomers(){
@@ -18,12 +21,12 @@ public class CustomerList
 
     public boolean addCustomer(Customer customer)
     {
-        return AppFacade.appFacade.getDataSource().customerDao().insertCustomer(customer);
+        return customerDao.insertCustomer(customer) == DaoResult.OP_OK;
     }
 
     public boolean removeCustomer(Customer customer)
     {
 
-        return AppFacade.appFacade.getDataSource().customerDao().deleteCustomer(customer);
+        return customerDao.deleteCustomer(customer) == DaoResult.OP_OK;
     }
 }

@@ -1,5 +1,7 @@
 package Projects;
 
+import Data.DaoResult;
+
 import java.util.List;
 
 /**
@@ -32,7 +34,7 @@ public interface IProjectDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean insertProject(Project project);
+    DaoResult insertProject(Project project);
 
     /**
      * Update instance of {@link Project} in datasource
@@ -40,7 +42,7 @@ public interface IProjectDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean updateProject(Project project);
+    DaoResult updateProject(Project project);
 
     /**
      * Delete instance of {@link Project} in datasource
@@ -48,6 +50,6 @@ public interface IProjectDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean deleteProject(Project project);
+    DaoResult deleteProject(Project project);
 
 }

@@ -18,9 +18,9 @@ public interface IEmployeeDAO
     List<Employee> findAll();
     Employee findById(int id);
 
-    boolean insertEmployee(Employee employee);
-    boolean updateEmployee(Employee employee);
-    boolean deleteEmployee(Employee employee);
-    boolean linkCustomer(Employee employee, Customer customer);
-    boolean unlinkCustomer(Employee employee, Customer customer);
+    DaoResult insertEmployee(Employee employee);
+    DaoResult updateEmployee(Employee employee);
+    DaoResult deleteEmployee(Employee employee);
+    DaoResult linkCustomer(Employee employee, Customer customer);
+    DaoResult unlinkCustomer(Employee employee, Customer customer);
 }

@@ -13,17 +13,17 @@ public class Project extends DataEntity
     private String name,shortName;
     private int color;
     private boolean invoice;
-    private IDataSource dataSource;
+    private IProjectDAO projectDao;
     private Customer customer;
     private ArrayList<ProjectTask> projectTasks;
 
-    public Project(IDataSource dataSource, int id, String name, int color, boolean invoice, String shortName, Customer customer)
+    public Project(IProjectDAO projectDao, int id, String name, int color, boolean invoice, String shortName, Customer customer)
     {
         super(id);
         this.name = name;
         this.invoice = invoice;
         this.color = color;
-        this.dataSource = dataSource;
+        this.projectDao = projectDao;
         this.customer = customer;
         customer.addProject(this);
         this.shortName = shortName;
@@ -38,7 +38,7 @@ public class Project extends DataEntity
     public void setName(String name)
     {
         this.name = name;
-        dataSource.projectDao().updateProject(this);
+        projectDao.updateProject(this);
     }
 
     public int getColor()
@@ -49,7 +49,7 @@ public class Project extends DataEntity
     public void setColor(int color)
     {
         this.color = color;
-        dataSource.projectDao().updateProject(this);
+        projectDao.updateProject(this);
     }
 
     public boolean isInvoice()
@@ -60,7 +60,7 @@ public class Project extends DataEntity
     public void setInvoice(boolean invoice)
     {
         this.invoice = invoice;
-        dataSource.projectDao().updateProject(this);
+        projectDao.updateProject(this);
     }
 
     public Customer getCustomer(){
@@ -71,7 +71,7 @@ public class Project extends DataEntity
         this.customer.removeProject(this);
         this.customer = customer;
         customer.addProject(this);
-        dataSource.projectDao().updateProject(this);
+        projectDao.updateProject(this);
     }
 
     public String getShortName()
@@ -82,7 +82,7 @@ public class Project extends DataEntity
     public void setShortName(String shortName)
     {
         this.shortName = shortName;
-        dataSource.projectDao().updateProject(this);
+        projectDao.updateProject(this);
     }
 
     public List<ProjectTask> getProjectTasks(){

@@ -3,6 +3,7 @@ package Projects;
 import Data.DataEntity;
 import Data.IDataSource;
 import Planning.Planning;
+import Timeregistration.Timeregistration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,19 +13,21 @@ public class ProjectTask extends DataEntity
 {
     private String name;
     private boolean completed;
-    private IDataSource dataSource;
+    private IProjectTaskDAO projectTaskDao;
     private Project project;
     private ArrayList<Planning> plannings;
+    private ArrayList<Timeregistration> timeregistrations;
 
-    public ProjectTask(IDataSource dataSource, int id, String name, boolean completed, Project project)
+    public ProjectTask(IProjectTaskDAO projectTaskDao, int id, String name, boolean completed, Project project)
     {
         super(id);
         this.name = name;
         this.completed = completed;
-        this.dataSource = dataSource;
+        this.projectTaskDao = projectTaskDao;
         this.project = project;
         project.addTask(this);
         this.plannings = new ArrayList<>();
+        this.timeregistrations = new ArrayList<>();
     }
 
     public String getName()
@@ -35,7 +38,7 @@ public class ProjectTask extends DataEntity
     public void setName(String name)
     {
         this.name = name;
-        dataSource.taskDao().updateTask(this);
+        projectTaskDao.updateTask(this);
     }
 
     public boolean isCompleted()
@@ -46,7 +49,7 @@ public class ProjectTask extends DataEntity
     public void setCompleted(boolean completed)
     {
         this.completed = completed;
-        dataSource.taskDao().updateTask(this);
+        projectTaskDao.updateTask(this);
     }
 
     public Project getProject(){
@@ -57,7 +60,7 @@ public class ProjectTask extends DataEntity
         this.project.removeTask(this);
         this.project = project;
         project.addTask(this);
-        dataSource.taskDao().updateTask(this);
+        projectTaskDao.updateTask(this);
     }
 
     public boolean addPlanning(Planning planning)
@@ -73,6 +76,20 @@ public class ProjectTask extends DataEntity
     public List<Planning> getPlannings()
     {
         return Collections.unmodifiableList(plannings);
+    }
+
+    public boolean addTimeregistration(Timeregistration timeregistration) {
+        return timeregistrations.add(timeregistration);
+    }
+
+    public boolean removeTimeregistration(Timeregistration timeregistration)
+    {
+        return timeregistrations.remove(timeregistration);
+    }
+
+    public List<Timeregistration> getTimeregistrations()
+    {
+        return Collections.unmodifiableList(timeregistrations);
     }
 
 }

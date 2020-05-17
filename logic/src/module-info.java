@@ -1,6 +1,7 @@
 module logic {
-    exports facade;
+    exports Facade;
     exports Data;
     exports Projects;
     exports Planning;
+    exports Timeregistration;
 }

@@ -1,6 +1,7 @@
 package Planning;
 
 import Data.Customer;
+import Data.DaoResult;
 import Data.Employee;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public interface IPlanningDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean insertPlanning(Planning planning);
+    DaoResult insertPlanning(Planning planning);
 
     /**
      * Update instance of {@link Planning} in datasource
@@ -43,7 +44,7 @@ public interface IPlanningDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean updatePlanning(Planning planning);
+    DaoResult updatePlanning(Planning planning);
 
     /**
      * Delete instance of {@link Planning} in datasource
@@ -51,5 +52,5 @@ public interface IPlanningDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean deletePlanning(Planning planning);
+    DaoResult deletePlanning(Planning planning);
 }

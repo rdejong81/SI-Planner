@@ -3,6 +3,7 @@ package Data;
 import Planning.IPlanningDAO;
 import Projects.IProjectDAO;
 import Projects.IProjectTaskDAO;
+import Timeregistration.ITimeregistrationDAO;
 
 public interface IDataSource
 {
@@ -13,5 +14,6 @@ public interface IDataSource
     IProjectDAO projectDao();
     IProjectTaskDAO taskDao();
     IPlanningDAO planningDao();
+    ITimeregistrationDAO timeregistrationDao();
 
 }

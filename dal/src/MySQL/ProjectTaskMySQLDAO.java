@@ -1,0 +1,157 @@
+package MySQL;
+
+import Data.DaoResult;
+import Planning.Planning;
+import Projects.ProjectTask;
+import Sql.QueryResult;
+import Projects.IProjectTaskDAO;
+import Projects.Project;
+import Timeregistration.Timeregistration;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ * Project Data Acccess Object
+ * @author Richard de Jong
+ * @see IProjectTaskDAO
+ */
+public class ProjectTaskMySQLDAO implements IProjectTaskDAO
+{
+    private MySQLConnection mySQLConnection;
+    private ArrayList<ProjectTask> projectTaskInstances;  // list of instances of Task to prevent duplicate objects of the same database id.
+    private ArrayList<ProjectTask> tasksUpdating;  // list of Task instances that are being updated.
+
+    protected ProjectTaskMySQLDAO(MySQLConnection mySQLConnection)
+    {
+        this.mySQLConnection = mySQLConnection;
+        projectTaskInstances = new ArrayList<>();
+        tasksUpdating = new ArrayList<>();
+    }
+
+    private ProjectTask processRow(HashMap<String,Object> row)
+    {
+        ProjectTask projectTask =null;
+        for(ProjectTask currentProjectTask : projectTaskInstances)
+        {
+            if(currentProjectTask.getId() == (Integer)row.get("id"))
+            {
+                tasksUpdating.add(currentProjectTask);
+                currentProjectTask.setName((String)row.get("name"));
+                currentProjectTask.setCompleted((Boolean) row.get("completed"));
+                currentProjectTask.setProject(mySQLConnection.projectDao().findById((Integer)row.get("projects_id")));
+                projectTask = currentProjectTask;
+            }
+        }
+        if(projectTask == null)
+        {
+            Project project = mySQLConnection.projectDao().findById((Integer)row.get("projects_id"));
+            projectTask = new ProjectTask(this,(Integer) row.get("id"),
+                    (String) row.get("name"),
+                    (Boolean) row.get("completed"),
+                    project
+            );
+            projectTaskInstances.add(projectTask);
+            tasksUpdating.add(projectTask);
+        }
+
+        // find plannings and timeregistrations belonging to projecttask
+        QueryResult childResults = new QueryResult(mySQLConnection, String.format("select id,planned from time where tasks_id=%d",
+                projectTask.getId()));
+
+        for(HashMap<String,Object> childRow : childResults.getRows())
+        {
+            if((Boolean)childRow.get("planned"))
+            {
+                Planning planning = mySQLConnection.planningDao().findById((Integer)childRow.get("id"));
+                if(planning != null && !projectTask.getPlannings().contains(planning))
+                    projectTask.addPlanning(planning);
+            } else {
+                Timeregistration timeregistration = mySQLConnection.timeregistrationDao().findById((Integer)childRow.get("id"));
+                if(timeregistration != null && !projectTask.getTimeregistrations().contains(timeregistration))
+                    projectTask.addTimeregistration(timeregistration);
+            }
+
+        }
+
+
+        tasksUpdating.remove(projectTask);
+        return projectTask;
+    }
+
+    @Override
+    public List<ProjectTask> findAll()
+    {
+        QueryResult result = new QueryResult(mySQLConnection, "select * from tasks");
+
+        for(HashMap<String,Object> row : result.getRows())
+        {
+            processRow(row);
+        }
+
+        return Collections.unmodifiableList(projectTaskInstances);
+    }
+
+    @Override
+    public ProjectTask findById(int id)
+    {
+        for(ProjectTask projectTask : projectTaskInstances)
+        {
+            if(projectTask.getId() == id) return projectTask;
+        }
+
+        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from tasks where id=%d",id));
+
+        for(HashMap<String,Object> row : result.getRows())
+        {
+            return processRow(row);
+        }
+
+        return null;
+    }
+
+    @Override
+    public DaoResult insertTask(ProjectTask projectTask)
+    {
+        QueryResult result = new QueryResult(mySQLConnection,String.format(
+                "insert into tasks (name,completed,projects_id) values ('%s',%d,%d)",
+                projectTask.getName().replace("'","%%%"),
+                projectTask.isCompleted() ? 1 : 0,
+                projectTask.getProject().getId()
+        ));
+        projectTask.setId((int)result.getCreatedKey());
+        projectTaskInstances.add(projectTask);
+        return DaoResult.OP_OK;
+    }
+
+    @Override
+    public DaoResult updateTask(ProjectTask projectTask)
+    {
+        if(tasksUpdating.contains(projectTask)) return DaoResult.OP_OK; //already updating
+        QueryResult result = new QueryResult(mySQLConnection,String.format("update tasks set name='%s',completed=%d,projects_id=%d where id=%d",
+                projectTask.getName().replace("'","%%%"),
+                projectTask.isCompleted() ? 1 : 0,
+                projectTask.getProject().getId(),
+                projectTask.getId()
+        ));
+        return DaoResult.OP_OK;
+    }
+
+    @Override
+    public DaoResult deleteTask(ProjectTask projectTask)
+    {
+        if(tasksUpdating.contains(projectTask)) return DaoResult.OP_OK; //already updating
+        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from tasks where id=%d", projectTask.getId()));
+        if(result.getLastError() == null)
+        {
+            projectTask.getProject().removeTask(projectTask);
+            projectTaskInstances.remove(projectTask);
+            return DaoResult.OP_OK;
+        }
+        return DaoResult.DAO_MISSING;
+    }
+
+
+}

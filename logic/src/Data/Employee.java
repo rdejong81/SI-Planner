@@ -9,15 +9,15 @@ public class Employee extends DataEntity
 {
     private String name,sqlLoginName;
     private ArrayList<Customer> customers;
-    private IDataSource dataSource;
+    private IEmployeeDAO employeeDao;
 
-    public Employee(IDataSource dataSource,int id,String name, String sqlLoginName)
+    public Employee(IEmployeeDAO employeeDao, int id, String name, String sqlLoginName)
     {
         super(id);
         this.name = name;
         this.sqlLoginName = sqlLoginName;
         customers = new ArrayList<>();
-        this.dataSource = dataSource;
+        this.employeeDao = employeeDao;
     }
 
     public String getName()
@@ -28,7 +28,7 @@ public class Employee extends DataEntity
     public void setName(String name)
     {
         this.name = name;
-        dataSource.employeeDao().updateEmployee(this);
+        employeeDao.updateEmployee(this);
     }
 
     public String getSqlLoginName()
@@ -39,7 +39,7 @@ public class Employee extends DataEntity
     public void setSqlLoginName(String sqlLoginName)
     {
         this.sqlLoginName = sqlLoginName;
-        dataSource.employeeDao().updateEmployee(this);
+        employeeDao.updateEmployee(this);
     }
 
     public void addCustomer(Customer customer)
@@ -47,13 +47,13 @@ public class Employee extends DataEntity
         if(customers.contains(customer)) return;
 
         customers.add(customer);
-        dataSource.employeeDao().linkCustomer(this,customer);
+        employeeDao.linkCustomer(this,customer);
     }
 
     public boolean removeCustomer(Customer customer)
     {
         if(!customers.contains(customer)) return false;
-        return customers.remove(customer) && dataSource.employeeDao().unlinkCustomer(this,customer);
+        return customers.remove(customer) && employeeDao.unlinkCustomer(this,customer) == DaoResult.OP_OK;
     }
 
     public Collection<Customer> getCustomers()

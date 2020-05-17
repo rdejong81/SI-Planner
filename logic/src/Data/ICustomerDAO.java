@@ -32,7 +32,7 @@ public interface ICustomerDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean insertCustomer(Customer customer);
+    DaoResult insertCustomer(Customer customer);
 
     /**
      * Update instance of {@link Customer} in datasource
@@ -40,7 +40,7 @@ public interface ICustomerDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean updateCustomer(Customer customer);
+    DaoResult updateCustomer(Customer customer);
 
     /**
      * Delete instance of {@link Customer} in datasource
@@ -48,7 +48,7 @@ public interface ICustomerDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean deleteCustomer(Customer customer);
+    DaoResult deleteCustomer(Customer customer);
 
     /**
      * Link {@link Employee} to {@link Customer} in datasource
@@ -57,7 +57,7 @@ public interface ICustomerDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean linkEmployee(Customer customer, Employee employee);
+    DaoResult linkEmployee(Customer customer, Employee employee);
     /**
      * Unlink {@link Employee} from {@link Customer} in datasource
      * @param customer instance to unlink
@@ -65,5 +65,5 @@ public interface ICustomerDAO
      * @return true if successful
      * @since 1.0
      */
-    boolean unlinkEmployee(Customer customer, Employee employee);
+    DaoResult unlinkEmployee(Customer customer, Employee employee);
 }

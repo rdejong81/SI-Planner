@@ -1,5 +1,5 @@
 module di {
     requires dal;
     requires logic;
-    exports db;
+    exports Database;
 }

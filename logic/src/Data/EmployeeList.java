@@ -1,16 +1,18 @@
 package Data;
 
-import facade.AppFacade;
+import Facade.AppFacade;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class EmployeeList
 {
-    private final List<Employee> employees;
+    private List<Employee> employees;
+    private IEmployeeDAO employeeDao;
 
-    public EmployeeList(){
-        employees = AppFacade.appFacade.getDataSource().employeeDao().findAll();
+    public EmployeeList(IEmployeeDAO employeeDao){
+        this.employeeDao = employeeDao;
+        employees = employeeDao.findAll();
     }
 
     public Collection<Employee> getEmployees(){
@@ -19,11 +21,11 @@ public class EmployeeList
 
     public boolean addEmployee(Employee employee)
     {
-        return AppFacade.appFacade.getDataSource().employeeDao().insertEmployee(employee);
+        return employeeDao.insertEmployee(employee) == DaoResult.OP_OK;
     }
 
     public boolean removeEmployee(Employee employee)
     {
-        return AppFacade.appFacade.getDataSource().employeeDao().deleteEmployee(employee);
+        return employeeDao.deleteEmployee(employee) == DaoResult.OP_OK;
     }
 }
