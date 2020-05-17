@@ -1,14 +1,12 @@
 package Sql;
 
-import Facade.IQueryResult;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.*;
 
-public class QueryResult implements IQueryResult
+public class QueryResult
 {
     private Statement statement;
     private ResultSet resultSet;
