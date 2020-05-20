@@ -9,7 +9,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import Facade.ILoginController;
 import javafx.stage.Modality;
-import jdk.jfr.Category;
 
 import java.net.URL;
 import java.util.HashMap;

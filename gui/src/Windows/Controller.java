@@ -55,6 +55,7 @@ public abstract class Controller implements Initializable, IWindow
         } catch (IOException e)
         {
             //todo handle fxml load error.
+            System.out.println(e.getMessage());
             System.exit(1); // do not continue.
         }
     }

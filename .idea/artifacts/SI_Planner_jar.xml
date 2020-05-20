@@ -14,8 +14,7 @@
       </element>
       <element id="directory" name="lib">
         <element id="library" level="project" name="Connector J 8" />
-        <element id="library" level="application" name="com.calendarfx:view:11.8.3" />
-        <element id="library" level="application" name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" />
+        <element id="library" level="project" name="com.calendarfx:view:11.8.3" />
       </element>
     </root>
   </artifact>

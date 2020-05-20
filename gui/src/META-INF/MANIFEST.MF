@@ -7,5 +7,5 @@ Class-Path: javafx\src.zip javafx\javafx-swt.jar javafx\javafx.web.jar j
  konli-core-11.3.4.jar lib\ical4j-3.0.10.jar lib\javax.mail-1.6.2.jar li
  b\slf4j-api-1.7.25.jar lib\activation-1.1.jar lib\commons-codec-1.11.ja
  r lib\commons-collections4-4.1.jar lib\commons-lang3-3.8.1.jar
-Main-Class: Main
+Main-Class: Main.Main
 
