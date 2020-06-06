@@ -1,13 +1,13 @@
 package Login;
 
-import Facade.ILoginProcessor;
+import Data.DaoResult;
+import Facade.AppFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import Facade.ILoginController;
 import javafx.stage.Modality;
 
 import java.net.URL;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 
 
-public class LoginController extends Windows.Controller implements ILoginController
+public class LoginController extends Windows.Controller
 {
     @FXML
     private ChoiceBox<String> dbType;
@@ -36,8 +36,6 @@ public class LoginController extends Windows.Controller implements ILoginControl
 
     private boolean cancelled;
 
-    private ILoginProcessor loginProcessor;
-
     private HashMap<String,Integer> dbTypes;
 
     public LoginController()
@@ -52,17 +50,21 @@ public class LoginController extends Windows.Controller implements ILoginControl
 
         this.dbTypes = new HashMap<>();
      }
-    public void loginError(String error){
-        errorlabel.setText(error);
-    }
 
     public void loginButtonPress(ActionEvent actionEvent)
     {
-        if(loginProcessor.tryLogin(this))
+        DaoResult result = AppFacade.appFacade.DoLogin(username.getText(),password.getText(),database.getText(),server.getText(),dbType.getValue());
+
+        switch(result)
         {
-            this.submitted = true;
-            super.getStage().close();
+            case OP_OK:
+                this.submitted = true;
+                super.getStage().close();
+                break;
+            default:
+                errorlabel.setText("Unknown error");
         }
+
     }
 
     @Override
@@ -83,6 +85,11 @@ public class LoginController extends Windows.Controller implements ILoginControl
         if(!this.submitted) this.cancelled=true;
     }
 
+    public boolean addDbType(String type)
+    {
+        return dbType.getItems().add(type);
+    }
+
     public int getDBType(){
         if(dbType.getValue() == null) return -1;
         for(String type : dbTypes.keySet()) {
@@ -91,12 +98,6 @@ public class LoginController extends Windows.Controller implements ILoginControl
         return -1;
     }
 
-    @Override
-    public void showAndWait(ILoginProcessor loginProcessor)
-    {
-        this.loginProcessor = loginProcessor;
-        showAndWait();
-    }
 
     public String getUserName(){
         return username.getText();
@@ -114,20 +115,9 @@ public class LoginController extends Windows.Controller implements ILoginControl
         return database.getText();
     }
 
-    @Override
-    public void addDatabaseType(String type, int typeValue)
-    {
-        dbTypes.put(type,typeValue);
-        dbType.getItems().add(type);
-    }
 
     public boolean getCancelled(){
         return cancelled;
     }
 
-    @Override
-    public void refreshData()
-    {
-
-    }
 }

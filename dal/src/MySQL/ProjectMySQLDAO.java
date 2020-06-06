@@ -6,6 +6,7 @@ import Sql.QueryResult;
 import Projects.IProjectDAO;
 import Projects.Project;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -153,6 +154,10 @@ public class ProjectMySQLDAO implements IProjectDAO
             project.getCustomer().removeProject(project);
             projectInstances.remove(project);
             return DaoResult.OP_OK;
+        }
+        if(result.getLastError().getCause() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
         }
         return DaoResult.DAO_MISSING;
     }

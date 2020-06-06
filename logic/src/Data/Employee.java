@@ -8,14 +8,14 @@ import java.util.Collections;
 public class Employee extends DataEntity
 {
     private String name,sqlLoginName;
-    private ArrayList<Customer> customers;
-    private IEmployeeDAO employeeDao;
+    private final ArrayList<Customer> customers;
+    private final IEmployeeDAO employeeDao;
 
     public Employee(IEmployeeDAO employeeDao, int id, String name, String sqlLoginName)
     {
         super(id);
-        this.name = name;
-        this.sqlLoginName = sqlLoginName;
+        this.name = name != null ? name : "undefined";
+        this.sqlLoginName = sqlLoginName != null ? sqlLoginName : "undefined";
         customers = new ArrayList<>();
         this.employeeDao = employeeDao;
     }

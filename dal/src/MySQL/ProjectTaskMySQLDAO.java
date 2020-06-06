@@ -8,6 +8,7 @@ import Projects.IProjectTaskDAO;
 import Projects.Project;
 import Timeregistration.Timeregistration;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -149,6 +150,10 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
             projectTask.getProject().removeTask(projectTask);
             projectTaskInstances.remove(projectTask);
             return DaoResult.OP_OK;
+        }
+        if(result.getLastError().getCause() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
         }
         return DaoResult.DAO_MISSING;
     }

@@ -1,6 +1,5 @@
 package Windows;
 
-import Facade.IWindow;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -13,7 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public abstract class Controller implements Initializable, IWindow
+public abstract class Controller implements Initializable
 {
 
     private Stage stage;

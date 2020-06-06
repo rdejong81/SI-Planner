@@ -6,6 +6,7 @@ import Data.Employee;
 import Data.IEmployeeDAO;
 import Sql.QueryResult;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,9 +14,9 @@ import java.util.List;
 
 public class EmployeeMySQLDAO implements IEmployeeDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<Employee> employeeInstances; // list of instances of Employee to prevent duplicate objects of the same database id.
-    private ArrayList<Employee> employeesUpdating; // list of Employee instances that are being updated.
+    private final MySQLConnection mySQLConnection;
+    private final ArrayList<Employee> employeeInstances; // list of instances of Employee to prevent duplicate objects of the same database id.
+    private final ArrayList<Employee> employeesUpdating; // list of Employee instances that are being updated.
 
     protected EmployeeMySQLDAO(MySQLConnection mySQLConnection){
         this.mySQLConnection = mySQLConnection;
@@ -127,8 +128,18 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     public DaoResult deleteEmployee(Employee employee)
     {
         if(employeesUpdating.contains(employee)) return DaoResult.OP_OK; // already updating.
-        new QueryResult(mySQLConnection,String.format("delete from employees where id=%d",employee.getId()));
-        return employeeInstances.remove(employee) ? DaoResult.OP_OK : DaoResult.DAO_MISSING;
+        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from employees where id=%d",employee.getId()));
+        if(result.getLastError() == null)
+        {
+            employeeInstances.remove(employee);
+            return DaoResult.OP_OK;
+        }
+
+        if(result.getLastError() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
+        }
+        return DaoResult.DAO_MISSING;
     }
 
     @Override

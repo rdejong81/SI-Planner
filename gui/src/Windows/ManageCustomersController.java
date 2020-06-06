@@ -1,45 +1,55 @@
 package Windows;
 
-import Data.Customer;
-import Data.Employee;
+import Data.*;
 import Facade.AppFacade;
+import Facade.IDataEntityPresenter;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Modality;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-import java.io.IOException;
+import java.lang.reflect.AnnotatedType;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
-public class ManageCustomersController extends Controller
-{    @FXML
-private TableView<Customer> customerTableView;
+public class ManageCustomersController extends Controller implements IDataEntityPresenter
+{
+    @FXML
+    private TableView<Customer> customerTableView;
+
+    @FXML
+    private TableView<Attribute> attributeDefView;
+
+    @FXML
+    private TableColumn<Attribute,String> nameAttributeDefColumn;
+
+    @FXML private TableColumn<Attribute,AttributeType> typeAttributeDefColumn;
+
+    @FXML private TableColumn<Attribute,EntityType> entityTypeAttributeDefColumn;
+
     @FXML
     private ListView<Employee> employeeListView;
 
     @FXML
-    private TableColumn<String, Customer> shortNameColumn;
-    @FXML
-    private TableColumn<String, Customer> nameColumn;
+    private TableColumn<String, Customer> shortNameColumn,nameColumn;
 
     @FXML
-    private TextField nameField;
+    private TextField nameField,shortNameField;
 
-    @FXML
-    private TextField shortNameField;
-
-
-
-
-
-    public ManageCustomersController(Controller owner) throws IOException
+    public ManageCustomersController(Controller owner)
     {
         super("ManageCustomers.fxml", "Manage Customers");
         getStage().initOwner(owner.getStage());
@@ -48,23 +58,63 @@ private TableView<Customer> customerTableView;
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         shortNameColumn.setCellValueFactory(new PropertyValueFactory<>("shortName"));
 
-        for(Customer customer : AppFacade.appFacade.getCustomerList().getCustomers())
+        nameAttributeDefColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameAttributeDefColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameAttributeDefColumn.setOnEditCommit(value -> {
+            value.getRowValue().setName(value.getNewValue());
+        });
+
+        entityTypeAttributeDefColumn.setCellValueFactory(new PropertyValueFactory<>("entityType"));
+        entityTypeAttributeDefColumn.setCellFactory(ComboBoxTableCell.forTableColumn( new StringConverter<>()
         {
-            customerTableView.getItems().add(customer);
 
-        }
+            @Override
+            public String toString(EntityType object)
+            {
+                return object.toString();
+            }
 
-        for(Employee employee : AppFacade.appFacade.getEmployeeList().getEmployees())
+            @Override
+            public EntityType fromString(String string)
+            {
+                return EntityType.valueOf(string);
+            }
+        }, FXCollections.observableArrayList( Arrays.asList(EntityType.values()))));
+        entityTypeAttributeDefColumn.setOnEditCommit(value -> {
+            value.getRowValue().setEntityType(value.getNewValue());
+        });
+
+        typeAttributeDefColumn.setCellValueFactory(new PropertyValueFactory<>("attributeType"));
+        typeAttributeDefColumn.setOnEditCommit(value -> {
+            value.getRowValue().setAttributeType(value.getNewValue());
+        });
+
+        typeAttributeDefColumn.setCellFactory(ComboBoxTableCell.forTableColumn( new StringConverter<>()
         {
-            employeeListView.getItems().add(employee);
-        }
 
+            @Override
+            public String toString(AttributeType object)
+            {
+                return object.getFriendlyName();
+            }
 
+            @Override
+            public AttributeType fromString(String string)
+            {
+                return AttributeType.fromFriendlyName(string);
+            }
+        }, FXCollections.observableArrayList( Arrays.asList(AttributeType.values()))));
 
         customerTableView.getSelectionModel().selectedItemProperty().addListener( (obs, oldSelection, newSelection) ->
                 {
                     nameField.setText(newSelection.getName());
                     shortNameField.setText(newSelection.getShortName());
+
+                    attributeDefView.getItems().clear();
+                    for(Attribute attribute : newSelection.getAttributeDefinitions())
+                    {
+                        attributeDefView.getItems().add(attribute);
+                    }
 
                     // employee list, add checkboxes and change listener representing linked employees.
                     employeeListView.setCellFactory(CheckBoxListCell.forListView(new Callback<Employee, ObservableValue<Boolean>>()
@@ -99,7 +149,7 @@ private TableView<Customer> customerTableView;
                         @Override
                         public Employee fromString(String string)
                         {
-                            for (Employee employee : AppFacade.appFacade.getEmployeeList().getEmployees())
+                            for (Employee employee : employeeListView.getItems())
                             {
                                 if(employee.getName().equals(string)) return employee;
                             }
@@ -110,8 +160,6 @@ private TableView<Customer> customerTableView;
 
         );
 
-        if(customerTableView.getItems().size() > 0)
-            customerTableView.getSelectionModel().select(0);  // select first item.
 
         // only allow uppercase characters x 10
         shortNameField.setTextFormatter(new TextFormatter<>(change -> {
@@ -137,25 +185,30 @@ private TableView<Customer> customerTableView;
             customerTableView.refresh();
         });
 
-
-
+        AppFacade.appFacade.subscribeDataEntityPresenter(this);
     }
 
 
     @FXML
     private void addButtonClick()
     {
-        Customer newCustomer = AppFacade.appFacade.addCustomer("new","new");
-        if(newCustomer != null) customerTableView.getItems().add(newCustomer);
+        AppFacade.appFacade.addCustomer("new","new");
     }
 
     @FXML
     private void removeButtonClick()
     {
-        if(AppFacade.appFacade.removeCustomer(customerTableView.getSelectionModel().getSelectedItem()))
-        {
-            customerTableView.getItems().remove(customerTableView.getSelectionModel().getSelectedItem());
-        }
+        AppFacade.appFacade.removeCustomer(customerTableView.getSelectionModel().getSelectedItem());
+    }
+
+    @FXML private void addAttrButtonClick(ActionEvent actionEvent)
+    {
+        AppFacade.appFacade.createAttributeDefinition(
+                customerTableView.getSelectionModel().getSelectedItem(),
+                "new",
+                AttributeType.STRING,
+                EntityType.CUSTOMER
+        );
     }
 
     @FXML
@@ -179,12 +232,39 @@ private TableView<Customer> customerTableView;
     @Override
     protected void onClosed()
     {
+        AppFacade.appFacade.unsubscribeDataEntityPresenter(this);
+
+    }
+
+
+    @Override
+    public void showDataEntity(DataEntity dataEntity)
+    {
+
+        if(dataEntity instanceof Customer && !customerTableView.getItems().contains(dataEntity))
+        {
+            customerTableView.getItems().add((Customer) dataEntity);
+        }
+
+        if(dataEntity instanceof Employee && !employeeListView.getItems().contains(dataEntity))
+        {
+            employeeListView.getItems().add((Employee) dataEntity);
+        }
+
 
     }
 
     @Override
-    public void refreshData()
+    public void hideDataEntity(DataEntity dataEntity)
     {
+        if(dataEntity instanceof Customer)
+        {
+            customerTableView.getItems().remove(dataEntity);
+        }
 
+        if(dataEntity instanceof Employee)
+        {
+            employeeListView.getItems().remove(dataEntity);
+        }
     }
 }

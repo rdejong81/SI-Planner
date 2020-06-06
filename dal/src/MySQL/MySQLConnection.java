@@ -1,5 +1,6 @@
 package MySQL;
 
+import Data.IAttributeDAO;
 import Data.ICustomerDAO;
 import Data.IEmployeeDAO;
 import Planning.IPlanningDAO;
@@ -12,12 +13,14 @@ import java.sql.SQLException;
 
 public class MySQLConnection extends SQLConnection
 {
-    private CustomerMySQLDAO customerMySQLDAO;
-    private EmployeeMySQLDAO employeeMySQLDAO;
-    private ProjectMySQLDAO projectMySQLDAO;
-    private ProjectTaskMySQLDAO taskMySQLDAO;
-    private PlanningMySQLDAO planningMySQLDAO;
-    private TimeregistrationMySQLDAO timeregistrationMySQLDAO;
+    private final CustomerMySQLDAO customerMySQLDAO;
+    private final EmployeeMySQLDAO employeeMySQLDAO;
+    private final ProjectMySQLDAO projectMySQLDAO;
+    private final ProjectTaskMySQLDAO taskMySQLDAO;
+    private final PlanningMySQLDAO planningMySQLDAO;
+    private final TimeregistrationMySQLDAO timeregistrationMySQLDAO;
+    private final AttributeDefinitionMySQLDAO attributeDefinitionMySQLDAO;
+    private final AttributeMySQLDAO attributeMySQLDAO;
 
     public MySQLConnection(String server, String database, String user, String password) throws SQLException, ClassNotFoundException
     {
@@ -30,6 +33,8 @@ public class MySQLConnection extends SQLConnection
         taskMySQLDAO = new ProjectTaskMySQLDAO(this);
         planningMySQLDAO = new PlanningMySQLDAO(this);
         timeregistrationMySQLDAO = new TimeregistrationMySQLDAO(this);
+        attributeDefinitionMySQLDAO = new AttributeDefinitionMySQLDAO(this);
+        attributeMySQLDAO = new AttributeMySQLDAO(this);
     }
 
     @Override
@@ -72,6 +77,18 @@ public class MySQLConnection extends SQLConnection
     public ITimeregistrationDAO timeregistrationDao()
     {
         return timeregistrationMySQLDAO;
+    }
+
+    @Override
+    public IAttributeDAO attributeDao()
+    {
+        return attributeMySQLDAO;
+    }
+
+    @Override
+    public IAttributeDAO attributeDefinitionDao()
+    {
+        return attributeDefinitionMySQLDAO;
     }
 
 

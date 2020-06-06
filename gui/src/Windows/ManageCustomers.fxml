@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.ManageCustomersController">
+<AnchorPane prefHeight="400.0" prefWidth="762.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.ManageCustomersController">
    <children>
       <TableView fx:id="customerTableView" layoutX="32.0" layoutY="36.0" prefHeight="281.0" prefWidth="224.0">
         <columns>
@@ -12,14 +12,14 @@
 
         </columns>
       </TableView>
-      <Button cancelButton="true" layoutX="528.0" layoutY="348.0" mnemonicParsing="false" onAction="#closeButtonClick" text="Close" />
+      <Button cancelButton="true" layoutX="703.0" layoutY="348.0" mnemonicParsing="false" onAction="#closeButtonClick" text="Close" />
       <Button layoutX="165.0" layoutY="348.0" mnemonicParsing="false" onAction="#addButtonClick" text="Add customer" />
       <Button layoutX="32.0" layoutY="348.0" mnemonicParsing="false" onAction="#removeButtonClick" text="Delete customer" />
-      <TabPane layoutX="271.0" layoutY="39.0" prefHeight="281.0" prefWidth="302.0" style="-fx-background-color: lightgrey; -fx-border-color: grey;" tabClosingPolicy="UNAVAILABLE">
+      <TabPane layoutX="271.0" layoutY="39.0" prefHeight="281.0" prefWidth="481.0" style="-fx-background-color: lightgrey; -fx-border-color: grey;" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="General">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="250.0" prefWidth="344.0">
                      <children>
                         <Label layoutX="53.0" layoutY="44.0" text="Name:" />
                         <TextField fx:id="nameField" layoutX="105.0" layoutY="40.0" prefHeight="25.0" prefWidth="177.0" />
@@ -42,6 +42,22 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
             </content>
           </Tab>
+            <Tab text="Attribute definitions">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="attributeDefView" editable="true" layoutX="13.0" layoutY="14.0" prefHeight="193.0" prefWidth="459.0">
+                          <columns>
+                            <TableColumn fx:id="nameAttributeDefColumn" prefWidth="172.0" text="Name" />
+                            <TableColumn fx:id="typeAttributeDefColumn" prefWidth="142.0" text="Field type" />
+                              <TableColumn fx:id="entityTypeAttributeDefColumn" prefWidth="140.0" text="Used with" />
+                          </columns>
+                        </TableView>
+                        <Button layoutX="14.0" layoutY="211.0" mnemonicParsing="false" onAction="#addAttrButtonClick" text="Add attribute" />
+                        <Button layoutX="372.0" layoutY="211.0" mnemonicParsing="false" text="Delete attribute" />
+                     </children></AnchorPane>
+                </content>
+            </Tab>
         </tabs>
       </TabPane>
    </children>

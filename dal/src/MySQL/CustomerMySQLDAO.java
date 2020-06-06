@@ -1,12 +1,10 @@
 package MySQL;
 
-import Data.Customer;
-import Data.DaoResult;
-import Data.Employee;
-import Data.ICustomerDAO;
+import Data.*;
 import Projects.Project;
 import Sql.QueryResult;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,9 +17,9 @@ import java.util.List;
  */
 public class CustomerMySQLDAO implements ICustomerDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<Customer> customerInstances;  // list of instances of customer to prevent duplicate objects of the same database id.
-    private ArrayList<Customer> customersUpdating;  // list of Customer instances that are being updated.
+    private final MySQLConnection mySQLConnection;
+    private final ArrayList<Customer> customerInstances;  // list of instances of customer to prevent duplicate objects of the same database id.
+    private final ArrayList<Customer> customersUpdating;  // list of Customer instances that are being updated.
 
     protected CustomerMySQLDAO(MySQLConnection mySQLConnection)
     {
@@ -78,6 +76,13 @@ public class CustomerMySQLDAO implements ICustomerDAO
             Project project = mySQLConnection.projectDao().findById((Integer)childRow.get("id"));
             if(project != null && !customer.getProjects().contains(project))
                 customer.addProject(project);
+        }
+
+        // find attribute definitions linked to customer
+        for(Attribute attribute : mySQLConnection.attributeDefinitionDao().findAll(customer))
+        {
+            if(!customer.getAttributeDefinitions().contains(attribute))
+                customer.addAttributeDefinition(attribute);
         }
 
         customersUpdating.remove(customer);
@@ -169,9 +174,24 @@ public class CustomerMySQLDAO implements ICustomerDAO
             mySQLConnection.projectDao().deleteProject(project);
         }
 
-        new QueryResult(mySQLConnection,String.format("delete from customers where id=%d",customer.getId()));
-        customerInstances.remove(customer);
-        return DaoResult.OP_OK;
+        // remove associated attribute definitions
+        for(Attribute attribute : new ArrayList<>(customer.getAttributeDefinitions()))
+        {
+            mySQLConnection.attributeDefinitionDao().deleteAttribute(attribute);
+        }
+
+        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from customers where id=%d",customer.getId()));
+        if(result.getLastError() == null)
+        {
+            customerInstances.remove(customer);
+            return DaoResult.OP_OK;
+        }
+
+        if(result.getLastError().getCause() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
+        }
+        return DaoResult.DAO_MISSING;
     }
 
     @Override

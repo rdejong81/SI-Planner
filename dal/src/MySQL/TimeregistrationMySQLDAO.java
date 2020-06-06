@@ -8,6 +8,7 @@ import Sql.QueryResult;
 import Timeregistration.ITimeregistrationDAO;
 import Timeregistration.Timeregistration;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -142,6 +143,10 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
             timeregistration.getProjectTask().removeTimeregistration(timeregistration);
             timeregistrationInstances.remove(timeregistration);
             return DaoResult.OP_OK;
+        }
+        if(result.getLastError().getCause() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
         }
         return DaoResult.DAO_MISSING;
     }

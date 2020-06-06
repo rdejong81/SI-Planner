@@ -2,6 +2,8 @@ package Windows;
 
 import Data.Customer;
 import Data.DaoResult;
+import Data.DataEntity;
+import Facade.IDataEntityPresenter;
 import Projects.Project;
 import Projects.ProjectTask;
 import Facade.AppFacade;
@@ -17,7 +19,7 @@ import javafx.util.StringConverter;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class ManageProjectsController extends Controller
+public class ManageProjectsController extends Controller implements IDataEntityPresenter
 {
     @FXML
     private TableView<Project> projectTableView;
@@ -118,23 +120,13 @@ public class ManageProjectsController extends Controller
             @Override
             public Customer fromString(String string)
             {
-                for (Customer customer : AppFacade.appFacade.getCustomerList().getCustomers())
+                for (Customer customer : customerField.getItems())
                 {
                     if(customer.getName().equals(string)) return customer;
                 }
                 return null;
             }
         });
-
-        for(Customer customer : AppFacade.appFacade.getCustomerList().getCustomers())
-        {
-            customerField.getItems().add(customer);
-
-            for(Project project : customer.getProjects())
-            {
-                projectTableView.getItems().add(project);
-            }
-        }
 
 
        projectTableView.getSelectionModel().selectedItemProperty().addListener( (obs, oldSelection, newSelection) ->
@@ -208,6 +200,8 @@ public class ManageProjectsController extends Controller
             taskListView.refresh();
         });
 
+        AppFacade.appFacade.subscribeDataEntityPresenter(this);
+
 
     }
 
@@ -226,14 +220,10 @@ public class ManageProjectsController extends Controller
     @Override
     protected void onClosed()
     {
+        AppFacade.appFacade.unsubscribeDataEntityPresenter(this);
 
     }
 
-    @Override
-    public void refreshData()
-    {
-
-    }
 
     public void closeButtonClick(ActionEvent actionEvent)
     {
@@ -242,19 +232,13 @@ public class ManageProjectsController extends Controller
 
     public void addButtonClick(ActionEvent actionEvent)
     {
-        Customer customer = AppFacade.appFacade.getCustomerList().getCustomers().iterator().next();
-        if(customer == null) return;
-        Project project = new Project(AppFacade.appFacade.getDataSource().projectDao(),0,"new",0,false,"new",customer);
-        if(AppFacade.appFacade.getDataSource().projectDao().insertProject(project) == DaoResult.OP_OK)
-            projectTableView.getItems().add(project);
+        AppFacade.appFacade.addProject("new");
     }
 
     public void removeButtonClick(ActionEvent actionEvent)
     {
-        if(AppFacade.appFacade.getDataSource().projectDao().deleteProject(projectTableView.getSelectionModel().getSelectedItem()) == DaoResult.OP_OK)
-        {
-            projectTableView.getItems().remove(projectTableView.getSelectionModel().getSelectedItem());
-        }
+        if(projectTableView.getSelectionModel().getSelectedItem() != null)
+        AppFacade.appFacade.removeProject(projectTableView.getSelectionModel().getSelectedItem());
     }
 
     public void addTaskButtonClick(ActionEvent actionEvent)
@@ -275,5 +259,37 @@ public class ManageProjectsController extends Controller
         {
             taskListView.getItems().remove(taskListView.getSelectionModel().getSelectedItem());
         }
+    }
+
+    @Override
+    public void showDataEntity(DataEntity dataEntity)
+    {
+
+        if(dataEntity instanceof Project)
+        {
+            projectTableView.getItems().add((Project) dataEntity);
+            if(projectTableView.getItems().size() == 1)
+                projectTableView.getSelectionModel().select(0);  // select first item.
+        }
+
+        if(dataEntity instanceof Customer)
+        {
+            customerField.getItems().add((Customer) dataEntity);
+        }
+    }
+
+    @Override
+    public void hideDataEntity(DataEntity dataEntity)
+    {
+        if(dataEntity instanceof Project)
+        {
+            projectTableView.getItems().remove(dataEntity);
+        }
+
+        if(dataEntity instanceof Customer)
+        {
+            customerField.getItems().remove(dataEntity);
+        }
+
     }
 }

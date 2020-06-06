@@ -7,8 +7,8 @@ import java.util.List;
 
 public class EmployeeList
 {
-    private List<Employee> employees;
-    private IEmployeeDAO employeeDao;
+    private final List<Employee> employees;
+    private final IEmployeeDAO employeeDao;
 
     public EmployeeList(IEmployeeDAO employeeDao){
         this.employeeDao = employeeDao;
@@ -19,13 +19,13 @@ public class EmployeeList
         return Collections.unmodifiableCollection(employees);
     }
 
-    public boolean addEmployee(Employee employee)
+    public DaoResult addEmployee(Employee employee)
     {
-        return employeeDao.insertEmployee(employee) == DaoResult.OP_OK;
+        return employeeDao.insertEmployee(employee);
     }
 
-    public boolean removeEmployee(Employee employee)
+    public DaoResult removeEmployee(Employee employee)
     {
-        return employeeDao.deleteEmployee(employee) == DaoResult.OP_OK;
+        return employeeDao.deleteEmployee(employee);
     }
 }

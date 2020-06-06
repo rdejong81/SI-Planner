@@ -15,5 +15,7 @@ public interface IDataSource
     IProjectTaskDAO taskDao();
     IPlanningDAO planningDao();
     ITimeregistrationDAO timeregistrationDao();
+    IAttributeDAO attributeDao();
+    IAttributeDAO attributeDefinitionDao();
 
 }

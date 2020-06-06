@@ -3,4 +3,5 @@ module dal {
 
     requires logic;
     requires java.sql;
+    requires mysql.connector.java;
 }

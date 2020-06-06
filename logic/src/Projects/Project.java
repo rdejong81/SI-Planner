@@ -13,20 +13,20 @@ public class Project extends DataEntity
     private String name,shortName;
     private int color;
     private boolean invoice;
-    private IProjectDAO projectDao;
+    private final IProjectDAO projectDao;
     private Customer customer;
-    private ArrayList<ProjectTask> projectTasks;
+    private final ArrayList<ProjectTask> projectTasks;
 
     public Project(IProjectDAO projectDao, int id, String name, int color, boolean invoice, String shortName, Customer customer)
     {
         super(id);
-        this.name = name;
+        this.name = name != null ? name : "undefined";
         this.invoice = invoice;
         this.color = color;
         this.projectDao = projectDao;
         this.customer = customer;
         customer.addProject(this);
-        this.shortName = shortName;
+        this.shortName = shortName != null ? shortName : "undefined";
         projectTasks = new ArrayList<>();
     }
 

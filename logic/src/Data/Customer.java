@@ -10,17 +10,19 @@ import java.util.List;
 public class Customer extends DataEntity
 {
     private String name, shortName;
-    private ArrayList<Employee> employees;
-    private ArrayList<Project> projects;
-    private ICustomerDAO customerDao;
+    private final ArrayList<Employee> employees;
+    private final ArrayList<Project> projects;
+    private final ArrayList<Attribute> attributeDefinitions;
+    private final ICustomerDAO customerDao;
 
     public Customer(ICustomerDAO customerDao, int id, String name, String shortName)
     {
         super(id);
-        this.name = name;
-        this.shortName = shortName;
+        this.name = name != null ? name : "undefined";
+        this.shortName = shortName != null ? shortName : "undefined";
         employees = new ArrayList<>();
         projects = new ArrayList<>();
+        attributeDefinitions = new ArrayList<>();
         this.customerDao = customerDao;
     }
 
@@ -74,5 +76,20 @@ public class Customer extends DataEntity
     public boolean removeProject(Project project)
     {
         return projects.remove(project);
+    }
+
+    public List<Attribute> getAttributeDefinitions()
+    {
+        return Collections.unmodifiableList(attributeDefinitions);
+    }
+
+    public boolean addAttributeDefinition(Attribute attribute)
+    {
+        return attributeDefinitions.add(attribute);
+    }
+
+    public boolean removeAttributeDefinition(Attribute attribute)
+    {
+        return attributeDefinitions.remove(attribute);
     }
 }

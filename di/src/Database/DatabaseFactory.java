@@ -26,6 +26,7 @@ public class DatabaseFactory implements ISQLConnectionFactory
                     return new MySQLConnection(server, database, user,password);
             }
         } catch (Exception e){
+            System.out.println(e.getMessage());
             throw new FailedLoginException(e.getMessage());
         }
 

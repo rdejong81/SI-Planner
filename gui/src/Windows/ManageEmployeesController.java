@@ -1,8 +1,11 @@
 package Windows;
 
 import Data.Customer;
+import Data.DaoResult;
+import Data.DataEntity;
 import Data.Employee;
 import Facade.AppFacade;
+import Facade.IDataEntityPresenter;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -18,7 +21,7 @@ import javafx.util.StringConverter;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class ManageEmployeesController extends Controller
+public class ManageEmployeesController extends Controller implements IDataEntityPresenter
 {
     @FXML
     private TableView<Employee> employeeTableView;
@@ -36,6 +39,9 @@ public class ManageEmployeesController extends Controller
     @FXML
     private TextField loginNameField;
 
+    @FXML
+    private Label errorLabel;
+
 
 
     protected ManageEmployeesController(Controller owner)
@@ -47,19 +53,6 @@ public class ManageEmployeesController extends Controller
 
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         loginNameColumn.setCellValueFactory(new PropertyValueFactory<>("SqlLoginName"));
-
-        for(Employee employee : AppFacade.appFacade.getEmployeeList().getEmployees())
-        {
-            employeeTableView.getItems().add(employee);
-
-        }
-
-        for(Customer customer : AppFacade.appFacade.getCustomerList().getCustomers())
-        {
-            customerListView.getItems().add(customer);
-        }
-
-
 
         employeeTableView.getSelectionModel().selectedItemProperty().addListener( (obs, oldSelection, newSelection) ->
                 {
@@ -88,7 +81,7 @@ public class ManageEmployeesController extends Controller
                             );
                             return value;
                         }
-                    }, new StringConverter<Customer>() // represent objects as text by full employee names
+                    }, new StringConverter<>() // represent objects as text by full employee names
                     {
                         @Override
                         public String toString(Customer object)
@@ -99,7 +92,7 @@ public class ManageEmployeesController extends Controller
                         @Override
                         public Customer fromString(String string)
                         {
-                            for (Customer customer : AppFacade.appFacade.getCustomerList().getCustomers())
+                            for (Customer customer : customerListView.getItems())
                             {
                                 if(customer.getName().equals(string)) return customer;
                             }
@@ -110,8 +103,7 @@ public class ManageEmployeesController extends Controller
 
         );
 
-        if(employeeTableView.getItems().size() > 0)
-            employeeTableView.getSelectionModel().select(0);  // select first item.
+
 
 
         loginNameField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -125,6 +117,8 @@ public class ManageEmployeesController extends Controller
             employeeTableView.getSelectionModel().getSelectedItem().setName(newValue);
             employeeTableView.refresh();
         });
+
+        AppFacade.appFacade.subscribeDataEntityPresenter(this);
 
 
 
@@ -145,14 +139,9 @@ public class ManageEmployeesController extends Controller
     @Override
     protected void onClosed()
     {
-
+        AppFacade.appFacade.unsubscribeDataEntityPresenter(this);
     }
 
-    @Override
-    public void refreshData()
-    {
-
-    }
 
     public void closeButtonClick(ActionEvent actionEvent)
     {
@@ -161,15 +150,51 @@ public class ManageEmployeesController extends Controller
 
     public void addButtonClick(ActionEvent actionEvent)
     {
-        Employee newEmployee = AppFacade.appFacade.addEmployee("new","new");
-        if(newEmployee != null) employeeTableView.getItems().add(newEmployee);
+        AppFacade.appFacade.addEmployee("new","new");
     }
 
     public void removeButtonClick(ActionEvent actionEvent)
     {
-        if(AppFacade.appFacade.removeEmployee(employeeTableView.getSelectionModel().getSelectedItem()))
+        switch (AppFacade.appFacade.removeEmployee(employeeTableView.getSelectionModel().getSelectedItem()))
         {
-            employeeTableView.getItems().remove(employeeTableView.getSelectionModel().getSelectedItem());
+            case OP_OK:
+                errorLabel.setText("");break;
+            case DAO_INUSE:
+                errorLabel.setText("Unable to remove, database record is in use.");break;
+            default:
+                errorLabel.setText("Unknown error.");break;
+
+        }
+    }
+
+    @Override
+    public void showDataEntity(DataEntity dataEntity)
+    {
+        if(dataEntity instanceof Customer && !customerListView.getItems().contains(dataEntity))
+        {
+            customerListView.getItems().add((Customer) dataEntity);
+
+        }
+
+        if(dataEntity instanceof Employee && !employeeTableView.getItems().contains(dataEntity))
+        {
+            employeeTableView.getItems().add((Employee) dataEntity);
+            if(employeeTableView.getItems().size() == 1)
+                employeeTableView.getSelectionModel().select(0);  // select first item.
+        }
+    }
+
+    @Override
+    public void hideDataEntity(DataEntity dataEntity)
+    {
+        if(dataEntity instanceof Customer)
+        {
+            customerListView.getItems().remove(dataEntity);
+        }
+
+        if(dataEntity instanceof Employee)
+        {
+            employeeTableView.getItems().remove(dataEntity);
         }
     }
 }

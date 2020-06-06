@@ -2,7 +2,7 @@
   <artifact build-on-make="true" name="SI-Planner:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SI_Planner_jar</output-path>
     <root id="root">
-      <element id="archive" name="SI-Planner.jar">
+      <element id="archive" name="gui.jar">
         <element id="module-output" name="gui" />
       </element>
       <element id="archive" name="dal.jar">
@@ -13,9 +13,15 @@
         <element id="module-output" name="logic" />
       </element>
       <element id="directory" name="lib">
-        <element id="library" level="project" name="Connector J 8" />
         <element id="library" level="project" name="com.calendarfx:view:11.8.3" />
+        <element id="library" level="project" name="org.openjfx:javafx-fxml:13.0.1" />
       </element>
+      <element id="archive" name="di.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/di/src/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
+      <element id="library" level="project" name="Connector J 8" />
     </root>
   </artifact>
 </component>

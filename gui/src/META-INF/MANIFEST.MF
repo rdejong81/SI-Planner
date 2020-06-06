@@ -1,11 +1,8 @@
 Manifest-Version: 1.0
-Class-Path: javafx\src.zip javafx\javafx-swt.jar javafx\javafx.web.jar j
- avafx\javafx.base.jar javafx\javafx.fxml.jar javafx\javafx.media.jar ja
- vafx\javafx.swing.jar javafx\javafx.controls.jar javafx\javafx.graphics
- .jar dal.jar logic.jar lib\view-11.8.3.jar lib\controlsfx-11.0.0.jar li
- b\ikonli-javafx-11.3.4.jar lib\ikonli-fontawesome-pack-11.3.4.jar lib\i
- konli-core-11.3.4.jar lib\ical4j-3.0.10.jar lib\javax.mail-1.6.2.jar li
- b\slf4j-api-1.7.25.jar lib\activation-1.1.jar lib\commons-codec-1.11.ja
- r lib\commons-collections4-4.1.jar lib\commons-lang3-3.8.1.jar
+Class-Path: di.jar logic.jar lib\view-11.8.3.jar lib\controlsfx-11.0.0.j
+ ar lib\ikonli-javafx-11.3.4.jar lib\ikonli-fontawesome-pack-11.3.4.jar 
+ lib\ikonli-core-11.3.4.jar lib\ical4j-3.0.10.jar lib\javax.mail-1.6.2.j
+ ar lib\slf4j-api-1.7.25.jar lib\activation-1.1.jar lib\commons-codec-1.
+ 11.jar lib\commons-collections4-4.1.jar lib\commons-lang3-3.8.1.jar
 Main-Class: Main.Main
 

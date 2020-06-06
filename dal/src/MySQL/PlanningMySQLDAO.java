@@ -7,6 +7,7 @@ import Planning.Planning;
 import Projects.ProjectTask;
 import Sql.QueryResult;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -138,6 +139,10 @@ public class PlanningMySQLDAO implements IPlanningDAO
             planning.getProjectTask().removePlanning(planning);
             planningInstances.remove(planning);
             return DaoResult.OP_OK;
+        }
+        if(result.getLastError().getCause() instanceof SQLIntegrityConstraintViolationException)
+        {
+            return DaoResult.DAO_INUSE;
         }
         return DaoResult.DAO_MISSING;
     }
