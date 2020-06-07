@@ -1,5 +1,6 @@
 package MySQL;
 
+import Data.Attribute;
 import Data.DaoResult;
 import Data.Employee;
 import Planning.Planning;
@@ -63,6 +64,12 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
             );
             timeregistrationInstances.add(timeregistration);
             timeregistrationsUpdating.add(timeregistration);
+        }
+
+        // find attributes linked to project.
+        for(Attribute attribute : mySQLConnection.attributeDao().findAll(timeregistration))
+        {
+            timeregistration.addAttribute(attribute);
         }
 
         timeregistrationsUpdating.remove(timeregistration);

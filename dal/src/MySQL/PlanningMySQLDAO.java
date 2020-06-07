@@ -1,5 +1,6 @@
 package MySQL;
 
+import Data.Attribute;
 import Data.DaoResult;
 import Data.Employee;
 import Planning.IPlanningDAO;
@@ -59,6 +60,12 @@ public class PlanningMySQLDAO implements IPlanningDAO
             );
             planningInstances.add(planning);
             planningsUpdating.add(planning);
+        }
+
+        // find attributes linked to project.
+        for(Attribute attribute : mySQLConnection.attributeDao().findAll(planning))
+        {
+            planning.addAttribute(attribute);
         }
 
         planningsUpdating.remove(planning);

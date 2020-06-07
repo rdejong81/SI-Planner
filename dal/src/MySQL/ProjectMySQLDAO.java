@@ -71,6 +71,12 @@ public class ProjectMySQLDAO implements IProjectDAO
                 project.addTask(projectTask);
         }
 
+        // find attributes linked to project.
+        for(Attribute attribute : mySQLConnection.attributeDao().findAll(project))
+        {
+            project.addAttribute(attribute);
+        }
+
         projectsUpdating.remove(project);
         return project;
     }
