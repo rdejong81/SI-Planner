@@ -1,6 +1,7 @@
 
 package Data;
 
+import Facade.EDataSourceConnection;
 import Facade.ISQLConnectionFactory;
 
 import javax.security.auth.login.FailedLoginException;
@@ -16,7 +17,7 @@ public class MockDBFactory implements ISQLConnectionFactory
     }
 
     @Override
-    public IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException
+    public IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws EDataSourceConnection
     {
         return new MockDataSource();
     }

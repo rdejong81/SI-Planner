@@ -1,6 +1,7 @@
 package Database;
 
 import Data.IDataSource;
+import Facade.EDataSourceConnection;
 import Facade.ISQLConnectionFactory;
 import MySQL.MySQLConnection;
 
@@ -16,7 +17,7 @@ public class DatabaseFactory implements ISQLConnectionFactory
         );
     }
 
-    public IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException
+    public IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws EDataSourceConnection
     {
         try
         {
@@ -25,9 +26,9 @@ public class DatabaseFactory implements ISQLConnectionFactory
                 case 1:
                     return new MySQLConnection(server, database, user,password);
             }
-        } catch (Exception e){
+        } catch (EDataSourceConnection e){
             System.out.println(e.getMessage());
-            throw new FailedLoginException(e.getMessage());
+            throw new EDataSourceConnection(e.getReason(),e.getMessage());
         }
 
         return null;

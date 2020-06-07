@@ -83,9 +83,9 @@ public class AppFacade
         {
             dataSource = sqlConnectionFactory.SQLFactoryCreate(sqlConnectionFactory.getDatabaseDrivers().get(dbType),
                     location, dbName, userName, password);
-        } catch (FailedLoginException e)
+        } catch (EDataSourceConnection e)
         {
-            return DaoResult.DS_DISCONNECTED;
+            return e.getReason();
         }
 
         employeeList = new EmployeeList(dataSource.employeeDao());
@@ -99,6 +99,39 @@ public class AppFacade
             dataSource.employeeDao().insertEmployee(loggedinEmployee);
             // todo: remove console output from logic layer
             System.out.printf("First application user %s created as employee.\n", userName);
+
+            // create initial demo employee, customer and projects for calendar.
+            Employee demoEmployee = new Employee(dataSource.employeeDao(), 0, "Demo Employee", "demouser");
+            dataSource.employeeDao().insertEmployee(demoEmployee);
+
+            dataSource.employeeDao().insertEmployee(loggedinEmployee);
+            Customer customer = AppFacade.appFacade.addCustomer("Example customer","EXC");
+            customer.addEmployee(loggedinEmployee);
+            customer.addEmployee(demoEmployee);
+
+            Project projectA = addProject("Example project A");
+            Project projectB = addProject("Example project B");
+            projectA.setColor(1);
+            projectB.setColor(2);
+
+            ProjectTask projectTaskA = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Prepare A",false,projectA);
+            ProjectTask projectTaskB = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Prepare B",false,projectB);
+            ProjectTask projectTaskC = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Demo Employee task",false,projectB);
+            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskA);
+            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskB);
+            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskC);
+
+            Planning planningA = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now(),LocalDateTime.now().plusHours(1),
+                    projectTaskA,loggedinEmployee);
+            Planning planningB = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1),
+                    projectTaskB,loggedinEmployee);
+            Planning planningC = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1),
+                    projectTaskC,demoEmployee);
+
+            dataSource.planningDao().insertPlanning(planningA);
+            dataSource.planningDao().insertPlanning(planningB);
+            dataSource.planningDao().insertPlanning(planningC);
+
             return DaoResult.OP_OK;
         }
 
@@ -182,13 +215,14 @@ public class AppFacade
         refreshData();
     }
 
-    public void addProject(String name)
+    public Project addProject(String name)
     {
         Customer customer = showCalendarEmployee.getCustomers().iterator().next();
-        if(customer == null) return;
+        if(customer == null) return null;
         Project project = new Project(dataSource.projectDao(),0,name,0,false,name,customer);
         dataSource.projectDao().insertProject(project);
         refreshData();
+        return project;
     }
 
     public DaoResult removeProject(Project project)

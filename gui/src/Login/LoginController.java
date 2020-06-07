@@ -61,8 +61,10 @@ public class LoginController extends Windows.Controller
                 this.submitted = true;
                 super.getStage().close();
                 break;
+            case DS_DISCONNECTED:
+                errorlabel.setText("Username or password is not correct.");break;
             default:
-                errorlabel.setText("Unknown error");
+                errorlabel.setText("Unable to connect to data source.");
         }
 
     }

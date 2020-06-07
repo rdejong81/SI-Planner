@@ -1,14 +1,15 @@
 package MySQL;
 
-import Data.IAttributeDAO;
-import Data.ICustomerDAO;
-import Data.IEmployeeDAO;
+import Data.*;
+import Facade.AppFacade;
+import Facade.EDataSourceConnection;
 import Planning.IPlanningDAO;
 import Projects.IProjectDAO;
 import Projects.IProjectTaskDAO;
 import Sql.QueryResult;
 import Sql.SQLConnection;
 import Timeregistration.ITimeregistrationDAO;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 import java.io.InputStream;
 import java.sql.DatabaseMetaData;
@@ -28,23 +29,40 @@ public class MySQLConnection extends SQLConnection
     private final AttributeDefinitionMySQLDAO attributeDefinitionMySQLDAO;
     private final AttributeMySQLDAO attributeMySQLDAO;
 
-    public MySQLConnection(String server, String database, String user, String password) throws SQLException, ClassNotFoundException
+    public MySQLConnection(String server, String database, String user, String password) throws EDataSourceConnection
     {
         super(server, database, user, password);
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        this.connectDatabase();
-        // make sure to use correct database
-        new QueryResult(this,"use "+database+";");
+        try
+        {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e)
+        {
+            throw new EDataSourceConnection(DaoResult.DAO_MISSING,e.getMessage());
+        }
 
-        //check schema
+        try
+        {
+            this.connectDatabase();
+            // make sure to use correct database
+            new QueryResult(this, "use " + database + ";");
 
-       if(!checkTableExists("employees",database))
-       {
-           //import schema
-           InputStream schema = MySQLConnection.class.getResourceAsStream("SIPlanner.sql");
-           importSQL(schema);
-       }
+            //check schema
 
+            if (!checkTableExists("employees", database))
+            {
+                //import schema
+                InputStream schema = MySQLConnection.class.getResourceAsStream("SIPlanner.sql");
+                importSQL(schema);
+
+            }
+        } catch (CommunicationsException e)
+        {
+            throw new EDataSourceConnection(DaoResult.DAO_MISSING,e.getMessage());
+        }
+        catch (SQLException e)
+        {
+            throw new EDataSourceConnection(DaoResult.DS_DISCONNECTED,e.getMessage());
+        }
         customerMySQLDAO = new CustomerMySQLDAO(this);
         employeeMySQLDAO = new EmployeeMySQLDAO(this);
         projectMySQLDAO = new ProjectMySQLDAO(this);

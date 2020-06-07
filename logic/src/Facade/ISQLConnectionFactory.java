@@ -8,5 +8,5 @@ import java.util.Map;
 public interface ISQLConnectionFactory
 {
     Map<String,Integer> getDatabaseDrivers();
-    IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws FailedLoginException;
+    IDataSource SQLFactoryCreate(int type, String server, String database, String user, String password) throws EDataSourceConnection;
 }
