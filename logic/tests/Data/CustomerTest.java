@@ -164,7 +164,7 @@ class CustomerTest
         appFacade.subscribeDataEntityPresenter(dataEntityPresenter);
 
         // act
-        appFacade.addProject(name);
+        appFacade.addProject(name,name);
 
         // assert
         assertTrue(customer.getProjects().contains(project[0]));
@@ -201,7 +201,7 @@ class CustomerTest
         };
         appFacade.subscribeDataEntityPresenter(dataEntityPresenter);
 
-        appFacade.addProject(name);
+        appFacade.addProject(name,name);
 
         // act
 

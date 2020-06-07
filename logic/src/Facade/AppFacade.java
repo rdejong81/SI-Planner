@@ -109,17 +109,17 @@ public class AppFacade
             customer.addEmployee(loggedinEmployee);
             customer.addEmployee(demoEmployee);
 
-            Project projectA = addProject("Example project A");
-            Project projectB = addProject("Example project B");
+            Project projectA = addProject("Example project A","PJA");
+            Project projectB = addProject("Example project B","PJB");
             projectA.setColor(1);
             projectB.setColor(2);
 
-            ProjectTask projectTaskA = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Prepare A",false,projectA);
-            ProjectTask projectTaskB = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Prepare B",false,projectB);
-            ProjectTask projectTaskC = new ProjectTask(AppFacade.appFacade.getDataSource().taskDao(),0,"Demo Employee task",false,projectB);
-            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskA);
-            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskB);
-            AppFacade.appFacade.getDataSource().taskDao().insertTask(projectTaskC);
+            ProjectTask projectTaskA = new ProjectTask(dataSource.taskDao(),0,"Prepare A",false,projectA);
+            ProjectTask projectTaskB = new ProjectTask(dataSource.taskDao(),0,"Prepare B",false,projectB);
+            ProjectTask projectTaskC = new ProjectTask(dataSource.taskDao(),0,"Demo Employee task",false,projectB);
+            dataSource.taskDao().insertTask(projectTaskA);
+            dataSource.taskDao().insertTask(projectTaskB);
+            dataSource.taskDao().insertTask(projectTaskC);
 
             Planning planningA = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now(),LocalDateTime.now().plusHours(1),
                     projectTaskA,loggedinEmployee);
@@ -215,11 +215,11 @@ public class AppFacade
         refreshData();
     }
 
-    public Project addProject(String name)
+    public Project addProject(String name, String shortCode)
     {
         Customer customer = showCalendarEmployee.getCustomers().iterator().next();
         if(customer == null) return null;
-        Project project = new Project(dataSource.projectDao(),0,name,0,false,name,customer);
+        Project project = new Project(dataSource.projectDao(),0,name,0,false,shortCode,customer);
         dataSource.projectDao().insertProject(project);
         refreshData();
         return project;

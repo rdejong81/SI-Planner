@@ -255,7 +255,7 @@ public class ManageProjectsController extends Controller implements IDataEntityP
 
     public void addButtonClick(ActionEvent actionEvent)
     {
-        AppFacade.appFacade.addProject("new");
+        AppFacade.appFacade.addProject("new","NEW");
     }
 
     public void removeButtonClick(ActionEvent actionEvent)

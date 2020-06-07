@@ -60,7 +60,7 @@ class ProjectTest
             }
         };
         appFacade.subscribeDataEntityPresenter(dataEntityPresenter);
-        appFacade.addProject(name);
+        appFacade.addProject(name,name);
         appFacade.unsubscribeDataEntityPresenter(dataEntityPresenter);
 
         assertNotNull(project[0],"Failed to create customer.");
