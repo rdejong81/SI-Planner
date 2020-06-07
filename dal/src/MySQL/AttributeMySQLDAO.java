@@ -48,7 +48,7 @@ public class AttributeMySQLDAO implements IAttributeDAO
 
         for(Attribute currentAttribute : attributeInstances)
         {
-            if(currentAttribute.getId() == (Integer)row.get("id"))
+            if(currentAttribute.getId() == (Integer)row.get("id_av"))
             {
                 attributesUpdating.add(currentAttribute);
                 currentAttribute.setName((String)row.get("attributeName"));
@@ -74,10 +74,11 @@ public class AttributeMySQLDAO implements IAttributeDAO
                     };
 
 
-            attribute = new Attribute(this,(Integer) row.get("id"),
+            attribute = new Attribute(this,(Integer) row.get("id_av"),
                     (String) row.get("attributeName"),
                     attributeValue,
                     parent,
+                    mySQLConnection.attributeDefinitionDao().findById((Integer)row.get("id_ad")),
                     entityType
             );
             attributeInstances.add(attribute);
@@ -89,21 +90,45 @@ public class AttributeMySQLDAO implements IAttributeDAO
     }
 
     @Override
+    public Attribute findById(int id)
+    {
+        for(Attribute attribute : attributeInstances)
+        {
+            if(attribute.getId() == id) return attribute;
+        }
+
+        QueryResult result = new QueryResult(mySQLConnection, String.format("select *,attribute_definitions.id,attribute_values.id as id_av as id_ad from attribute_values " +
+                "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id " +
+                "where attribute_values.id=%d",id));
+
+        for(HashMap<String,Object> row : result.getRows())
+        {
+            return processRow(row);
+        }
+
+        return null;
+    }
+
+    @Override
     public List<Attribute> findAll(DataEntity parent)
     {
-        EntityType entityType = EntityType.fromEntity(parent);
+        EntityType entityType = parent == null ? null : EntityType.fromEntity(parent);
+        ArrayList<Attribute> results = new ArrayList<>();
 
-        QueryResult result = new QueryResult(mySQLConnection,
-                String.format("select * from attribute_values " +
+        QueryResult result = parent == null ? new QueryResult(mySQLConnection,
+                "select *,attribute_definitions.id as id_ad,attribute_values.id as id_av from attribute_values " +
+                        "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id ")
+                : new QueryResult(mySQLConnection,
+                String.format("select *,attribute_definitions.id as id_ad,attribute_values.id as id_av from attribute_values " +
                         "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id " +
                         "where entity_id=%d and entityType=%d",parent.getId(),entityType.getId()));
 
         for(HashMap<String,Object> row : result.getRows())
         {
-            processRow(row);
+            results.add(processRow(row));
         }
 
-        return Collections.unmodifiableList(attributeInstances);
+        return Collections.unmodifiableList(results);
     }
 
     @Override
@@ -136,9 +161,9 @@ public class AttributeMySQLDAO implements IAttributeDAO
                     attribute.getParent().getId()
             ));
             case DOUBLE -> new QueryResult(mySQLConnection,String.format(
-                    "insert into attribute_values (attribute_definitions_id,doubleValue,entity_id) values (%d,%f,%d)",
+                    "insert into attribute_values (attribute_definitions_id,doubleValue,entity_id) values (%d,%s,%d)",
                     attributeDefinition.getId(),
-                    attribute.getValue(),
+                    ((Double)attribute.getValue()).toString(),
                     attribute.getParent().getId()
             ));
         };
@@ -180,8 +205,8 @@ public class AttributeMySQLDAO implements IAttributeDAO
                             attribute.getId()
                     ));
                     case DOUBLE -> new QueryResult(mySQLConnection,String.format(
-                            "update attribute_values set doubleValue=%f,entity_id=%d where id=%d",
-                            attribute.getValue(),
+                            "update attribute_values set doubleValue=%s,entity_id=%d where id=%d",
+                            ((Double)attribute.getValue()).toString(),
                             attribute.getParent().getId(),
                             attribute.getId()
                     ));

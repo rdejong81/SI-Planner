@@ -56,8 +56,11 @@ public class QueryResult
                         case Types.BIGINT:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getLong(i));
                             break;
+                        case Types.DOUBLE:
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getDouble(i));
+                            break;
                         case Types.TIMESTAMP:
-                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getTimestamp(i).toLocalDateTime());
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getTimestamp(i) != null ? resultSet.getTimestamp(i).toLocalDateTime() : null);
                             break;
 
                     }

@@ -5,33 +5,35 @@ import Projects.Project;
 import Projects.ProjectTask;
 import Timeregistration.Timeregistration;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum EntityType
 {
-    CUSTOMER(0, Customer.class),
-    EMPLOYEE(1, Employee.class),
-    PROJECT(2, Project.class),
-    TASK(3, ProjectTask.class),
-    PLANNING(4, Planning.class),
-    TIMEREGISTRATION(5, Timeregistration.class);
+    CUSTOMER(0, Customer.class,true),
+    EMPLOYEE(1, Employee.class,false),
+    PROJECT(2, Project.class,true),
+    TASK(3, ProjectTask.class,false),
+    PLANNING(4, Planning.class,true),
+    TIMEREGISTRATION(5, Timeregistration.class,true);
 
 
     private final int id;
     private final Class<?> typeClass;
-    private EntityType(int id, Class<?> typeClass)
+    private final boolean allowAttributes;
+    private EntityType(int id, Class<?> typeClass, boolean allowAttributes)
     {
         this.id = id;
         this.typeClass = typeClass;
+        this.allowAttributes = allowAttributes;
     }
 
     public int getId()
     {
         return id;
     }
+    public boolean isAllowAttributes() { return allowAttributes; }
 
     public Class<?> getTypeClass() { return typeClass; }
 
@@ -46,6 +48,16 @@ public enum EntityType
     }
     public static EntityType fromId(final int id) {
         return idMap.get(id);
+    }
+
+    public static List<EntityType> entityTypesWithAttributes(){
+        ArrayList<EntityType> entityTypes = new ArrayList<>();
+        for (EntityType entityType : EntityType.values())
+        {
+            if(entityType.isAllowAttributes())
+                entityTypes.add(entityType);
+        }
+        return Collections.unmodifiableList(entityTypes);
     }
 
 }

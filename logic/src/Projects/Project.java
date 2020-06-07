@@ -3,6 +3,7 @@ package Projects;
 import Data.Customer;
 import Data.DataEntity;
 import Data.IDataSource;
+import Facade.AppFacade;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,10 +69,12 @@ public class Project extends DataEntity
     }
 
     public void setCustomer(Customer customer){
+        if(customer == null) return;
         this.customer.removeProject(this);
         this.customer = customer;
         customer.addProject(this);
         projectDao.updateProject(this);
+        AppFacade.appFacade.resetPresentation();
     }
 
     public String getShortName()

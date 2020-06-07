@@ -1,5 +1,7 @@
 package Data;
 
+import Facade.AppFacade;
+
 import java.time.LocalDateTime;
 
 public class Attribute
@@ -11,7 +13,10 @@ public class Attribute
     private final DataEntity parent;
     private EntityType entityType;
 
-    public Attribute(IAttributeDAO attributeDao, int id,String name, Object value, DataEntity parent, EntityType entityType)
+
+    private final Attribute parentDefinition;
+
+    public Attribute(IAttributeDAO attributeDao, int id, String name, Object value, DataEntity parent, Attribute parentDefinition, EntityType entityType)
     {
         this.id = id;
         this.name = name;
@@ -19,6 +24,7 @@ public class Attribute
         this.attributeDao = attributeDao;
         this.parent = parent;
         this.entityType = entityType;
+        this.parentDefinition = parentDefinition;
     }
 
     public IAttributeDAO getAttributeDao()
@@ -47,6 +53,7 @@ public class Attribute
         this.name = name;
         return attributeDao.updateAttribute(this);
     }
+
     public EntityType getEntityType()
     {
         return entityType;
@@ -55,6 +62,7 @@ public class Attribute
     public DaoResult setEntityType(EntityType entityType)
     {
         this.entityType = entityType;
+        // update presentation layer
         return attributeDao.updateAttribute(this);
     }
 
@@ -76,18 +84,28 @@ public class Attribute
     public void setAttributeType(AttributeType attributeType)
     {
         // initialize new value based on attribute Type.
-        value = switch(attributeType)
+        value = switch (attributeType)
                 {
                     case STRING -> "";
-                    case DOUBLE -> 1.0;
+                    case DOUBLE -> 0.0;
                     case DATE -> LocalDateTime.now();
-                    case BOOLEAN -> true;
-                    case INTEGER -> 1;
+                    case BOOLEAN -> false;
+                    case INTEGER -> 0;
                 };
+        // update presentation layer
         attributeDao.updateAttribute(this);
+        if(parent != null )
+            AppFacade.appFacade.resetPresentation();
     }
 
-    public DataEntity getParent(){
+    public DataEntity getParent()
+    {
         return parent;
     }
+
+    public Attribute getParentDefinition()
+    {
+        return parentDefinition;
+    }
+
 }

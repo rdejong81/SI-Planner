@@ -12,7 +12,7 @@ abstract public class SQLConnection implements IDataSource
     private String user;
     private String server;
     private String password;
-    private Connection connection;
+    protected Connection connection;
 
     protected SQLConnection(String server, String database, String user, String password)
     {

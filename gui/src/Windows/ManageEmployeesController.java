@@ -197,4 +197,5 @@ public class ManageEmployeesController extends Controller implements IDataEntity
             employeeTableView.getItems().remove(dataEntity);
         }
     }
+
 }

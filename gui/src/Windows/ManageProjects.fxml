@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.ManageProjectsController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.ManageProjectsController">
     <children>
         <TableView fx:id="projectTableView" layoutX="9.0" layoutY="36.0" prefHeight="281.0" prefWidth="247.0">
             <columns>
@@ -49,7 +49,15 @@
                 </Tab>
                 <Tab text="Attributes">
                     <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="attributeView" editable="true" layoutX="2.0" layoutY="4.0" prefHeight="246.0" prefWidth="313.0">
+                          <columns>
+                            <TableColumn fx:id="attributeColumn" prefWidth="149.0" text="Attribute name" />
+                            <TableColumn fx:id="attributeValueColumn" minWidth="0.0" prefWidth="160.0" text="Value" />
+                          </columns>
+                        </TableView>
+                     </children></AnchorPane>
                     </content>
                 </Tab>
             </tabs>

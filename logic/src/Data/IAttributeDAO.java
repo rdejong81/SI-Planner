@@ -21,6 +21,15 @@ public interface IAttributeDAO
     List<Attribute> findAll(DataEntity parent);
 
     /**
+     * Request instance of {@link Attribute} in datasource.
+     *
+     * @param id retrieve attribute by unique database id.
+     * @return A read-only list of all instances of {@link Attribute}.
+     * @since 1.0
+     */
+    Attribute findById(int id);
+
+    /**
      * Insert new instance of {@link Attribute}
      *
      * @param attribute newly created instance of Attribute.

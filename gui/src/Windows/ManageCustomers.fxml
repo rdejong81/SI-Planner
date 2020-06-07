@@ -33,13 +33,21 @@
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <ListView fx:id="employeeListView" layoutX="15.0" layoutY="25.0" prefHeight="200.0" prefWidth="271.0" />
+                        <ListView fx:id="employeeListView" layoutX="15.0" layoutY="25.0" prefHeight="200.0" prefWidth="456.0" />
                      </children></AnchorPane>
                 </content>
             </Tab>
           <Tab text="Attributes">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="attributeView" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="226.0" prefWidth="452.0">
+                          <columns>
+                            <TableColumn fx:id="attributeColumn" prefWidth="207.0" text="Attribute" />
+                            <TableColumn fx:id="attributeValueColumn" minWidth="0.0" prefWidth="239.0" text="Value" />
+                          </columns>
+                        </TableView>
+                     </children></AnchorPane>
             </content>
           </Tab>
             <Tab text="Attribute definitions">
@@ -54,7 +62,7 @@
                           </columns>
                         </TableView>
                         <Button layoutX="14.0" layoutY="211.0" mnemonicParsing="false" onAction="#addAttrButtonClick" text="Add attribute" />
-                        <Button layoutX="372.0" layoutY="211.0" mnemonicParsing="false" text="Delete attribute" />
+                        <Button layoutX="372.0" layoutY="211.0" mnemonicParsing="false" onAction="#removeAttrButtonClick" text="Delete attribute" />
                      </children></AnchorPane>
                 </content>
             </Tab>

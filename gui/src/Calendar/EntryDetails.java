@@ -1,5 +1,6 @@
 package Calendar;
 
+import Data.Attribute;
 import Data.DaoResult;
 import Data.DataEntity;
 import Facade.AppFacade;
@@ -7,6 +8,7 @@ import Planning.Planning;
 import Projects.Project;
 import Projects.ProjectTask;
 import Timeregistration.Timeregistration;
+import Windows.ObjectTableCell;
 import Windows.ProjectColor;
 import com.calendarfx.model.Calendar;
 import com.calendarfx.model.Entry;
@@ -24,6 +26,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -275,6 +278,30 @@ public class EntryDetails extends EntryPopOverPane
             }
         });
 
+        TableView<Attribute> attributeTableView = new TableView<>();
+        attributeTableView.setMaxHeight(150.0);
+        attributeTableView.setMaxWidth(400.0);
+        attributeTableView.setEditable(true);
+
+        TableColumn<Attribute,String> attributeStringTableColumn = new TableColumn<>("Attribute name");
+        TableColumn<Attribute,Object> attributeObjectTableColumn = new TableColumn<>("Value");
+        attributeTableView.getColumns().clear();
+        attributeTableView.getColumns().add(attributeStringTableColumn);
+        attributeTableView.getColumns().add(attributeObjectTableColumn);
+
+
+        attributeStringTableColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        attributeObjectTableColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
+        attributeObjectTableColumn.setCellFactory(ObjectTableCell.forTableColumn());
+        attributeObjectTableColumn.setOnEditCommit(value -> {
+            value.getRowValue().setValue(value.getNewValue());
+        });
+
+        for(Attribute attribute : entry.getUserObject().getAttributes())
+        {
+            attributeTableView.getItems().add(attribute);
+        }
+
         GridPane box = new GridPane();
         box.getStyleClass().add("content"); //$NON-NLS-1$
         box.add(fullDayLabel, 0, 0);
@@ -294,7 +321,10 @@ public class EntryDetails extends EntryPopOverPane
         box.add(timeLabel,0,5,1,2);
         box.add(planningBtn,1,5);
         box.add(spentBtn,1,6);
-        box.add(summaryLabel, 1, 7);
+
+        box.add(attributeTableView,0,7,2,3);
+
+        box.add(summaryLabel, 1, 10);
 
         GridPane.setFillWidth(zoneBox, true);
         GridPane.setHgrow(zoneBox, Priority.ALWAYS);

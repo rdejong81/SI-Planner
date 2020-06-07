@@ -1,5 +1,6 @@
 package Windows;
 
+import Data.Attribute;
 import Data.Customer;
 import Data.DaoResult;
 import Data.DataEntity;
@@ -24,6 +25,11 @@ public class ManageProjectsController extends Controller implements IDataEntityP
     @FXML
     private TableView<Project> projectTableView;
 
+    @FXML private TableView<Attribute> attributeView;
+
+    @FXML private TableColumn<Attribute,String> attributeColumn;
+    @FXML private TableColumn<Attribute,Object> attributeValueColumn;
+
     @FXML
     private TableColumn<String, Project> shortNameColumn,nameColumn;
 
@@ -42,6 +48,7 @@ public class ManageProjectsController extends Controller implements IDataEntityP
     @FXML
     private ListView<ProjectTask> taskListView;
 
+    private Project lastSelected;
 
 
     protected ManageProjectsController(Controller owner)
@@ -50,6 +57,13 @@ public class ManageProjectsController extends Controller implements IDataEntityP
         getStage().initOwner(owner.getStage());
         getStage().initModality(Modality.WINDOW_MODAL);
         this.getStage().setResizable(false);
+
+        attributeColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        attributeValueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
+        attributeValueColumn.setCellFactory(ObjectTableCell.forTableColumn());
+        attributeValueColumn.setOnEditCommit(value -> {
+            value.getRowValue().setValue(value.getNewValue());
+        });
 
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         shortNameColumn.setCellValueFactory(new PropertyValueFactory<>("shortName"));
@@ -106,6 +120,7 @@ public class ManageProjectsController extends Controller implements IDataEntityP
             if(newSelection == null) return;
             taskNameField.setText(newSelection.getName());
             taskCompletedField.setSelected(newSelection.isCompleted());
+
         });
 
         // convert Customer to text
@@ -131,6 +146,7 @@ public class ManageProjectsController extends Controller implements IDataEntityP
 
        projectTableView.getSelectionModel().selectedItemProperty().addListener( (obs, oldSelection, newSelection) ->
                 {
+                    if(newSelection == null) return;
                     nameField.setText(newSelection.getName());
                     shortNameField.setText(newSelection.getShortName());
                     colorField.setValue(ProjectColor.fromId(newSelection.getColor()));
@@ -141,6 +157,11 @@ public class ManageProjectsController extends Controller implements IDataEntityP
                     for(ProjectTask projectTask : newSelection.getProjectTasks())
                     {
                         taskListView.getItems().add(projectTask);
+                    }
+                    attributeView.getItems().clear();
+                    for(Attribute attribute : newSelection.getAttributes())
+                    {
+                        attributeView.getItems().add(attribute);
                     }
                 }
 
@@ -184,7 +205,9 @@ public class ManageProjectsController extends Controller implements IDataEntityP
         });
 
         customerField.getSelectionModel().selectedItemProperty().addListener( (observable, oldValue, newValue) -> {
-            if(projectTableView.getSelectionModel().getSelectedItem() == null) return;
+            if(projectTableView.getSelectionModel().getSelectedItem() == null ||
+            newValue == projectTableView.getSelectionModel().getSelectedItem().getCustomer()
+            || newValue == null) return;
             projectTableView.getSelectionModel().getSelectedItem().setCustomer(newValue);
         });
 
@@ -268,8 +291,10 @@ public class ManageProjectsController extends Controller implements IDataEntityP
         if(dataEntity instanceof Project)
         {
             projectTableView.getItems().add((Project) dataEntity);
-            if(projectTableView.getItems().size() == 1)
+            if(projectTableView.getItems().size() == 1 && lastSelected == null)
                 projectTableView.getSelectionModel().select(0);  // select first item.
+            if(dataEntity == lastSelected)
+                projectTableView.getSelectionModel().select(lastSelected);
         }
 
         if(dataEntity instanceof Customer)
@@ -283,6 +308,12 @@ public class ManageProjectsController extends Controller implements IDataEntityP
     {
         if(dataEntity instanceof Project)
         {
+            if(projectTableView.getSelectionModel().getSelectedItem() == dataEntity)
+            {
+                projectTableView.getSelectionModel().clearSelection();
+                lastSelected = (Project) dataEntity;
+            }
+
             projectTableView.getItems().remove(dataEntity);
         }
 
@@ -292,4 +323,5 @@ public class ManageProjectsController extends Controller implements IDataEntityP
         }
 
     }
+
 }

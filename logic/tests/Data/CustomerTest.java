@@ -197,6 +197,7 @@ class CustomerTest
             {
 
             }
+
         };
         appFacade.subscribeDataEntityPresenter(dataEntityPresenter);
 

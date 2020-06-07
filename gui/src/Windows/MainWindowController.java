@@ -445,7 +445,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         {
             TreeItem<DataEntity> customerItem = searchTreeItem(dataEntity,taskTreeList.getChildren());
             if(customerItem != null)
-                customerItem.getParent().getChildren().remove(customerItem);
+                customerItem.getParent().getChildren().removeAll(customerItem);
 
             calendarView.getCalendarSources().removeIf(
                     calendarSource -> calendarSource.getName().equals(((Customer) dataEntity).getName()));
@@ -456,7 +456,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             // search for customer tree item
             TreeItem<DataEntity> treeItem = searchTreeItem(dataEntity, taskTreeList.getChildren());
             if(treeItem != null)
-                treeItem.getParent().getChildren().remove(dataEntity);
+                treeItem.getParent().getChildren().removeAll(treeItem);
 
 
             Calendar calendar = searchCalendar((Project) dataEntity);
@@ -472,7 +472,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             // search for customer tree item
             TreeItem<DataEntity> treeItem = searchTreeItem(dataEntity, taskTreeList.getChildren());
             if(treeItem != null)
-                treeItem.getParent().getChildren().remove(dataEntity);
+                treeItem.getParent().getChildren().removeAll(treeItem);
 
             if(((ProjectTask) dataEntity).getProject().getProjectTasks().size() < 2)
             {

@@ -31,10 +31,12 @@ public class ManageCustomersController extends Controller implements IDataEntity
     private TableView<Customer> customerTableView;
 
     @FXML
-    private TableView<Attribute> attributeDefView;
+    private TableView<Attribute> attributeDefView,attributeView;
 
     @FXML
-    private TableColumn<Attribute,String> nameAttributeDefColumn;
+    private TableColumn<Attribute,String> nameAttributeDefColumn,attributeColumn;
+
+    @FXML private TableColumn<Attribute,Object> attributeValueColumn;
 
     @FXML private TableColumn<Attribute,AttributeType> typeAttributeDefColumn;
 
@@ -49,6 +51,8 @@ public class ManageCustomersController extends Controller implements IDataEntity
     @FXML
     private TextField nameField,shortNameField;
 
+    private Customer lastSelected;
+
     public ManageCustomersController(Controller owner)
     {
         super("ManageCustomers.fxml", "Manage Customers");
@@ -56,6 +60,12 @@ public class ManageCustomersController extends Controller implements IDataEntity
         getStage().initModality(Modality.WINDOW_MODAL);
         this.getStage().setResizable(false);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        attributeValueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
+        attributeValueColumn.setCellFactory(ObjectTableCell.forTableColumn());
+        attributeValueColumn.setOnEditCommit(value -> {
+            value.getRowValue().setValue(value.getNewValue());
+        });
+        attributeColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         shortNameColumn.setCellValueFactory(new PropertyValueFactory<>("shortName"));
 
         nameAttributeDefColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -79,9 +89,9 @@ public class ManageCustomersController extends Controller implements IDataEntity
             {
                 return EntityType.valueOf(string);
             }
-        }, FXCollections.observableArrayList( Arrays.asList(EntityType.values()))));
+        }, FXCollections.observableArrayList(EntityType.entityTypesWithAttributes())));
         entityTypeAttributeDefColumn.setOnEditCommit(value -> {
-            value.getRowValue().setEntityType(value.getNewValue());
+            AppFacade.appFacade.reassignAttributeDefinition(value.getRowValue(),value.getNewValue());
         });
 
         typeAttributeDefColumn.setCellValueFactory(new PropertyValueFactory<>("attributeType"));
@@ -107,6 +117,8 @@ public class ManageCustomersController extends Controller implements IDataEntity
 
         customerTableView.getSelectionModel().selectedItemProperty().addListener( (obs, oldSelection, newSelection) ->
                 {
+                    if(newSelection == null) return;
+                    lastSelected = newSelection;
                     nameField.setText(newSelection.getName());
                     shortNameField.setText(newSelection.getShortName());
 
@@ -114,6 +126,12 @@ public class ManageCustomersController extends Controller implements IDataEntity
                     for(Attribute attribute : newSelection.getAttributeDefinitions())
                     {
                         attributeDefView.getItems().add(attribute);
+                    }
+
+                    attributeView.getItems().clear();
+                    for(Attribute attribute : newSelection.getAttributes())
+                    {
+                        attributeView.getItems().add(attribute);
                     }
 
                     // employee list, add checkboxes and change listener representing linked employees.
@@ -211,6 +229,11 @@ public class ManageCustomersController extends Controller implements IDataEntity
         );
     }
 
+    @FXML private void removeAttrButtonClick(ActionEvent actionEvent)
+    {
+        AppFacade.appFacade.deleteAttributeDefinition(attributeDefView.getSelectionModel().getSelectedItem());
+    }
+
     @FXML
     private void closeButtonClick()
     {
@@ -244,6 +267,7 @@ public class ManageCustomersController extends Controller implements IDataEntity
         if(dataEntity instanceof Customer && !customerTableView.getItems().contains(dataEntity))
         {
             customerTableView.getItems().add((Customer) dataEntity);
+            if(lastSelected == dataEntity) customerTableView.getSelectionModel().select(lastSelected);
         }
 
         if(dataEntity instanceof Employee && !employeeListView.getItems().contains(dataEntity))
@@ -259,6 +283,7 @@ public class ManageCustomersController extends Controller implements IDataEntity
     {
         if(dataEntity instanceof Customer)
         {
+            if(lastSelected == dataEntity) customerTableView.getSelectionModel().clearSelection();
             customerTableView.getItems().remove(dataEntity);
         }
 
@@ -267,4 +292,5 @@ public class ManageCustomersController extends Controller implements IDataEntity
             employeeListView.getItems().remove(dataEntity);
         }
     }
+
 }

@@ -72,8 +72,6 @@ public class AppFacade
         }
     }
 
-
-
     public Set<String> getDatabaseTypes()
     {
         return Collections.unmodifiableSet(sqlConnectionFactory.getDatabaseDrivers().keySet());
@@ -211,14 +209,13 @@ public class AppFacade
                     case DATE -> LocalDateTime.now();
                     case DOUBLE -> 1.0;
                 };
-        Attribute attribute = new Attribute(dataSource.attributeDefinitionDao(),-1,name,value,customer,entityType);
+        Attribute attribute = new Attribute(dataSource.attributeDefinitionDao(),-1,name,value,customer,null,entityType);
         DaoResult daoResult = dataSource.attributeDefinitionDao().insertAttribute(attribute,attribute);
         if(daoResult == DaoResult.OP_OK)
         {
             // workaround for refresh.
             // todo: create dedicated refresh object mechanism.
-            broadcastHideDataEntity(customer);
-            broadcastShowDataEntity(customer);
+            resetPresentation();
             return daoResult;
         }
         return daoResult;
@@ -226,7 +223,58 @@ public class AppFacade
 
     public DaoResult deleteAttributeDefinition(Attribute attribute)
     {
-        return dataSource.attributeDefinitionDao().deleteAttribute(attribute);
+        // delete all associated attributes first.
+        for(Attribute attributeChild : new ArrayList<>(dataSource.attributeDao().findAll(null)))
+        {
+            if(attributeChild.getParentDefinition() == attribute)
+            {
+                dataSource.attributeDao().deleteAttribute(attributeChild);
+                attributeChild.getParent().removeAttribute(attributeChild);
+            }
+
+        }
+        DaoResult result = dataSource.attributeDefinitionDao().deleteAttribute(attribute);
+        if(result == DaoResult.OP_OK)
+            resetPresentation();
+        return result;
+    }
+
+    public void reassignAttributeDefinition(Attribute attributeDefinition, EntityType entityType)
+    {
+        // delete all associated attributes.
+        for(Attribute attributeChild : new ArrayList<>(dataSource.attributeDao().findAll(null)))
+        {
+            if(attributeChild.getParentDefinition() == attributeDefinition)
+            {
+                dataSource.attributeDao().deleteAttribute(attributeChild);
+                attributeChild.getParent().removeAttribute(attributeChild);
+            }
+
+        }
+
+        attributeDefinition.setEntityType(entityType);
+
+        for(DataEntity dataEntity : shownDataEntities)
+        {
+            // refresh all data entities of new type.
+            if(EntityType.fromEntity(dataEntity) == entityType)
+            {
+                dataEntity.getAttributes();
+
+            }
+        }
+        resetPresentation();
+
+
+
+    }
+
+    public void resetPresentation()
+    {
+        for(DataEntity dataEntity : shownDataEntities)
+            broadcastHideDataEntity(dataEntity);
+        shownDataEntities.clear();
+        refreshData();
     }
 
     // refresh all data entity presenters based on existing being shown

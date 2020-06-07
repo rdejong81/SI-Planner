@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public enum AttributeType
 {
     STRING(0, String.class,"Text field"),
-    INTEGER(1, Integer.class,"Number field"),
+    INTEGER(1, Integer.class,"Numeric field"),
     BOOLEAN(2, Boolean.class, "Checkbox field"),
     DATE(3, LocalDateTime.class,"Date field"),
     DOUBLE(4, Double.class,"Precision field");

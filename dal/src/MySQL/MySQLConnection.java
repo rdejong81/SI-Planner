@@ -6,10 +6,16 @@ import Data.IEmployeeDAO;
 import Planning.IPlanningDAO;
 import Projects.IProjectDAO;
 import Projects.IProjectTaskDAO;
+import Sql.QueryResult;
 import Sql.SQLConnection;
 import Timeregistration.ITimeregistrationDAO;
 
+import java.io.InputStream;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
 
 public class MySQLConnection extends SQLConnection
 {
@@ -27,6 +33,18 @@ public class MySQLConnection extends SQLConnection
         super(server, database, user, password);
         Class.forName("com.mysql.cj.jdbc.Driver");
         this.connectDatabase();
+        // make sure to use correct database
+        new QueryResult(this,"use "+database+";");
+
+        //check schema
+
+       if(!checkTableExists("employees",database))
+       {
+           //import schema
+           InputStream schema = MySQLConnection.class.getResourceAsStream("SIPlanner.sql");
+           importSQL(schema);
+       }
+
         customerMySQLDAO = new CustomerMySQLDAO(this);
         employeeMySQLDAO = new EmployeeMySQLDAO(this);
         projectMySQLDAO = new ProjectMySQLDAO(this);
@@ -91,5 +109,57 @@ public class MySQLConnection extends SQLConnection
         return attributeDefinitionMySQLDAO;
     }
 
+    private boolean checkTableExists(String tableName,String database) throws SQLException
+    {
+        boolean tExists = false;
+        try (ResultSet rs = connection.getMetaData().getTables(database, database, tableName, null)) {
+            while (rs.next()) {
+                String tName = rs.getString("TABLE_NAME");
+                if (tName != null && tName.equals(tableName)) {
+                    tExists = true;
+                    break;
+                }
+            }
+        }
+        return tExists;
+    }
+
+    private void importSQL(InputStream in) throws SQLException
+    {
+        Scanner s = new Scanner(in);
+        s.useDelimiter("(;(\r)?\n)|((\r)?\n)?(--)?.*(--(\r)?\n)");
+        Statement st = null;
+        try
+        {
+            st = connection.createStatement();
+            while (s.hasNext())
+            {
+                String line = s.next();
+                if (line.startsWith("/*!") && line.endsWith("*/"))
+                {
+                    int i = line.indexOf(' ');
+                    line = line.substring(i + 1, line.length() - " */".length());
+                }
+
+                if (line.trim().length() > 0)
+                {
+                    try {
+                        st.execute(line);
+                    } catch (Exception e)
+                    {
+
+                    }
+
+                }
+            }
+        } catch (Exception e)
+        {
+
+        }
+        finally
+        {
+            if (st != null) st.close();
+        }
+    }
 
 }

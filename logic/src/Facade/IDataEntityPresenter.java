@@ -10,5 +10,5 @@ import Data.DataEntity;
 public interface IDataEntityPresenter
 {
     void showDataEntity(DataEntity dataEntity);     // show in presentation layer
-    void hideDataEntity(DataEntity dataEntity); // remove from presentation layer
+    void hideDataEntity(DataEntity dataEntity);     // remove from presentation layer
 }

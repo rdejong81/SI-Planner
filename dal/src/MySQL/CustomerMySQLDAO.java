@@ -85,6 +85,12 @@ public class CustomerMySQLDAO implements ICustomerDAO
                 customer.addAttributeDefinition(attribute);
         }
 
+        // find attributes linked to customer.
+        for(Attribute attribute : mySQLConnection.attributeDao().findAll(customer))
+        {
+            customer.addAttribute(attribute);
+        }
+
         customersUpdating.remove(customer);
         return customer;
     }

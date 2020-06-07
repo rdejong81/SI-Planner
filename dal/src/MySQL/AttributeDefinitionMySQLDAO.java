@@ -1,6 +1,8 @@
 package MySQL;
 
 import Data.*;
+import Facade.AppFacade;
+import Projects.Project;
 import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -65,6 +67,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
                     (String) row.get("attributeName"),
                     attributeValue,
                     parent,
+                    null,
                     entityType
             );
             attributeInstances.add(attribute);
@@ -73,6 +76,24 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
 
         attributesUpdating.remove(attribute);
         return attribute;
+    }
+
+    @Override
+    public Attribute findById(int id)
+    {
+        for(Attribute attributeDefinition : attributeInstances)
+        {
+            if(attributeDefinition.getId() == id) return attributeDefinition;
+        }
+
+        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from attribute_definitions where id=%d",id));
+
+        for(HashMap<String,Object> row : result.getRows())
+        {
+            return processRow(row);
+        }
+
+        return null;
     }
 
     @Override
@@ -122,6 +143,19 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
                             attribute.getId()
                     ));
 
+        // update child attributes
+        for(Attribute attributeChild : mySQLConnection.attributeDao().findAll(null))
+        {
+            if(attributeChild.getParentDefinition() == attribute)
+            {
+                // synchronize name and type that could have changed in presentation layer.
+                attributeChild.setAttributeType(AttributeType.fromClass(attribute.getValue().getClass()));
+                attributeChild.setName(attribute.getName());
+
+            }
+        }
+
+
         if(result.getLastError() == null)
             return DaoResult.OP_OK; else
                 return DaoResult.DAO_MISSING;
@@ -131,7 +165,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
     public DaoResult deleteAttribute(Attribute attribute)
     {
         if(attributesUpdating.contains(attribute)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from attribute_values where id=%d", attribute.getId()));
+        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from attribute_definitions where id=%d", attribute.getId()));
         if(result.getLastError() == null)
         {
             attributeInstances.remove(attribute);
