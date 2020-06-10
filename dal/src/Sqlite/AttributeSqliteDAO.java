@@ -1,11 +1,7 @@
-package MySQL;
+package Sqlite;
 
 import Data.*;
-import Planning.Planning;
-import Projects.Project;
-import Projects.ProjectTask;
 import Sql.QueryResult;
-import Timeregistration.Timeregistration;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
@@ -20,15 +16,15 @@ import java.util.List;
  * @author Richard de Jong
  * @see IAttributeDAO
  */
-public class AttributeMySQLDAO implements IAttributeDAO
+public class AttributeSqliteDAO implements IAttributeDAO
 {
-    private final MySQLConnection mySQLConnection;
+    private final SqliteConnection sqliteConnection;
     private final ArrayList<Attribute> attributeInstances;  // list of instances of Task to prevent duplicate objects of the same database id.
     private final ArrayList<Attribute> attributesUpdating;  // list of Task instances that are being updated.
 
-    public AttributeMySQLDAO(MySQLConnection mySQLConnection)
+    public AttributeSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         attributeInstances = new ArrayList<>();
         attributesUpdating = new ArrayList<>();
     }
@@ -42,7 +38,8 @@ public class AttributeMySQLDAO implements IAttributeDAO
                     case STRING -> row.get("stringValue");
                     case INTEGER -> row.get("intValue");
                     case BOOLEAN -> row.get("boolValue");
-                    case DATE -> row.get("dateValue") == null ? LocalDateTime.now() : row.get("dateValue");
+                    case DATE -> row.get("dateValue") == null ? LocalDateTime.now() :
+                            LocalDateTime.parse((String)row.get("dateValue"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                     case DOUBLE -> row.get("doubleValue");
                 };
 
@@ -65,12 +62,12 @@ public class AttributeMySQLDAO implements IAttributeDAO
 
             parent = switch (entityType)
                     {
-                        case CUSTOMER -> mySQLConnection.customerDao().findById((Integer) row.get("entity_id"));
-                        case TASK -> mySQLConnection.taskDao().findById((Integer) row.get("entity_id"));
-                        case EMPLOYEE -> mySQLConnection.employeeDao().findById((Integer) row.get("entity_id"));
-                        case PROJECT -> mySQLConnection.projectDao().findById((Integer) row.get("entity_id"));
-                        case PLANNING -> mySQLConnection.planningDao().findById((Integer) row.get("entity_id"));
-                        case TIMEREGISTRATION -> mySQLConnection.timeregistrationDao().findById((Integer) row.get("entity_id"));
+                        case CUSTOMER -> sqliteConnection.customerDao().findById((Integer) row.get("entity_id"));
+                        case TASK -> sqliteConnection.taskDao().findById((Integer) row.get("entity_id"));
+                        case EMPLOYEE -> sqliteConnection.employeeDao().findById((Integer) row.get("entity_id"));
+                        case PROJECT -> sqliteConnection.projectDao().findById((Integer) row.get("entity_id"));
+                        case PLANNING -> sqliteConnection.planningDao().findById((Integer) row.get("entity_id"));
+                        case TIMEREGISTRATION -> sqliteConnection.timeregistrationDao().findById((Integer) row.get("entity_id"));
                     };
 
 
@@ -78,7 +75,7 @@ public class AttributeMySQLDAO implements IAttributeDAO
                     (String) row.get("attributeName"),
                     attributeValue,
                     parent,
-                    mySQLConnection.attributeDefinitionDao().findById((Integer)row.get("id_ad")),
+                    sqliteConnection.attributeDefinitionDao().findById((Integer)row.get("id_ad")),
                     entityType
             );
             attributeInstances.add(attribute);
@@ -97,7 +94,7 @@ public class AttributeMySQLDAO implements IAttributeDAO
             if(attribute.getId() == id) return attribute;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select *,attribute_definitions.id,attribute_values.id as id_av as id_ad from attribute_values " +
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select *,attribute_definitions.id,attribute_values.id as id_av as id_ad from attribute_values " +
                 "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id " +
                 "where attribute_values.id=%d",id));
 
@@ -115,10 +112,10 @@ public class AttributeMySQLDAO implements IAttributeDAO
         EntityType entityType = parent == null ? null : EntityType.fromEntity(parent);
         ArrayList<Attribute> results = new ArrayList<>();
 
-        QueryResult result = parent == null ? new QueryResult(mySQLConnection,
+        QueryResult result = parent == null ? new QueryResult(sqliteConnection,
                 "select *,attribute_definitions.id as id_ad,attribute_values.id as id_av from attribute_values " +
                         "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id ")
-                : new QueryResult(mySQLConnection,
+                : new QueryResult(sqliteConnection,
                 String.format("select *,attribute_definitions.id as id_ad,attribute_values.id as id_av from attribute_values " +
                         "left join attribute_definitions on attribute_values.attribute_definitions_id = attribute_definitions.id " +
                         "where entity_id=%d and entityType=%d",parent.getId(),entityType.getId()));
@@ -136,31 +133,31 @@ public class AttributeMySQLDAO implements IAttributeDAO
     {
         QueryResult result = switch(AttributeType.fromClass(attributeDefinition.getValue().getClass()))
         {
-            case STRING -> new QueryResult(mySQLConnection,String.format(
+            case STRING -> new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_values (attribute_definitions_id,stringValue,entity_id) values (%d,'%s',%d)",
                     attributeDefinition.getId(),
                     ((String)attribute.getValue()).replace("'","%%%"),
                     attribute.getParent().getId()
             ));
-            case INTEGER -> new QueryResult(mySQLConnection,String.format(
+            case INTEGER -> new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_values (attribute_definitions_id,intValue,entity_id) values (%d,%d,%d)",
                     attributeDefinition.getId(),
                     attribute.getValue(),
                     attribute.getParent().getId()
             ));
-            case BOOLEAN -> new QueryResult(mySQLConnection,String.format(
+            case BOOLEAN -> new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_values (attribute_definitions_id,boolValue,entity_id) values (%d,%d,%d)",
                     attributeDefinition.getId(),
                     (Boolean)attribute.getValue() ? 1 : 0,
                     attribute.getParent().getId()
             ));
-            case DATE -> new QueryResult(mySQLConnection,String.format(
+            case DATE -> new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_values (attribute_definitions_id,dateValue,entity_id) values (%d,'%s',%d)",
                     attributeDefinition.getId(),
                     ((LocalDateTime)attribute.getValue()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                     attribute.getParent().getId()
             ));
-            case DOUBLE -> new QueryResult(mySQLConnection,String.format(
+            case DOUBLE -> new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_values (attribute_definitions_id,doubleValue,entity_id) values (%d,%s,%d)",
                     attributeDefinition.getId(),
                     ((Double)attribute.getValue()).toString(),
@@ -180,31 +177,31 @@ public class AttributeMySQLDAO implements IAttributeDAO
 
         QueryResult result = switch(AttributeType.fromClass(attribute.getValue().getClass()))
                 {
-                    case STRING -> new QueryResult(mySQLConnection,String.format(
+                    case STRING -> new QueryResult(sqliteConnection,String.format(
                             "update attribute_values set stringValue='%s',entity_id=%d where id=%d",
                             ((String)attribute.getValue()).replace("'","%%%"),
                             attribute.getParent().getId(),
                             attribute.getId()
                     ));
-                    case INTEGER -> new QueryResult(mySQLConnection,String.format(
+                    case INTEGER -> new QueryResult(sqliteConnection,String.format(
                             "update attribute_values set intValue=%d,entity_id=%d where id=%d",
                             attribute.getValue(),
                             attribute.getParent().getId(),
                             attribute.getId()
                     ));
-                    case BOOLEAN -> new QueryResult(mySQLConnection,String.format(
+                    case BOOLEAN -> new QueryResult(sqliteConnection,String.format(
                             "update attribute_values set boolValue=%d,entity_id=%d where id=%d",
                             (Boolean)attribute.getValue() ? 1 : 0,
                             attribute.getParent().getId(),
                             attribute.getId()
                     ));
-                    case DATE -> new QueryResult(mySQLConnection,String.format(
+                    case DATE -> new QueryResult(sqliteConnection,String.format(
                             "update attribute_values set dateValue='%s',entity_id=%d where id=%d",
                             ((LocalDateTime)attribute.getValue()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                             attribute.getParent().getId(),
                             attribute.getId()
                     ));
-                    case DOUBLE -> new QueryResult(mySQLConnection,String.format(
+                    case DOUBLE -> new QueryResult(sqliteConnection,String.format(
                             "update attribute_values set doubleValue=%s,entity_id=%d where id=%d",
                             ((Double)attribute.getValue()).toString(),
                             attribute.getParent().getId(),
@@ -220,7 +217,7 @@ public class AttributeMySQLDAO implements IAttributeDAO
     public DaoResult deleteAttribute(Attribute attribute)
     {
         if(attributesUpdating.contains(attribute)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from attribute_values where id=%d", attribute.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from attribute_values where id=%d", attribute.getId()));
         if(result.getLastError() == null)
         {
             attributeInstances.remove(attribute);

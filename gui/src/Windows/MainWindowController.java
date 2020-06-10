@@ -74,6 +74,9 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             ZonedDateTime time = param.getZonedDateTime();
             ProjectTask task = (ProjectTask)taskTreeView.getSelectionModel().getSelectedItem().getValue();
 
+            AppFacade.appFacade.createPlanning(time.toLocalDateTime(),time.toLocalDateTime().plusHours(1),
+                    task,employee);
+/*
             Entry<DataEntity> entry = new Entry<>(String.format("%s - %s",task.getProject().getName(),task.getName()));
 
             entry.setMinimumDuration(Duration.of(30,MINUTES));
@@ -83,6 +86,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             entry.changeEndTime(time.toLocalTime().plusHours(1),false);
 
             //entry.getStyleClass().add("style2");
+
             Planning planning = new Planning(AppFacade.appFacade.getDataSource().planningDao(),0,false,entry.getStartAsLocalDateTime(),entry.getEndAsLocalDateTime()
             ,task,employee);
              entry.setUserObject(planning);
@@ -96,7 +100,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
                     AppFacade.appFacade.getDataSource().planningDao().insertPlanning(planning);
                 }
 
-            }
+            }*/
 
             return null;
         });

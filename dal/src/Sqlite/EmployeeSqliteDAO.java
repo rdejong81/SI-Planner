@@ -1,4 +1,4 @@
-package MySQL;
+package Sqlite;
 
 import Data.Customer;
 import Data.DaoResult;
@@ -12,14 +12,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class EmployeeMySQLDAO implements IEmployeeDAO
+public class EmployeeSqliteDAO implements IEmployeeDAO
 {
-    private final MySQLConnection mySQLConnection;
+    private final SqliteConnection sqliteConnection;
     private final ArrayList<Employee> employeeInstances; // list of instances of Employee to prevent duplicate objects of the same database id.
     private final ArrayList<Employee> employeesUpdating; // list of Employee instances that are being updated.
 
-    public EmployeeMySQLDAO(MySQLConnection mySQLConnection){
-        this.mySQLConnection = mySQLConnection;
+    public EmployeeSqliteDAO(SqliteConnection sqliteConnection){
+        this.sqliteConnection = sqliteConnection;
         employeeInstances = new ArrayList<>();
         employeesUpdating = new ArrayList<>();
     }
@@ -53,12 +53,12 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
         }
 
         // find employees linked to customer
-        QueryResult childResults = new QueryResult(mySQLConnection, String.format("select * from employees_customers where employees_id=%d",
+        QueryResult childResults = new QueryResult(sqliteConnection, String.format("select * from employees_customers where employees_id=%d",
                 employee.getId()));
 
         for(HashMap<String,Object> childRow : childResults.getRows())
         {
-            Customer customer = mySQLConnection.customerDao().findById((Integer)childRow.get("customers_id"));
+            Customer customer = sqliteConnection.customerDao().findById((Integer)childRow.get("customers_id"));
             if(customer != null && !employee.getCustomers().contains(customer))
                 employee.addCustomer(customer);
         }
@@ -70,7 +70,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     @Override
     public List<Employee> findAll()
     {
-        QueryResult result = new QueryResult(mySQLConnection, "select * from employees");
+        QueryResult result = new QueryResult(sqliteConnection, "select * from employees");
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -88,7 +88,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
             if(employee.getId() == id) return employee;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from employees where id=%d",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from employees where id=%d",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -102,7 +102,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     public DaoResult insertEmployee(Employee employee)
     {
         if(employeeInstances.contains(employee)) return DaoResult.OP_OK;
-        QueryResult result = new QueryResult(mySQLConnection,String.format("insert into employees (name,sqlLogin) values ('%s','%s')",
+        QueryResult result = new QueryResult(sqliteConnection,String.format("insert into employees (name,sqlLogin) values ('%s','%s')",
                 employee.getName(),
                 employee.getSqlLoginName()
         ));
@@ -116,7 +116,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
         if(employeesUpdating.contains(employee)) return DaoResult.OP_OK; // already updating.
 
 
-        new QueryResult(mySQLConnection,String.format("update employees set name='%s',sqlLogin='%s' where id=%d",
+        new QueryResult(sqliteConnection,String.format("update employees set name='%s',sqlLogin='%s' where id=%d",
                 employee.getName().replace("'","%%%"),
                 employee.getSqlLoginName().replace("'","%%%"),
                 employee.getId()
@@ -128,7 +128,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     public DaoResult deleteEmployee(Employee employee)
     {
         if(employeesUpdating.contains(employee)) return DaoResult.OP_OK; // already updating.
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from employees where id=%d",employee.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from employees where id=%d",employee.getId()));
         if(result.getLastError() == null)
         {
             employeeInstances.remove(employee);
@@ -146,7 +146,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     public DaoResult linkCustomer(Employee employee, Customer customer)
     {
         if(employeesUpdating.contains(employee)) return DaoResult.OP_OK; //already updating
-        new QueryResult(mySQLConnection,String.format("insert into employees_customers (employees_id,customers_id) values (%d,%d)",
+        new QueryResult(sqliteConnection,String.format("insert into employees_customers (employees_id,customers_id) values (%d,%d)",
                 employee.getId(),
                 customer.getId()
         ));
@@ -160,7 +160,7 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
     public DaoResult unlinkCustomer(Employee employee, Customer customer)
     {
         if(employeesUpdating.contains(employee)) return DaoResult.OP_OK; //already updating
-        new QueryResult(mySQLConnection,String.format("delete from employees_customers where employees_id=%d and customers_id=%d",
+        new QueryResult(sqliteConnection,String.format("delete from employees_customers where employees_id=%d and customers_id=%d",
                 employee.getId(),
                 customer.getId()
         ));

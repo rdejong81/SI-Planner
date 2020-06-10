@@ -1,10 +1,13 @@
-package MySQL;
+package Sqlite;
 
-import Data.*;
-import Projects.ProjectTask;
-import Sql.QueryResult;
+import Data.Attribute;
+import Data.Customer;
+import Data.DaoResult;
+import Data.ICustomerDAO;
 import Projects.IProjectDAO;
 import Projects.Project;
+import Projects.ProjectTask;
+import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
@@ -17,15 +20,15 @@ import java.util.List;
  * @author Richard de Jong
  * @see ICustomerDAO
  */
-public class ProjectMySQLDAO implements IProjectDAO
+public class ProjectSqliteDAO implements IProjectDAO
 {
-    private final MySQLConnection mySQLConnection;
+    private final SqliteConnection sqliteConnection;
     private final ArrayList<Project> projectInstances;  // list of instances of Project to prevent duplicate objects of the same database id.
     private final ArrayList<Project> projectsUpdating;  // list of Project instances that are being updated.
 
-    public ProjectMySQLDAO(MySQLConnection mySQLConnection)
+    public ProjectSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         projectInstances = new ArrayList<>();
         projectsUpdating = new ArrayList<>();
     }
@@ -42,13 +45,13 @@ public class ProjectMySQLDAO implements IProjectDAO
                 currentProject.setShortName((String)row.get("shortCode"));
                 currentProject.setColor((Integer)row.get("color"));
                 currentProject.setInvoice((Boolean) row.get("timesheetNeeded"));
-                currentProject.setCustomer(mySQLConnection.customerDao().findById((Integer)row.get("customer_id")));
+                currentProject.setCustomer(sqliteConnection.customerDao().findById((Integer)row.get("customer_id")));
                 project=currentProject;
             }
         }
         if(project == null)
         {
-            Customer customer = mySQLConnection.customerDao().findById((Integer)row.get("customer_id"));
+            Customer customer = sqliteConnection.customerDao().findById((Integer)row.get("customer_id"));
             project = new Project(this,(Integer) row.get("id"),
                     (String) row.get("name"),
                     (Integer) row.get("color"),
@@ -61,18 +64,18 @@ public class ProjectMySQLDAO implements IProjectDAO
         }
 
         // find tasks belonging to project
-        QueryResult childResults = new QueryResult(mySQLConnection, String.format("select id from tasks where projects_id=%d",
+        QueryResult childResults = new QueryResult(sqliteConnection, String.format("select id from tasks where projects_id=%d",
                 project.getId()));
 
         for(HashMap<String,Object> childRow : childResults.getRows())
         {
-            ProjectTask projectTask = mySQLConnection.taskDao().findById((Integer)childRow.get("id"));
+            ProjectTask projectTask = sqliteConnection.taskDao().findById((Integer)childRow.get("id"));
             if(projectTask != null && !project.getProjectTasks().contains(projectTask))
                 project.addTask(projectTask);
         }
 
         // find attributes linked to project.
-        for(Attribute attribute : mySQLConnection.attributeDao().findAll(project))
+        for(Attribute attribute : sqliteConnection.attributeDao().findAll(project))
         {
             project.addAttribute(attribute);
         }
@@ -84,7 +87,7 @@ public class ProjectMySQLDAO implements IProjectDAO
     @Override
     public List<Project> findAll()
     {
-        QueryResult result = new QueryResult(mySQLConnection, "select * from projects");
+        QueryResult result = new QueryResult(sqliteConnection, "select * from projects");
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -102,7 +105,7 @@ public class ProjectMySQLDAO implements IProjectDAO
             if(project.getId() == id) return project;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from projects where id=%d",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from projects where id=%d",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -115,7 +118,7 @@ public class ProjectMySQLDAO implements IProjectDAO
     @Override
     public DaoResult insertProject(Project project)
     {
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                 "insert into projects (name,shortCode,color,timesheetNeeded,customer_id) values ('%s','%s',%d,%d,%d)",
                 project.getName().replace("'","%%%"),
                 project.getShortName().replace("'","%%%"),
@@ -132,7 +135,7 @@ public class ProjectMySQLDAO implements IProjectDAO
     public DaoResult updateProject(Project project)
     {
         if(projectsUpdating.contains(project)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("update projects set name='%s',shortCode='%s',color=%d,timesheetNeeded=%d,customer_id=%d where id=%d",
+        QueryResult result = new QueryResult(sqliteConnection,String.format("update projects set name='%s',shortCode='%s',color=%d,timesheetNeeded=%d,customer_id=%d where id=%d",
                 project.getName().replace("'","%%%"),
                 project.getShortName().replace("'","%%%"),
                 project.getColor(),
@@ -151,10 +154,10 @@ public class ProjectMySQLDAO implements IProjectDAO
         // delete all owned tasks
         for(ProjectTask projectTask : new ArrayList<>(project.getProjectTasks()))
         {
-            mySQLConnection.taskDao().deleteTask(projectTask);
+            sqliteConnection.taskDao().deleteTask(projectTask);
         }
 
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from projects where id=%d",project.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from projects where id=%d",project.getId()));
         if(result.getLastError() == null)
         {
             project.getCustomer().removeProject(project);

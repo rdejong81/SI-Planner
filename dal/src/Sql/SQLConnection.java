@@ -7,12 +7,12 @@ import java.sql.*;
 abstract public class SQLConnection implements IDataSource
 {
 
-    private String connectString;
-    private String database;
-    private String user;
-    private String server;
-    private String password;
-    protected Connection connection;
+    private final String connectString;
+    private final String database;
+    private final String user;
+    private final String server;
+    private final String password;
+    private Connection connection;
 
     protected SQLConnection(String server, String database, String user, String password)
     {
@@ -29,6 +29,8 @@ abstract public class SQLConnection implements IDataSource
     }
 
     abstract public String getConnectString();
+
+    abstract public Statement executeStatement(String statementText);
 
     final public String getDatabase()
     {

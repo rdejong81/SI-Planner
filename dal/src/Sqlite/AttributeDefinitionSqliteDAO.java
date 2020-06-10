@@ -1,13 +1,10 @@
-package MySQL;
+package Sqlite;
 
 import Data.*;
-import Facade.AppFacade;
-import Projects.Project;
 import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,15 +15,15 @@ import java.util.List;
  * @author Richard de Jong
  * @see IAttributeDAO
  */
-public class AttributeDefinitionMySQLDAO implements IAttributeDAO
+public class AttributeDefinitionSqliteDAO implements IAttributeDAO
 {
-    private final MySQLConnection mySQLConnection;
+    private final SqliteConnection sqliteConnection;
     private final ArrayList<Attribute> attributeInstances;  // list of instances of Task to prevent duplicate objects of the same database id.
     private final ArrayList<Attribute> attributesUpdating;  // list of Task instances that are being updated.
 
-    public AttributeDefinitionMySQLDAO(MySQLConnection mySQLConnection)
+    public AttributeDefinitionSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         attributeInstances = new ArrayList<>();
         attributesUpdating = new ArrayList<>();
     }
@@ -61,7 +58,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
             DataEntity parent;
             EntityType entityType = EntityType.fromId((Integer)row.get("entityType"));
 
-            parent = mySQLConnection.customerDao().findById((Integer) row.get("customers_id"));
+            parent = sqliteConnection.customerDao().findById((Integer) row.get("customers_id"));
 
             attribute = new Attribute(this,(Integer) row.get("id"),
                     (String) row.get("attributeName"),
@@ -86,7 +83,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
             if(attributeDefinition.getId() == id) return attributeDefinition;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from attribute_definitions where id=%d",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from attribute_definitions where id=%d",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -101,7 +98,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
     {
         ArrayList<Attribute> found = new ArrayList<>();
 
-        QueryResult result = new QueryResult(mySQLConnection,
+        QueryResult result = new QueryResult(sqliteConnection,
                 String.format("select * from attribute_definitions where customers_id=%d",parent.getId()));
 
         for(HashMap<String,Object> row : result.getRows())
@@ -115,7 +112,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
     @Override
     public DaoResult insertAttribute(Attribute attribute, Attribute attributeDefinition)
     {
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                     "insert into attribute_definitions (attributeType,attributeName,entityType,customers_id) values (%d,'%s',%d,%d)",
                     AttributeType.fromClass(attribute.getValue().getClass()).getId(),
                     attribute.getName().replace("'","%%%"),
@@ -134,7 +131,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
     {
         if(attributesUpdating.contains(attribute)) return DaoResult.OP_OK; //already updating
 
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                             "update attribute_definitions set attributeType=%d,attributeName='%s',entityType=%d,customers_id=%d where id=%d",
                             AttributeType.fromClass(attribute.getValue().getClass()).getId(),
                             attribute.getName().replace("'","%%%"),
@@ -144,7 +141,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
                     ));
 
         // update child attributes
-        for(Attribute attributeChild : mySQLConnection.attributeDao().findAll(null))
+        for(Attribute attributeChild : sqliteConnection.attributeDao().findAll(null))
         {
             if(attributeChild.getParentDefinition() == attribute)
             {
@@ -165,7 +162,7 @@ public class AttributeDefinitionMySQLDAO implements IAttributeDAO
     public DaoResult deleteAttribute(Attribute attribute)
     {
         if(attributesUpdating.contains(attribute)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from attribute_definitions where id=%d", attribute.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from attribute_definitions where id=%d", attribute.getId()));
         if(result.getLastError() == null)
         {
             attributeInstances.remove(attribute);

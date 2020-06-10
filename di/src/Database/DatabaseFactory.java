@@ -4,6 +4,7 @@ import Data.IDataSource;
 import Facade.EDataSourceConnection;
 import Facade.ISQLConnectionFactory;
 import MySQL.MySQLConnection;
+import Sqlite.SqliteConnection;
 
 import javax.security.auth.login.FailedLoginException;
 import java.util.Map;
@@ -13,7 +14,8 @@ public class DatabaseFactory implements ISQLConnectionFactory
 
     public Map<String,Integer> getDatabaseDrivers(){
         return Map.of(
-                "MySQL",1
+                "MySQL",1,
+                "Sqlite",2
         );
     }
 
@@ -25,6 +27,8 @@ public class DatabaseFactory implements ISQLConnectionFactory
             {
                 case 1:
                     return new MySQLConnection(server, database, user,password);
+                case 2:
+                    return new SqliteConnection(server,database,user,password);
             }
         } catch (EDataSourceConnection e){
             System.out.println(e.getMessage());

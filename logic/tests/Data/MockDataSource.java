@@ -1,10 +1,13 @@
 package Data;
 
+import Facade.EDataSourceConnection;
 import Planning.IPlanningDAO;
 import Projects.IProjectDAO;
 import Projects.IProjectTaskDAO;
 import Projects.MockProjectDao;
 import Timeregistration.ITimeregistrationDAO;
+
+import java.util.Set;
 
 public class MockDataSource implements IDataSource
 {
@@ -16,6 +19,24 @@ public class MockDataSource implements IDataSource
         employeeDAO = new MockEmployeeDao(this);
         customerDAO = new MockCustomerDao(this);
         projectDAO = new MockProjectDao(this);
+    }
+
+    @Override
+    public void closeConnection()
+    {
+
+    }
+
+    @Override
+    public void openConnection() throws EDataSourceConnection
+    {
+
+    }
+
+    @Override
+    public Set<DSCapability> getCapabilities()
+    {
+        return null;
     }
 
     @Override

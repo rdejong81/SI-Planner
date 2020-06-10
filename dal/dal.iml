@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="logic" />
     <orderEntry type="library" name="Connector J 8" level="project" />
+    <orderEntry type="library" name="sqlite-jdbc" level="project" />
   </component>
 </module>

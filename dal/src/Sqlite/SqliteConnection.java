@@ -1,7 +1,8 @@
-package MySQL;
+package Sqlite;
 
 import Data.*;
 import Facade.EDataSourceConnection;
+import MySQL.*;
 import Planning.IPlanningDAO;
 import Projects.IProjectDAO;
 import Projects.IProjectTaskDAO;
@@ -11,6 +12,7 @@ import Timeregistration.ITimeregistrationDAO;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 import java.io.InputStream;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,61 +21,38 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
-public class MySQLConnection extends SQLConnection
+public class SqliteConnection extends SQLConnection
 {
-    private final CustomerMySQLDAO customerMySQLDAO;
-    private final EmployeeMySQLDAO employeeMySQLDAO;
-    private final ProjectMySQLDAO projectMySQLDAO;
-    private final ProjectTaskMySQLDAO taskMySQLDAO;
-    private final PlanningMySQLDAO planningMySQLDAO;
-    private final TimeregistrationMySQLDAO timeregistrationMySQLDAO;
-    private final AttributeDefinitionMySQLDAO attributeDefinitionMySQLDAO;
-    private final AttributeMySQLDAO attributeMySQLDAO;
+    private final CustomerSqliteDAO customerMySQLDAO;
+    private final EmployeeSqliteDAO employeeMySQLDAO;
+    private final ProjectSqliteDAO projectMySQLDAO;
+    private final ProjectTaskSqliteDAO taskMySQLDAO;
+    private final PlanningSqliteDAO planningMySQLDAO;
+    private final TimeregistrationSqliteDAO timeregistrationMySQLDAO;
+    private final AttributeDefinitionSqliteDAO attributeDefinitionMySQLDAO;
+    private final AttributeSqliteDAO attributeMySQLDAO;
 
-    public MySQLConnection(String server, String database, String user, String password) throws EDataSourceConnection
+    public SqliteConnection(String server, String database, String user, String password) throws EDataSourceConnection
     {
         super(server, database, user, password);
-
         try
         {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e)
+            DriverManager.registerDriver(new org.sqlite.JDBC());
+        } catch (SQLException e)
         {
             throw new EDataSourceConnection(DaoResult.DAO_MISSING,e.getMessage());
         }
 
 
-        customerMySQLDAO = new CustomerMySQLDAO(this);
-        employeeMySQLDAO = new EmployeeMySQLDAO(this);
-        projectMySQLDAO = new ProjectMySQLDAO(this);
-        taskMySQLDAO = new ProjectTaskMySQLDAO(this);
-        planningMySQLDAO = new PlanningMySQLDAO(this);
-        timeregistrationMySQLDAO = new TimeregistrationMySQLDAO(this);
-        attributeDefinitionMySQLDAO = new AttributeDefinitionMySQLDAO(this);
-        attributeMySQLDAO = new AttributeMySQLDAO(this);
+        customerMySQLDAO = new CustomerSqliteDAO(this);
+        employeeMySQLDAO = new EmployeeSqliteDAO(this);
+        projectMySQLDAO = new ProjectSqliteDAO(this);
+        taskMySQLDAO = new ProjectTaskSqliteDAO(this);
+        planningMySQLDAO = new PlanningSqliteDAO(this);
+        timeregistrationMySQLDAO = new TimeregistrationSqliteDAO(this);
+        attributeDefinitionMySQLDAO = new AttributeDefinitionSqliteDAO(this);
+        attributeMySQLDAO = new AttributeSqliteDAO(this);
     }
-
-    @Override
-    public String getConnectString()
-    {
-        return String.format("jdbc:mysql://%s:3306/%s", this.getServer(), this.getDatabase());
-    }
-
-    @Override
-    public Statement executeStatement(String statementText)
-    {
-        try
-        {
-            Statement statement = getConnection().createStatement();
-            statement.execute(statementText, Statement.RETURN_GENERATED_KEYS);
-            return statement;
-        } catch (Exception e)
-        {
-            System.out.println(e.getMessage());
-        }
-        return null;
-    }
-
 
     @Override
     public void closeConnection()
@@ -81,9 +60,9 @@ public class MySQLConnection extends SQLConnection
         try
         {
             getConnection().close();
-        } catch (Exception e)
+        } catch (SQLException throwables)
         {
-            System.out.println(e.getMessage());
+            throwables.printStackTrace();
         }
     }
 
@@ -94,14 +73,14 @@ public class MySQLConnection extends SQLConnection
         {
             this.connectDatabase();
             // make sure to use correct database
-            new QueryResult(this, "use " + getDatabase() + ";");
+            //new QueryResult(this, "use " + database + ";");
 
             //check schema
 
             if (!checkTableExists("employees", getDatabase()))
             {
                 //import schema
-                InputStream schema = MySQLConnection.class.getResourceAsStream("SIPlanner.sql");
+                InputStream schema = SqliteConnection.class.getResourceAsStream("SIPlanner.sql");
                 importSQL(schema);
 
             }
@@ -116,12 +95,12 @@ public class MySQLConnection extends SQLConnection
     }
 
     @Override
-    public Set<DSCapability> getCapabilities()
+    public String getConnectString()
     {
-        DSCapability capabilities[] = {DSCapability.BOOLEAN,DSCapability.DATABASENAME,DSCapability.LOGIN,DSCapability.SERVERLOCATION};
-
-        return new HashSet<>(Arrays.asList(capabilities));
+        return String.format("jdbc:sqlite:%s.db", this.getDatabase());
     }
+
+
 
     @Override
     public ICustomerDAO customerDao()
@@ -207,6 +186,7 @@ public class MySQLConnection extends SQLConnection
                         st.execute(line);
                     } catch (Exception e)
                     {
+                        System.out.println(e.getMessage());
 
                     }
 
@@ -220,6 +200,29 @@ public class MySQLConnection extends SQLConnection
         {
             if (st != null) st.close();
         }
+    }
+
+    @Override
+    public Statement executeStatement(String statementText)
+    {
+        try
+        {
+            Statement statement = getConnection().createStatement();
+            statement.execute(statementText);
+            return statement;
+        } catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public Set<DSCapability> getCapabilities()
+    {
+        DSCapability capabilities[] = {DSCapability.DATABASENAME};
+
+        return new HashSet<>(Arrays.asList(capabilities));
     }
 
 }

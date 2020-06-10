@@ -58,6 +58,8 @@ public class AppFacade
 
     private void broadcastShowDataEntity(DataEntity dataEntity)
     {
+        if(!shownDataEntities.contains(dataEntity))
+            shownDataEntities.add(dataEntity);
         for (IDataEntityPresenter dataEntityPresenter : dataEntityPresenters)
         {
             dataEntityPresenter.showDataEntity(dataEntity);
@@ -66,6 +68,8 @@ public class AppFacade
 
     private void broadcastHideDataEntity(DataEntity dataEntity)
     {
+        if(shownDataEntities.contains(dataEntity))
+            shownDataEntities.remove(dataEntity);
         for (IDataEntityPresenter dataEntityPresenter : dataEntityPresenters)
         {
             dataEntityPresenter.hideDataEntity(dataEntity);
@@ -83,6 +87,7 @@ public class AppFacade
         {
             dataSource = sqlConnectionFactory.SQLFactoryCreate(sqlConnectionFactory.getDatabaseDrivers().get(dbType),
                     location, dbName, userName, password);
+            dataSource.openConnection();
         } catch (EDataSourceConnection e)
         {
             return e.getReason();
@@ -271,6 +276,21 @@ public class AppFacade
         if(result == DaoResult.OP_OK)
             resetPresentation();
         return result;
+    }
+
+    public DaoResult createPlanning(LocalDateTime start, LocalDateTime end, ProjectTask projectTask, Employee employee)
+    {
+        Planning planning = new Planning(dataSource.planningDao(),0,false,start,end
+                ,projectTask,employee);
+
+        DaoResult result = dataSource.planningDao().insertPlanning(planning);
+        if(result == DaoResult.OP_OK)
+        {
+            broadcastShowDataEntity(planning);
+            return DaoResult.OP_OK;
+        } else {
+            return result;
+        }
     }
 
     public void reassignAttributeDefinition(Attribute attributeDefinition, EntityType entityType)

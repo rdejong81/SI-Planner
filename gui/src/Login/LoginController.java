@@ -1,7 +1,10 @@
 package Login;
 
+import Data.DSCapability;
 import Data.DaoResult;
+import Data.IDataSource;
 import Facade.AppFacade;
+import Facade.ISQLConnectionFactory;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
@@ -30,17 +33,17 @@ public class LoginController extends Windows.Controller
     @FXML
     private Label errorlabel;
 
-    private String errortext;
-
     private boolean submitted;
 
     private boolean cancelled;
 
     private HashMap<String,Integer> dbTypes;
+    private final ISQLConnectionFactory sqlConnectionFactory;
 
-    public LoginController()
+    public LoginController(ISQLConnectionFactory sqlConnectionFactory)
     {
         super("LoginWindow.fxml","Login to SI-Planner");
+        this.sqlConnectionFactory = sqlConnectionFactory;
 
         //loginPreferences.getGroups().add(Group.of(Setting.of("Datasource type",dbType.idProperty())));
 
@@ -49,10 +52,44 @@ public class LoginController extends Windows.Controller
         this.getStage().initModality(Modality.APPLICATION_MODAL);
 
         this.dbTypes = new HashMap<>();
+
+        dbType.getSelectionModel().selectedItemProperty().addListener(event ->
+        {
+            try
+            {
+                String selected = dbType.selectionModelProperty().getValue().getSelectedItem();
+                IDataSource dataSource = sqlConnectionFactory.SQLFactoryCreate(sqlConnectionFactory.getDatabaseDrivers().get(selected),
+                    null, null, null, null);
+                username.setDisable(true);
+                password.setDisable(true);
+                database.setDisable(true);
+                server.setDisable(true);
+
+
+                for(DSCapability dsCapability : dataSource.getCapabilities())
+                {
+                    switch (dsCapability)
+                    {
+                        case LOGIN -> {
+                            username.setDisable(false);
+                            password.setDisable(false);
+                        }
+                        case DATABASENAME -> database.setDisable(false);
+                        case SERVERLOCATION -> server.setDisable(false);
+                    }
+                }
+            } catch (Exception e)
+            {
+
+            }
+
+
+        });
      }
 
     public void loginButtonPress(ActionEvent actionEvent)
     {
+
         DaoResult result = AppFacade.appFacade.DoLogin(username.getText(),password.getText(),database.getText(),server.getText(),dbType.getValue());
 
         switch(result)

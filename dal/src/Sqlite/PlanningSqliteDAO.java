@@ -1,4 +1,4 @@
-package MySQL;
+package Sqlite;
 
 import Data.Attribute;
 import Data.DaoResult;
@@ -11,22 +11,25 @@ import Sql.QueryResult;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Project Data Acccess Object
  * @author Richard de Jong
  * @see IPlanningDAO
  */
-public class PlanningMySQLDAO implements IPlanningDAO
+public class PlanningSqliteDAO implements IPlanningDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<Planning> planningInstances;  // list of instances of Planning to prevent duplicate objects of the same database id.
-    private ArrayList<Planning> planningsUpdating;  // list of Planning instances that are being updated.
+    private final SqliteConnection sqliteConnection;
+    private final ArrayList<Planning> planningInstances;  // list of instances of Planning to prevent duplicate objects of the same database id.
+    private final ArrayList<Planning> planningsUpdating;  // list of Planning instances that are being updated.
 
-    public PlanningMySQLDAO(MySQLConnection mySQLConnection)
+    public PlanningSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         planningInstances = new ArrayList<>();
         planningsUpdating = new ArrayList<>();
     }
@@ -39,22 +42,24 @@ public class PlanningMySQLDAO implements IPlanningDAO
             if(currentPlanning.getId() == (Integer)row.get("id"))
             {
                 planningsUpdating.add(currentPlanning);
-                currentPlanning.setStart((LocalDateTime) row.get("start"));
-                currentPlanning.setEnd((LocalDateTime) row.get("end"));
+                currentPlanning.setStart(
+                        LocalDateTime.parse((String)row.get("start"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                currentPlanning.setEnd(
+                        LocalDateTime.parse((String)row.get("end"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 currentPlanning.setSynced((Boolean) row.get("synced"));
-                currentPlanning.setProjectTask(mySQLConnection.taskDao().findById((Integer)row.get("tasks_id")));
-                currentPlanning.setEmployee(mySQLConnection.employeeDao().findById((Integer)row.get("employeesid")));
+                currentPlanning.setProjectTask(sqliteConnection.taskDao().findById((Integer)row.get("tasks_id")));
+                currentPlanning.setEmployee(sqliteConnection.employeeDao().findById((Integer)row.get("employeesid")));
                 planning = currentPlanning;
             }
         }
         if(planning == null)
         {
-            ProjectTask projectTask = mySQLConnection.taskDao().findById((Integer)row.get("tasks_id"));
-            Employee employee = mySQLConnection.employeeDao().findById((Integer)row.get("employeesid"));
+            ProjectTask projectTask = sqliteConnection.taskDao().findById((Integer)row.get("tasks_id"));
+            Employee employee = sqliteConnection.employeeDao().findById((Integer)row.get("employeesid"));
             planning = new Planning(this,(Integer) row.get("id"),
                     (Boolean) row.get("synced"),
-                    (LocalDateTime) row.get("start"),
-                    (LocalDateTime) row.get("end"),
+                    LocalDateTime.parse((String)row.get("start"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    LocalDateTime.parse((String)row.get("end"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                     projectTask,
                     employee
             );
@@ -63,7 +68,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
         }
 
         // find attributes linked to project.
-        for(Attribute attribute : mySQLConnection.attributeDao().findAll(planning))
+        for(Attribute attribute : sqliteConnection.attributeDao().findAll(planning))
         {
             planning.addAttribute(attribute);
         }
@@ -75,7 +80,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
     @Override
     public List<Planning> findAll()
     {
-        QueryResult result = new QueryResult(mySQLConnection, "select * from time where planned=1");
+        QueryResult result = new QueryResult(sqliteConnection, "select * from time where planned=1");
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -93,7 +98,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
             if(planning.getId() == id) return planning;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from time where id=%d and planned=1",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from time where id=%d and planned=1",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -106,7 +111,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
     @Override
     public DaoResult insertPlanning(Planning planning)
     {
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                 "insert into time (start,end,planned,synced,tasks_id,employeesid) values ('%s','%s',1,%d,%d,%d)",
                 planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
@@ -123,7 +128,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
     public DaoResult updatePlanning(Planning planning)
     {
         if(planningsUpdating.contains(planning)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                 "update time set start='%s',end='%s',planned=1,synced=%d,tasks_id=%d,employeesid=%d where id=%d",
                 planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
@@ -140,7 +145,7 @@ public class PlanningMySQLDAO implements IPlanningDAO
     {
         if(planningsUpdating.contains(planning)) return DaoResult.OP_OK; //already updating
 
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from time where id=%d", planning.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from time where id=%d", planning.getId()));
         if(result.getLastError() == null)
         {
             planning.getProjectTask().removePlanning(planning);

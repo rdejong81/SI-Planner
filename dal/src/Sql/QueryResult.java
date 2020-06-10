@@ -1,5 +1,7 @@
 package Sql;
 
+import Data.DSCapability;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
@@ -21,8 +23,7 @@ public class QueryResult
 
         try
         {
-            this.statement = db.getConnection().createStatement();
-            this.statement.execute(statement, Statement.RETURN_GENERATED_KEYS);
+            this.statement = db.executeStatement(statement);
             this.resultSet = this.statement.getResultSet();
             if (resultSet == null)
             {
@@ -51,7 +52,10 @@ public class QueryResult
                             break;
                         case Types.INTEGER:
                         case Types.TINYINT:
-                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
+                            if(resultSetMetaData.getPrecision(i) == 1 &&
+                                    !db.getCapabilities().contains(DSCapability.BOOLEAN))
+                                rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i) == 1 ? true : false); else
+                                    rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getInt(i));
                             break;
                         case Types.BIGINT:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getLong(i));
@@ -69,6 +73,7 @@ public class QueryResult
             }
             lastError = null;
         } catch (Exception e){
+            System.out.println(statement +"\n"+e.getMessage());
             lastError = e;  // for use with exception handling code
         }
 

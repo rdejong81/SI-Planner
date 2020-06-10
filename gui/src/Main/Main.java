@@ -1,6 +1,7 @@
 package Main;
 
 import Database.DatabaseFactory;
+import Facade.ISQLConnectionFactory;
 import Windows.Controller;
 import Windows.MainWindowController;
 import javafx.application.Application;
@@ -18,9 +19,11 @@ public class Main extends Application
     public void start(Stage primaryStage)
     {
 
+        final ISQLConnectionFactory[] sqlConnectionFactory = new ISQLConnectionFactory[1];
+
         primaryStage.getIcons().add(new Image(Controller.class.getResourceAsStream("siplanner-small.png")));
         new SplashLoader(primaryStage,() -> {
-            LoginController login = new LoginController();
+            LoginController login = new LoginController(sqlConnectionFactory[0]);
             for(String dbType : AppFacade.appFacade.getDatabaseTypes())
                 login.addDbType(dbType);
             login.showAndWait();
@@ -28,18 +31,15 @@ public class Main extends Application
                 {
                     MainWindowController mainWindowController = new MainWindowController();
                     mainWindowController.showAndWait();
+                    AppFacade.appFacade.getDataSource().closeConnection();
                 }
 
         },3, (int task) -> {  // program initialization steps.
             switch(task)
             {
-                case 1:// preferencesFx = PreferencesFx.of(Main.class,null);
-               // preferencesFx.
-                    Platform.runLater(()->{
-
-                    });
+                case 1: sqlConnectionFactory[0] = new DatabaseFactory();
                 return "Loading windows";
-                case 2: AppFacade.appFacade = new AppFacade(new DatabaseFactory());
+                case 2: AppFacade.appFacade = new AppFacade(sqlConnectionFactory[0]);
 
                     return "Loaded windows...";
                 case 3:

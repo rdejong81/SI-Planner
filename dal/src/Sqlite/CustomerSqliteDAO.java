@@ -1,4 +1,4 @@
-package MySQL;
+package Sqlite;
 
 import Data.*;
 import Projects.Project;
@@ -13,17 +13,17 @@ import java.util.List;
 /**
  * Customer Data Acccess Object
  * @author Richard de Jong
- * @see Data.ICustomerDAO
+ * @see ICustomerDAO
  */
-public class CustomerMySQLDAO implements ICustomerDAO
+public class CustomerSqliteDAO implements ICustomerDAO
 {
-    private final MySQLConnection mySQLConnection;
+    private final SqliteConnection sqliteConnection;
     private final ArrayList<Customer> customerInstances;  // list of instances of customer to prevent duplicate objects of the same database id.
     private final ArrayList<Customer> customersUpdating;  // list of Customer instances that are being updated.
 
-    public CustomerMySQLDAO(MySQLConnection mySQLConnection)
+    public CustomerSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         customerInstances = new ArrayList<>();
         customersUpdating = new ArrayList<>();
     }
@@ -57,36 +57,36 @@ public class CustomerMySQLDAO implements ICustomerDAO
         }
 
         // find employees linked to customer
-        QueryResult childResults = new QueryResult(mySQLConnection, String.format("select employees_id from employees_customers where customers_id=%d",
+        QueryResult childResults = new QueryResult(sqliteConnection, String.format("select employees_id from employees_customers where customers_id=%d",
                 customer.getId()));
 
         for(HashMap<String,Object> childRow : childResults.getRows())
         {
-            Employee employee = mySQLConnection.employeeDao().findById((Integer)childRow.get("employees_id"));
+            Employee employee = sqliteConnection.employeeDao().findById((Integer)childRow.get("employees_id"));
             if(employee != null && !customer.getEmployees().contains(employee))
                 customer.addEmployee(employee);
         }
 
         // find projects linked to customer
-        childResults = new QueryResult(mySQLConnection, String.format("select id from projects where customer_id=%d",
+        childResults = new QueryResult(sqliteConnection, String.format("select id from projects where customer_id=%d",
                 customer.getId()));
 
         for(HashMap<String,Object> childRow : childResults.getRows())
         {
-            Project project = mySQLConnection.projectDao().findById((Integer)childRow.get("id"));
+            Project project = sqliteConnection.projectDao().findById((Integer)childRow.get("id"));
             if(project != null && !customer.getProjects().contains(project))
                 customer.addProject(project);
         }
 
         // find attribute definitions linked to customer
-        for(Attribute attribute : mySQLConnection.attributeDefinitionDao().findAll(customer))
+        for(Attribute attribute : sqliteConnection.attributeDefinitionDao().findAll(customer))
         {
             if(!customer.getAttributeDefinitions().contains(attribute))
                 customer.addAttributeDefinition(attribute);
         }
 
         // find attributes linked to customer.
-        for(Attribute attribute : mySQLConnection.attributeDao().findAll(customer))
+        for(Attribute attribute : sqliteConnection.attributeDao().findAll(customer))
         {
             customer.addAttribute(attribute);
         }
@@ -104,7 +104,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
     @Override
     public List<Customer> findAll()
     {
-        QueryResult result = new QueryResult(mySQLConnection, "select * from customers");
+        QueryResult result = new QueryResult(sqliteConnection, "select * from customers");
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -129,7 +129,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
             if(customer.getId() == id) return customer;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from customers where id=%d",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from customers where id=%d",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -142,7 +142,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
     @Override
     public DaoResult insertCustomer(Customer customer)
     {
-        QueryResult result = new QueryResult(mySQLConnection,String.format("insert into customers (name,shortName) values ('%s','%s')",
+        QueryResult result = new QueryResult(sqliteConnection,String.format("insert into customers (name,shortName) values ('%s','%s')",
                 customer.getName(),
                 customer.getShortName()
         ));
@@ -155,7 +155,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
     public DaoResult updateCustomer(Customer customer)
     {
         if(customersUpdating.contains(customer)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("update customers set name='%s',shortName='%s' where id=%d",
+        QueryResult result = new QueryResult(sqliteConnection,String.format("update customers set name='%s',shortName='%s' where id=%d",
                 customer.getName().replace("'","%%%"),
                 customer.getShortName().replace("'","%%%"),
                 customer.getId()
@@ -177,16 +177,16 @@ public class CustomerMySQLDAO implements ICustomerDAO
         // remove associated projects - make new list while changing original
         for(Project project : new ArrayList<>(customer.getProjects()))
         {
-            mySQLConnection.projectDao().deleteProject(project);
+            sqliteConnection.projectDao().deleteProject(project);
         }
 
         // remove associated attribute definitions
         for(Attribute attribute : new ArrayList<>(customer.getAttributeDefinitions()))
         {
-            mySQLConnection.attributeDefinitionDao().deleteAttribute(attribute);
+            sqliteConnection.attributeDefinitionDao().deleteAttribute(attribute);
         }
 
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from customers where id=%d",customer.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from customers where id=%d",customer.getId()));
         if(result.getLastError() == null)
         {
             customerInstances.remove(customer);
@@ -204,7 +204,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
     public DaoResult linkEmployee(Customer customer, Employee employee)
     {
         if(customersUpdating.contains(customer)) return DaoResult.OP_OK; //already updating
-        new QueryResult(mySQLConnection,String.format("insert into employees_customers (employees_id,customers_id) values (%d,%d)",
+        new QueryResult(sqliteConnection,String.format("insert into employees_customers (employees_id,customers_id) values (%d,%d)",
                 employee.getId(),
                 customer.getId()
         ));
@@ -218,7 +218,7 @@ public class CustomerMySQLDAO implements ICustomerDAO
     public DaoResult unlinkEmployee(Customer customer, Employee employee)
     {
         if(customersUpdating.contains(customer)) return DaoResult.OP_OK; //already updating
-        new QueryResult(mySQLConnection,String.format("delete from employees_customers where employees_id=%d and customers_id=%d",
+        new QueryResult(sqliteConnection,String.format("delete from employees_customers where employees_id=%d and customers_id=%d",
                 employee.getId(),
                 customer.getId()
         ));

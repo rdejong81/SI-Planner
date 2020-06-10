@@ -1,11 +1,11 @@
-package MySQL;
+package Sqlite;
 
 import Data.DaoResult;
 import Planning.Planning;
-import Projects.ProjectTask;
-import Sql.QueryResult;
 import Projects.IProjectTaskDAO;
 import Projects.Project;
+import Projects.ProjectTask;
+import Sql.QueryResult;
 import Timeregistration.Timeregistration;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -19,15 +19,15 @@ import java.util.List;
  * @author Richard de Jong
  * @see IProjectTaskDAO
  */
-public class ProjectTaskMySQLDAO implements IProjectTaskDAO
+public class ProjectTaskSqliteDAO implements IProjectTaskDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<ProjectTask> projectTaskInstances;  // list of instances of Task to prevent duplicate objects of the same database id.
-    private ArrayList<ProjectTask> tasksUpdating;  // list of Task instances that are being updated.
+    private final SqliteConnection sqliteConnection;
+    private final ArrayList<ProjectTask> projectTaskInstances;  // list of instances of Task to prevent duplicate objects of the same database id.
+    private final ArrayList<ProjectTask> tasksUpdating;  // list of Task instances that are being updated.
 
-    public ProjectTaskMySQLDAO(MySQLConnection mySQLConnection)
+    public ProjectTaskSqliteDAO(SqliteConnection sqliteConnection)
     {
-        this.mySQLConnection = mySQLConnection;
+        this.sqliteConnection = sqliteConnection;
         projectTaskInstances = new ArrayList<>();
         tasksUpdating = new ArrayList<>();
     }
@@ -42,13 +42,13 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
                 tasksUpdating.add(currentProjectTask);
                 currentProjectTask.setName((String)row.get("name"));
                 currentProjectTask.setCompleted((Boolean) row.get("completed"));
-                currentProjectTask.setProject(mySQLConnection.projectDao().findById((Integer)row.get("projects_id")));
+                currentProjectTask.setProject(sqliteConnection.projectDao().findById((Integer)row.get("projects_id")));
                 projectTask = currentProjectTask;
             }
         }
         if(projectTask == null)
         {
-            Project project = mySQLConnection.projectDao().findById((Integer)row.get("projects_id"));
+            Project project = sqliteConnection.projectDao().findById((Integer)row.get("projects_id"));
             projectTask = new ProjectTask(this,(Integer) row.get("id"),
                     (String) row.get("name"),
                     (Boolean) row.get("completed"),
@@ -59,18 +59,18 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
         }
 
         // find plannings and timeregistrations belonging to projecttask
-        QueryResult childResults = new QueryResult(mySQLConnection, String.format("select id,planned from time where tasks_id=%d",
+        QueryResult childResults = new QueryResult(sqliteConnection, String.format("select id,planned from time where tasks_id=%d",
                 projectTask.getId()));
 
         for(HashMap<String,Object> childRow : childResults.getRows())
         {
             if((Boolean)childRow.get("planned"))
             {
-                Planning planning = mySQLConnection.planningDao().findById((Integer)childRow.get("id"));
+                Planning planning = sqliteConnection.planningDao().findById((Integer)childRow.get("id"));
                 if(planning != null && !projectTask.getPlannings().contains(planning))
                     projectTask.addPlanning(planning);
             } else {
-                Timeregistration timeregistration = mySQLConnection.timeregistrationDao().findById((Integer)childRow.get("id"));
+                Timeregistration timeregistration = sqliteConnection.timeregistrationDao().findById((Integer)childRow.get("id"));
                 if(timeregistration != null && !projectTask.getTimeregistrations().contains(timeregistration))
                     projectTask.addTimeregistration(timeregistration);
             }
@@ -85,7 +85,7 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
     @Override
     public List<ProjectTask> findAll()
     {
-        QueryResult result = new QueryResult(mySQLConnection, "select * from tasks");
+        QueryResult result = new QueryResult(sqliteConnection, "select * from tasks");
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -103,7 +103,7 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
             if(projectTask.getId() == id) return projectTask;
         }
 
-        QueryResult result = new QueryResult(mySQLConnection, String.format("select * from tasks where id=%d",id));
+        QueryResult result = new QueryResult(sqliteConnection, String.format("select * from tasks where id=%d",id));
 
         for(HashMap<String,Object> row : result.getRows())
         {
@@ -116,7 +116,7 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
     @Override
     public DaoResult insertTask(ProjectTask projectTask)
     {
-        QueryResult result = new QueryResult(mySQLConnection,String.format(
+        QueryResult result = new QueryResult(sqliteConnection,String.format(
                 "insert into tasks (name,completed,projects_id) values ('%s',%d,%d)",
                 projectTask.getName().replace("'","%%%"),
                 projectTask.isCompleted() ? 1 : 0,
@@ -131,7 +131,7 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
     public DaoResult updateTask(ProjectTask projectTask)
     {
         if(tasksUpdating.contains(projectTask)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("update tasks set name='%s',completed=%d,projects_id=%d where id=%d",
+        QueryResult result = new QueryResult(sqliteConnection,String.format("update tasks set name='%s',completed=%d,projects_id=%d where id=%d",
                 projectTask.getName().replace("'","%%%"),
                 projectTask.isCompleted() ? 1 : 0,
                 projectTask.getProject().getId(),
@@ -144,7 +144,7 @@ public class ProjectTaskMySQLDAO implements IProjectTaskDAO
     public DaoResult deleteTask(ProjectTask projectTask)
     {
         if(tasksUpdating.contains(projectTask)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(mySQLConnection,String.format("delete from tasks where id=%d", projectTask.getId()));
+        QueryResult result = new QueryResult(sqliteConnection,String.format("delete from tasks where id=%d", projectTask.getId()));
         if(result.getLastError() == null)
         {
             projectTask.getProject().removeTask(projectTask);
