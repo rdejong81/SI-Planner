@@ -7,6 +7,7 @@ import Projects.IProjectTaskDAO;
 import Projects.MockProjectDao;
 import Timeregistration.ITimeregistrationDAO;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class MockDataSource implements IDataSource
@@ -36,7 +37,8 @@ public class MockDataSource implements IDataSource
     @Override
     public Set<DSCapability> getCapabilities()
     {
-        return null;
+
+        return new HashSet<DSCapability>();
     }
 
     @Override

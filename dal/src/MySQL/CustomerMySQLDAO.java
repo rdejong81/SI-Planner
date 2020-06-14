@@ -78,6 +78,17 @@ public class CustomerMySQLDAO implements ICustomerDAO
                 customer.addProject(project);
         }
 
+        // find document templates linked to customer
+        childResults = new QueryResult(mySQLConnection, String.format("select id from templates where customers_id=%d",
+                customer.getId()));
+
+        for(HashMap<String,Object> childRow : childResults.getRows())
+        {
+            DocumentTemplate documentTemplate = mySQLConnection.documentTemplateDao().findById((Integer)childRow.get("id"));
+            if(documentTemplate != null && !customer.getDocumentTemplates().contains(documentTemplate))
+                customer.addDocumentTemplate(documentTemplate);
+        }
+
         // find attribute definitions linked to customer
         for(Attribute attribute : mySQLConnection.attributeDefinitionDao().findAll(customer))
         {

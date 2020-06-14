@@ -2,6 +2,7 @@ package Sql;
 
 import Data.DSCapability;
 
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
@@ -43,6 +44,10 @@ public class QueryResult
                 {
                     switch (resultSetMetaData.getColumnType(i))
                     {
+                        case Types.LONGVARBINARY:
+                            InputStream input = resultSet.getBinaryStream(i);
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), input.readAllBytes());
+                            break;
                         case Types.BLOB:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getBytes(i));
                             break;

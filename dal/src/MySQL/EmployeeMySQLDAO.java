@@ -1,9 +1,6 @@
 package MySQL;
 
-import Data.Customer;
-import Data.DaoResult;
-import Data.Employee;
-import Data.IEmployeeDAO;
+import Data.*;
 import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -50,6 +47,12 @@ public class EmployeeMySQLDAO implements IEmployeeDAO
             employee = new Employee(this,(Integer) row.get("id"), (String) row.get("name"), (String) row.get("sqlLogin"));
             employeeInstances.add(employee);
             employeesUpdating.add(employee);
+        }
+
+        // find attributes linked to employee.
+        for(Attribute attribute : mySQLConnection.attributeDao().findAll(employee))
+        {
+            employee.addAttribute(attribute);
         }
 
         // find employees linked to customer

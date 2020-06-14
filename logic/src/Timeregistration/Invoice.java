@@ -260,8 +260,10 @@ public class Invoice
 
         work = empty ? null : invoiceIAO.retrieve();
         if(empty)
-            AppFacade.appFacade.broadcastStatusUpdate("No time registrations found to invoice.",0,0);
-        AppFacade.appFacade.broadcastStatusUpdate("Completed invoices.",0,0);
+            AppFacade.appFacade.broadcastStatusUpdate(
+                    String.format("No time registrations found to invoice between %s and %s for employee %s.",start.toString(),end.toString(),employee.getName()),0,0);
+        else
+            AppFacade.appFacade.broadcastStatusUpdate("Completed invoices.",0,0);
 
         invoiceIAO.stop();
     }

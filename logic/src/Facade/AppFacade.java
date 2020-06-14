@@ -43,6 +43,7 @@ public class AppFacade
 
     public boolean subscribeStatusPresenter(IStatusPresenter statusPresenter)
     {
+        statusPresenter.statusTick("",0,0);
         return statusPresenters.add(statusPresenter);
     }
 
@@ -135,6 +136,7 @@ public class AppFacade
             {
                 loggedinEmployee = new Employee(dataSource.employeeDao(), 0, userName, userName);
                 dataSource.employeeDao().insertEmployee(loggedinEmployee);
+                shownCalendarEmployee = loggedinEmployee;
 
                 // todo: remove console output from logic layer
                 System.out.printf("First application user %s created as employee.\n", userName);
@@ -147,6 +149,8 @@ public class AppFacade
 
             if(!dataSource.getCapabilities().contains(DSCapability.LOGIN))
                 loggedinEmployee = demoEmployee;
+
+            shownCalendarEmployee = demoEmployee;
 
             Customer customer = addCustomer("Example customer","EXC");
             customer.addEmployee(demoEmployeeB);

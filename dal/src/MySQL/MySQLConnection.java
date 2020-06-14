@@ -29,6 +29,7 @@ public class MySQLConnection extends SQLConnection
     private final TimeregistrationMySQLDAO timeregistrationMySQLDAO;
     private final AttributeDefinitionMySQLDAO attributeDefinitionMySQLDAO;
     private final AttributeMySQLDAO attributeMySQLDAO;
+    private final DocumentTemplateMySQLDAO documentTemplateMySQLDAO;
 
     public MySQLConnection(String server, String database, String user, String password) throws EDataSourceConnection
     {
@@ -51,6 +52,7 @@ public class MySQLConnection extends SQLConnection
         timeregistrationMySQLDAO = new TimeregistrationMySQLDAO(this);
         attributeDefinitionMySQLDAO = new AttributeDefinitionMySQLDAO(this);
         attributeMySQLDAO = new AttributeMySQLDAO(this);
+        documentTemplateMySQLDAO = new DocumentTemplateMySQLDAO(this);
     }
 
     @Override
@@ -172,7 +174,7 @@ public class MySQLConnection extends SQLConnection
     @Override
     public IDocumentTemplateDAO documentTemplateDao()
     {
-        return null;
+        return documentTemplateMySQLDAO;
     }
 
     private boolean checkTableExists(String tableName,String database) throws SQLException
