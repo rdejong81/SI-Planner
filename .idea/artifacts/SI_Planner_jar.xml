@@ -16,6 +16,7 @@
         <element id="library" level="project" name="com.calendarfx:view:11.8.3" />
         <element id="library" level="project" name="org.openjfx:javafx-fxml:13.0.1" />
         <element id="library" level="project" name="sqlite-jdbc" />
+        <element id="library" level="project" name="com4j" />
       </element>
       <element id="archive" name="di.jar">
         <element id="directory" name="META-INF">
@@ -23,6 +24,12 @@
         </element>
       </element>
       <element id="library" level="project" name="Connector J 8" />
+      <element id="archive" name="invoice.jar">
+        <element id="module-output" name="invoice" />
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/invoice/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
     </root>
   </artifact>
 </component>

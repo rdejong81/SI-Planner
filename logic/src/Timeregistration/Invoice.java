@@ -4,6 +4,7 @@ import Data.Attribute;
 import Data.Customer;
 import Data.DocumentTemplate;
 import Data.Employee;
+import Facade.AppFacade;
 import Projects.Project;
 import Projects.ProjectTask;
 
@@ -36,6 +37,7 @@ public class Invoice
     {
         if(work != null) return;
         boolean empty = true;
+        boolean canContinue = false;
         for(Project project : customer.getProjects())
         {
             boolean projectEmpty = true;
@@ -48,23 +50,33 @@ public class Invoice
             HashMap<String,Double> parameterTimeTotal = new HashMap<>(); // summary of total project time per day parameter.
             HashMap<String,String> parameterAttributeJoin = new HashMap<>(); //joined attribute values for day parameter.
 
+            //check to see if sheet generation is needed.
+            for (ProjectTask projectTask : project.getProjectTasks())
+                for (Timeregistration timeregistration : projectTask.getTimeregistrations())
+                    if (timeregistration.getStart().isAfter(start.atStartOfDay())
+                    && timeregistration.getStart().isBefore(end.atStartOfDay()))
+                        canContinue = true;
+
+            if(canContinue)
             for(int datenr=1;datenr-1<dates.size();datenr++)
             {
+                AppFacade.appFacade.broadcastStatusUpdate(
+                        String.format("Generating timesheet for project %s",project.getName()),
+                        datenr,dates.size());
                 for (ProjectTask projectTask : project.getProjectTasks())
                     for (Timeregistration timeregistration : projectTask.getTimeregistrations())
                     {
                         // only timeregistrations for intended employee
                         if (timeregistration.getEmployee() != employee) continue;
 
-
                         if (projectEmpty)
                         {
                             invoiceIAO.start(this, project.getShortName());
                             parametersUnfilled = new ArrayList<>(invoiceIAO.findParameters());
                         }
+
                         projectEmpty = false;
                         empty = false;
-
                         for (String parameter : invoiceIAO.findParameters())
                         {
                             // if already filled, skip
@@ -246,7 +258,11 @@ public class Invoice
 
 
 
-        work = invoiceIAO.retrieve();
+        work = empty ? null : invoiceIAO.retrieve();
+        if(empty)
+            AppFacade.appFacade.broadcastStatusUpdate("No time registrations found to invoice.",0,0);
+        AppFacade.appFacade.broadcastStatusUpdate("Completed invoices.",0,0);
+
         invoiceIAO.stop();
     }
 

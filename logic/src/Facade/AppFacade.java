@@ -22,6 +22,7 @@ public class AppFacade
     private CustomerList customerList;
     private EmployeeList employeeList;
     private Employee loggedinEmployee, shownCalendarEmployee;
+    private final ArrayList<IStatusPresenter> statusPresenters;
     private final ArrayList<IDataEntityPresenter> dataEntityPresenters;
     private final ArrayList<DataEntity> shownDataEntities;
     private final InvoiceConnectionFactory invoiceConnectionFactory;
@@ -37,6 +38,23 @@ public class AppFacade
         this.invoiceConnectionFactory = invoiceConnectionFactory;
         dataEntityPresenters = new ArrayList<>();
         shownDataEntities = new ArrayList<>();
+        statusPresenters = new ArrayList<>();
+    }
+
+    public boolean subscribeStatusPresenter(IStatusPresenter statusPresenter)
+    {
+        return statusPresenters.add(statusPresenter);
+    }
+
+    public boolean unSubscribeStatusPresenter(IStatusPresenter statusPresenter)
+    {
+        return statusPresenters.remove(statusPresenter);
+    }
+
+    public void broadcastStatusUpdate(String message,int progress, int total)
+    {
+        for(IStatusPresenter statusPresenter : statusPresenters)
+            statusPresenter.statusTick(message,progress,total);
     }
 
     public boolean subscribeDataEntityPresenter(IDataEntityPresenter dataEntityPresenter)
@@ -400,6 +418,10 @@ public class AppFacade
             }
         }
 
+
+
+
+
         return Collections.unmodifiableList(invoices);
     }
 
@@ -491,6 +513,7 @@ public class AppFacade
             }
         }
 
+        broadcastStatusUpdate("Done loading data.",0,0);
         // broadcast removed database items
         for(DataEntity dataEntity : handledObjects)
         {

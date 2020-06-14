@@ -1,6 +1,7 @@
 package Windows;
 
 import Facade.IDataEntityPresenter;
+import Facade.IStatusPresenter;
 import Planning.Planning;
 import Timeregistration.*;
 import com.calendarfx.model.*;
@@ -12,8 +13,10 @@ import Data.*;
 import Facade.AppFacade;
 import com.calendarfx.view.popover.EntryPopOverContentPane;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -30,6 +33,7 @@ import java.net.URL;
 import java.time.*;
 import java.time.temporal.WeekFields;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -37,12 +41,16 @@ import static javafx.collections.ObservableList.*;
 
 import Calendar.EntryPopup;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
+import org.controlsfx.control.StatusBar;
 // calendar.CalendarView;
 
-public class MainWindowController extends Controller implements IDataEntityPresenter
+public class MainWindowController extends Controller implements IDataEntityPresenter, IStatusPresenter
 {
-   @FXML
-   private CalendarView calendarView;
+
+    @FXML private CalendarView calendarView;
+
+    @FXML private StatusBar statusBar;
 
     @FXML
     private TreeView<DataEntity> taskTreeView;
@@ -162,6 +170,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         });
 
         AppFacade.appFacade.subscribeDataEntityPresenter(this);
+        AppFacade.appFacade.subscribeStatusPresenter(this);
     }
 
     @FXML
@@ -205,34 +214,70 @@ public class MainWindowController extends Controller implements IDataEntityPrese
 
     @FXML void generateInvoicesButtonClicked()
     {
-        for(Invoice invoice : AppFacade.appFacade.generateInvoices(calendarView.getDate().withDayOfMonth(1),
-                calendarView.getDate().plusMonths(1).withDayOfMonth(1).minusDays(1)))
-        {
-            FileChooser fileChooser = new FileChooser();
-            String typeName=null;
-            for(Map.Entry<String,Integer> entry : AppFacade.appFacade.getInvoiceTypes().entrySet())
-            {
-                if(entry.getValue() == invoice.getDocumentTemplate().getType())
-                    typeName = entry.getKey();
-            }
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(
-                    typeName,"*."+AppFacade.appFacade.getInvoiceType(invoice.getDocumentTemplate().getType()).supportedFileExtension()));
-            byte work[] = invoice.getDocument();
-            if (work == null) continue;
+        List<Invoice> invoices;
+        final Window owner = this.getStage();
 
-            File file = fileChooser.showSaveDialog(this.getStage());
-            if(file == null) return;
-            try
-            {
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                fileOutputStream.write(work);
-                fileOutputStream.close();
+        Task task = new Task<List<Invoice>>() {
 
-            } catch (Exception e)
-            {
-                e.printStackTrace();
+            @Override
+            protected List<Invoice> call() throws Exception {
+
+                return AppFacade.appFacade.generateInvoices(calendarView.getDate().withDayOfMonth(1),
+                        calendarView.getDate().plusMonths(1).withDayOfMonth(1).minusDays(1));
             }
-        }
+
+            @Override
+            protected void done()
+            {
+                super.done();
+                try
+                {
+                    for(Invoice invoice : this.get())
+                    {
+                        FileChooser fileChooser = new FileChooser();
+                        String typeName=null;
+                        for(Map.Entry<String,Integer> entry : AppFacade.appFacade.getInvoiceTypes().entrySet())
+                        {
+                            if(entry.getValue() == invoice.getDocumentTemplate().getType())
+                                typeName = entry.getKey();
+                        }
+                        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(
+                                typeName,"*."+AppFacade.appFacade.getInvoiceType(invoice.getDocumentTemplate().getType()).supportedFileExtension()));
+                        final byte work[] = invoice.getDocument();
+                        if (work == null) continue;
+
+                        Platform.runLater(() -> {
+                            File file = fileChooser.showSaveDialog(owner);
+                            if(file == null) return;
+                            try
+                            {
+                                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                                fileOutputStream.write(work);
+                                fileOutputStream.close();
+
+                            } catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        });
+
+                    }
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                } catch (ExecutionException e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+        Thread th = new Thread(task);
+        th.setDaemon(true);
+        th.start();
+
+
+
     }
 
     @Override
@@ -252,6 +297,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
     protected void onClosed()
     {
         AppFacade.appFacade.unsubscribeDataEntityPresenter(this);
+        AppFacade.appFacade.unSubscribeStatusPresenter(this);
     }
 
     private TreeItem<DataEntity> searchTreeItem(DataEntity dataEntity,ObservableList<TreeItem<DataEntity>> searchList)
@@ -538,5 +584,16 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         }
 
         updatingCalendar = false;
+    }
+
+    @Override
+    public void statusTick(String statusMessage, int progress, int total)
+    {
+
+        Platform.runLater(() -> {
+            statusBar.setText(statusMessage);
+            statusBar.setProgress((double)progress / (double)total);
+        });
+
     }
 }

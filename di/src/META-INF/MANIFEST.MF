@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Class-Path: dal.jar
+Class-Path: dal.jar invoice.jar
 

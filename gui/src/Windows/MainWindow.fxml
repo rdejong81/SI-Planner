@@ -43,7 +43,7 @@
           <RowConstraints maxHeight="614.0" minHeight="10.0" prefHeight="458.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="354.0" minHeight="10.0" prefHeight="34.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="354.0" minHeight="0.0" prefHeight="193.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="354.0" minHeight="10.0" prefHeight="44.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="20.0" minHeight="20.0" prefHeight="20.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
 
@@ -78,7 +78,7 @@
             <Label text="Employee calender view" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
             <HBox prefHeight="36.0" prefWidth="1422.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
                <children>
-                  <StatusBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" progress="0.5" HBox.hgrow="ALWAYS" />
+                  <StatusBar fx:id="statusBar" nodeOrientation="LEFT_TO_RIGHT" prefHeight="22.0" prefWidth="1422.0" progress="0.5" HBox.hgrow="ALWAYS" />
                </children></HBox>
          </children>
       </GridPane>
