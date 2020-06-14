@@ -66,6 +66,19 @@
                      </children></AnchorPane>
                 </content>
             </Tab>
+            <Tab text="Invoice templates">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                     <TableView fx:id="templateTableView" layoutX="14.0" layoutY="14.0" prefHeight="189.0" prefWidth="453.0">
+                       <columns>
+                         <TableColumn fx:id="templateNameColumn" prefWidth="276.0" text="Name" />
+                         <TableColumn fx:id="templateSizeColumn" prefWidth="129.0" text="Size" />
+                       </columns>
+                     </TableView>
+                     <Button layoutX="14.0" layoutY="211.0" mnemonicParsing="false" onAction="#addTemplateButtonClick" text="Add template" />
+                     <Button layoutX="364.0" layoutY="211.0" mnemonicParsing="false" onAction="#deleteTemplateButtonClick" text="Delete template" />
+                  </children></AnchorPane>
+            </Tab>
         </tabs>
       </TabPane>
    </children>

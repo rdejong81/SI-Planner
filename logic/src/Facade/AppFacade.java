@@ -6,13 +6,13 @@ import Data.*;
 import Planning.Planning;
 import Projects.Project;
 import Projects.ProjectTask;
-import Timeregistration.Timeregistration;
+import Timeregistration.*;
 
-import javax.security.auth.login.FailedLoginException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 public class AppFacade
 {
@@ -21,18 +21,20 @@ public class AppFacade
     private final ISQLConnectionFactory sqlConnectionFactory;
     private CustomerList customerList;
     private EmployeeList employeeList;
-    private Employee loggedinEmployee,showCalendarEmployee;
+    private Employee loggedinEmployee, shownCalendarEmployee;
     private final ArrayList<IDataEntityPresenter> dataEntityPresenters;
     private final ArrayList<DataEntity> shownDataEntities;
+    private final InvoiceConnectionFactory invoiceConnectionFactory;
 
     public Employee getLoggedinEmployee()
     {
         return loggedinEmployee;
     }
 
-    public AppFacade(ISQLConnectionFactory sqlConnectionFactory)
+    public AppFacade(ISQLConnectionFactory sqlConnectionFactory, InvoiceConnectionFactory invoiceConnectionFactory)
     {
         this.sqlConnectionFactory = sqlConnectionFactory;
+        this.invoiceConnectionFactory = invoiceConnectionFactory;
         dataEntityPresenters = new ArrayList<>();
         shownDataEntities = new ArrayList<>();
     }
@@ -81,6 +83,16 @@ public class AppFacade
         return Collections.unmodifiableSet(sqlConnectionFactory.getDatabaseDrivers().keySet());
     }
 
+    public InvoiceIAO getInvoiceType(int type)
+    {
+        return invoiceConnectionFactory.InvoiceFactoryCreate(type);
+    }
+
+    public Map<String,Integer> getInvoiceTypes()
+    {
+        return Collections.unmodifiableMap(invoiceConnectionFactory.getInvoiceDrivers());
+    }
+
     public DaoResult DoLogin(String userName, String password, String dbName, String location, String dbType)
     {
         try
@@ -99,19 +111,27 @@ public class AppFacade
         // first user of the database automatically gets to be the first employee
         if (employeeList.getEmployees().isEmpty())
         {
-            loggedinEmployee = new Employee(dataSource.employeeDao(), 0, userName, userName);
 
-            dataSource.employeeDao().insertEmployee(loggedinEmployee);
-            // todo: remove console output from logic layer
-            System.out.printf("First application user %s created as employee.\n", userName);
+            // if datasource supports login, create login user as first employee
+            if(dataSource.getCapabilities().contains(DSCapability.LOGIN))
+            {
+                loggedinEmployee = new Employee(dataSource.employeeDao(), 0, userName, userName);
+                dataSource.employeeDao().insertEmployee(loggedinEmployee);
 
-            // create initial demo employee, customer and projects for calendar.
-            Employee demoEmployee = new Employee(dataSource.employeeDao(), 0, "Demo Employee", "demouser");
-            dataSource.employeeDao().insertEmployee(demoEmployee);
+                // todo: remove console output from logic layer
+                System.out.printf("First application user %s created as employee.\n", userName);
+            }
 
-            dataSource.employeeDao().insertEmployee(loggedinEmployee);
-            Customer customer = AppFacade.appFacade.addCustomer("Example customer","EXC");
-            customer.addEmployee(loggedinEmployee);
+            // create initial demo employees, customer and projects for calendar.
+
+            Employee demoEmployee = addEmployee("Demo Employee","demouser");
+            Employee demoEmployeeB = addEmployee("Demo Employee B","demouserB");
+
+            if(!dataSource.getCapabilities().contains(DSCapability.LOGIN))
+                loggedinEmployee = demoEmployee;
+
+            Customer customer = addCustomer("Example customer","EXC");
+            customer.addEmployee(demoEmployeeB);
             customer.addEmployee(demoEmployee);
 
             Project projectA = addProject("Example project A","PJA");
@@ -126,19 +146,19 @@ public class AppFacade
             dataSource.taskDao().insertTask(projectTaskB);
             dataSource.taskDao().insertTask(projectTaskC);
 
-            Planning planningA = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now(),LocalDateTime.now().plusHours(1),
-                    projectTaskA,loggedinEmployee);
-            Planning planningB = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1),
-                    projectTaskB,loggedinEmployee);
-            Planning planningC = new Planning(dataSource.planningDao(),0,false,LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1),
-                    projectTaskC,demoEmployee);
-
-            dataSource.planningDao().insertPlanning(planningA);
-            dataSource.planningDao().insertPlanning(planningB);
-            dataSource.planningDao().insertPlanning(planningC);
+            createPlanning(LocalDateTime.now(),LocalDateTime.now().plusHours(1),projectTaskA,demoEmployeeB);
+            createPlanning(LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1), projectTaskB,demoEmployeeB);
+            createPlanning(LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1), projectTaskC,demoEmployee);
 
             return DaoResult.OP_OK;
         }
+
+        if(!dataSource.getCapabilities().contains(DSCapability.LOGIN))
+        {
+            loggedinEmployee=dataSource.employeeDao().findAll().iterator().next();
+            return DaoResult.OP_OK;
+        }
+
 
         for (Employee employee : employeeList.getEmployees())
         {
@@ -208,6 +228,42 @@ public class AppFacade
         return result;
     }
 
+    public DaoResult addDocumentTemplate(File file,Customer customer)
+    {
+        FileInputStream fileInputStream;
+        byte[] bytes;
+        try
+        {
+            fileInputStream = new FileInputStream(file);
+            bytes = fileInputStream.readAllBytes();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return DaoResult.DAO_MISSING;
+        }
+
+        DocumentTemplate documentTemplate = new DocumentTemplate(dataSource.documentTemplateDao(),-1,file.getName(),bytes,
+                customer, 1);
+        DaoResult result = dataSource.documentTemplateDao().insertDocumentTemplate(documentTemplate);
+        if(result == DaoResult.OP_OK)
+        {
+            customer.addDocumentTemplate(documentTemplate);
+            resetPresentation();
+        }
+        return result;
+    }
+
+    public DaoResult removeDocumentTemplate(DocumentTemplate documentTemplate)
+    {
+        DaoResult result = dataSource.documentTemplateDao().deleteDocumentTemplate(documentTemplate);
+        if(result == DaoResult.OP_OK)
+        {
+            resetPresentation();
+            return result;
+        }
+        return result;
+    }
+
 
     public IDataSource getDataSource()
     {
@@ -216,13 +272,13 @@ public class AppFacade
 
     public void showCalendar(Employee employee)
     {
-        showCalendarEmployee = employee;
+        shownCalendarEmployee = employee;
         refreshData();
     }
 
     public Project addProject(String name, String shortCode)
     {
-        Customer customer = showCalendarEmployee.getCustomers().iterator().next();
+        Customer customer = shownCalendarEmployee.getCustomers().iterator().next();
         if(customer == null) return null;
         Project project = new Project(dataSource.projectDao(),0,name,0,false,shortCode,customer);
         dataSource.projectDao().insertProject(project);
@@ -323,9 +379,33 @@ public class AppFacade
 
     }
 
+    /**
+     * Returns files of generated invoices based on selected/active employee in selected month.
+     * List can be empty when no project has invoice able timeregistrations
+     * @return
+     */
+    public List<Invoice> generateInvoices(LocalDate start,LocalDate end)
+    {
+        ArrayList<Invoice> invoices = new ArrayList<>();
+
+        for(Customer customer : shownCalendarEmployee.getCustomers())
+        {
+            for(DocumentTemplate documentTemplate : customer.getDocumentTemplates())
+            {
+                InvoiceIAO invoiceIAO = invoiceConnectionFactory.InvoiceFactoryCreate(documentTemplate.getType());
+                Invoice invoice = new Invoice(documentTemplate, shownCalendarEmployee,customer,invoiceIAO);
+                invoice.generate(start,end);
+                if(invoice.getDocument() != null)
+                    invoices.add(invoice);
+            }
+        }
+
+        return Collections.unmodifiableList(invoices);
+    }
+
     public void resetPresentation()
     {
-        for(DataEntity dataEntity : shownDataEntities)
+        for(DataEntity dataEntity : new ArrayList<>(shownDataEntities))
             broadcastHideDataEntity(dataEntity);
         shownDataEntities.clear();
         refreshData();
@@ -334,7 +414,7 @@ public class AppFacade
     // refresh all data entity presenters based on existing being shown
     public void refreshData()
     {
-        if(showCalendarEmployee == null) showCalendarEmployee = loggedinEmployee;  // default calendar to logged in user.
+        if(shownCalendarEmployee == null) shownCalendarEmployee = loggedinEmployee;  // default calendar to logged in user.
 
         // to detect deleted database objects
         ArrayList<DataEntity> handledObjects = new ArrayList<>(shownDataEntities);
@@ -352,7 +432,7 @@ public class AppFacade
 
         for (Customer customer : customerList.getCustomers())
         {
-            if(!customer.getEmployees().contains(showCalendarEmployee) &&
+            if(!customer.getEmployees().contains(shownCalendarEmployee) &&
                     !customer.getEmployees().isEmpty()) continue; // do not show if employee is unlinked to customer.
                                                                     // except when customer not linked to any employee.
 
@@ -385,7 +465,7 @@ public class AppFacade
 
                     for (Planning planning : projectTask.getPlannings())
                     {
-                        if(showCalendarEmployee != planning.getEmployee()) continue; // only show time for active employee calendar.
+                        if(shownCalendarEmployee != planning.getEmployee()) continue; // only show time for active employee calendar.
                         handledObjects.remove(planning);
                         if (!shownDataEntities.contains(planning))
                         {
@@ -396,7 +476,7 @@ public class AppFacade
 
                     for (Timeregistration timeregistration : projectTask.getTimeregistrations())
                     {
-                        if(showCalendarEmployee != timeregistration.getEmployee()) continue; // only show time for active employee calendar.
+                        if(shownCalendarEmployee != timeregistration.getEmployee()) continue; // only show time for active employee calendar.
                         handledObjects.remove(timeregistration);
                         if (!shownDataEntities.contains(timeregistration))
                         {

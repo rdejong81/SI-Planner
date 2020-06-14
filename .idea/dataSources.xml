@@ -7,5 +7,11 @@
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/siplanner</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="siplanner.db" uuid="7b64aef4-76b2-47bd-b5a0-54cefd536caa">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/.siplanner/siplanner.db</jdbc-url>
+    </data-source>
   </component>
 </project>

@@ -1,9 +1,6 @@
 package Windows;
 
-import Data.Customer;
-import Data.DaoResult;
-import Data.DataEntity;
-import Data.Employee;
+import Data.*;
 import Facade.AppFacade;
 import Facade.IDataEntityPresenter;
 import javafx.beans.property.BooleanProperty;
@@ -23,10 +20,13 @@ import java.util.ResourceBundle;
 
 public class ManageEmployeesController extends Controller implements IDataEntityPresenter
 {
-    @FXML
-    private TableView<Employee> employeeTableView;
-    @FXML
-    private ListView<Customer> customerListView;
+    @FXML private TableView<Attribute> attributeTableView;
+    @FXML private TableColumn<Attribute,String> attributeNameColumn;
+    @FXML private TableColumn<Attribute,Object> attributeValueColumn;
+
+    @FXML private TableView<Employee> employeeTableView;
+
+    @FXML private ListView<Customer> customerListView;
 
     @FXML
     private TableColumn<String, Employee> loginNameColumn;
@@ -51,6 +51,13 @@ public class ManageEmployeesController extends Controller implements IDataEntity
         getStage().initModality(Modality.WINDOW_MODAL);
         this.getStage().setResizable(false);
 
+        attributeValueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
+        attributeValueColumn.setCellFactory(ObjectTableCell.forTableColumn());
+        attributeValueColumn.setOnEditCommit(value -> {
+            value.getRowValue().setValue(value.getNewValue());
+        });
+        attributeNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         loginNameColumn.setCellValueFactory(new PropertyValueFactory<>("SqlLoginName"));
 
@@ -58,6 +65,16 @@ public class ManageEmployeesController extends Controller implements IDataEntity
                 {
                     nameField.setText(newSelection.getName());
                     loginNameField.setText(newSelection.getSqlLoginName());
+
+                    attributeTableView.getItems().clear();
+                    for(Customer customer : newSelection.getCustomers())
+                    {
+                        for(Attribute attribute : newSelection.getAttributes())
+                        {
+                            if(attribute.getParentDefinition().getParent() == customer)
+                                attributeTableView.getItems().add(attribute);
+                        }
+                    }
 
                     // employee list, add checkboxes and change listener representing linked employees.
                     customerListView.setCellFactory(CheckBoxListCell.forListView(new Callback<Customer, ObservableValue<Boolean>>()

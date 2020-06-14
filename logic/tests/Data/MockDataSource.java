@@ -86,4 +86,10 @@ public class MockDataSource implements IDataSource
     {
         return null;
     }
+
+    @Override
+    public IDocumentTemplateDAO documentTemplateDao()
+    {
+        return null;
+    }
 }

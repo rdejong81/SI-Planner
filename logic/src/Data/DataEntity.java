@@ -6,6 +6,7 @@ import Projects.Project;
 import Timeregistration.Timeregistration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,24 +45,26 @@ public abstract class DataEntity
 
     public List<Attribute> getAttributes()
     {
-        Customer customer=null;
+        Collection<Customer> customers=new ArrayList<>();
         // Copy from customer definitions when attribute is not filled in yet.
         // only needed for supported entities and can be easily extended.
         switch (EntityType.fromEntity(this))
         {
             case CUSTOMER -> {
-                customer = (Customer) this;
+                customers.add ((Customer) this);
             }
-            case PROJECT -> customer = ((Project)this).getCustomer();
-            case PLANNING -> customer = ((Planning)this).getProjectTask().getProject().getCustomer();
-            case TIMEREGISTRATION -> customer = ((Timeregistration)this).getProjectTask().getProject().getCustomer();
+            case PROJECT -> customers.add(((Project)this).getCustomer());
+            case PLANNING -> customers.add(((Planning)this).getProjectTask().getProject().getCustomer());
+            case TIMEREGISTRATION -> customers.add(((Timeregistration)this).getProjectTask().getProject().getCustomer());
+            case EMPLOYEE -> customers = ((Employee)this).getCustomers();
         }
 
-        if(customer != null)
+        for(Customer customer : customers)
             for(Attribute attributeDefinition : customer.getAttributeDefinitions())
             {
                 boolean found=false;
-                if(attributeDefinition.getEntityType() != EntityType.fromEntity(this)) continue;
+                if(attributeDefinition.getEntityType() != EntityType.fromEntity(this)
+                || attributeDefinition.getParent() != customer) continue;
 
                 for(Attribute attribute : attributes)
                 {

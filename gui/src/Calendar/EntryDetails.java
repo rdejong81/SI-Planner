@@ -247,6 +247,8 @@ public class EntryDetails extends EntryPopOverPane
         if(entry.getUserObject() instanceof Planning)
             planningBtn.setSelected(true); else
                 spentBtn.setSelected(true);
+
+        TableView<Attribute> attributeTableView = new TableView<>();
         // switch time type listener
         timeGroup.selectedToggleProperty().addListener((obs,oldValue,newValue) -> {
             if(newValue == planningBtn) {
@@ -276,9 +278,15 @@ public class EntryDetails extends EntryPopOverPane
 
 
             }
+            attributeTableView.getItems().clear();
+            for(Attribute attribute : entry.getUserObject().getAttributes())
+            {
+                attributeTableView.getItems().add(attribute);
+            }
+
         });
 
-        TableView<Attribute> attributeTableView = new TableView<>();
+
         attributeTableView.setMaxHeight(150.0);
         attributeTableView.setMaxWidth(400.0);
         attributeTableView.setEditable(true);

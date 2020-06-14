@@ -61,7 +61,7 @@
                   <Button mnemonicParsing="false" onAction="#manageCustomersButtonClicked" text="Manage customers" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                   <Button mnemonicParsing="false" onAction="#manageProjectsButtonClicked" text="Manage Projects" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <Button mnemonicParsing="false" onAction="#manageEmployeesButtonClicked" text="Manage employees" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                  <Button disable="true" mnemonicParsing="false" text="Generate invoice" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Button mnemonicParsing="false" onAction="#generateInvoicesButtonClicked" text="Generate invoices" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                </children>
             </GridPane>
             <TreeView fx:id="taskTreeView" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">

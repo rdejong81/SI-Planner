@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ *
  * Customer Data Acccess Object
  * @author Richard de Jong
  * @see ICustomerDAO
@@ -76,6 +77,17 @@ public class CustomerSqliteDAO implements ICustomerDAO
             Project project = sqliteConnection.projectDao().findById((Integer)childRow.get("id"));
             if(project != null && !customer.getProjects().contains(project))
                 customer.addProject(project);
+        }
+
+        // find document templates linked to customer
+        childResults = new QueryResult(sqliteConnection, String.format("select id from templates where customers_id=%d",
+                customer.getId()));
+
+        for(HashMap<String,Object> childRow : childResults.getRows())
+        {
+            DocumentTemplate documentTemplate = sqliteConnection.documentTemplateDao().findById((Integer)childRow.get("id"));
+            if(documentTemplate != null && !customer.getDocumentTemplates().contains(documentTemplate))
+                customer.addDocumentTemplate(documentTemplate);
         }
 
         // find attribute definitions linked to customer
@@ -178,6 +190,12 @@ public class CustomerSqliteDAO implements ICustomerDAO
         for(Project project : new ArrayList<>(customer.getProjects()))
         {
             sqliteConnection.projectDao().deleteProject(project);
+        }
+
+        // remove associated templates - make new list while changing original
+        for(DocumentTemplate documentTemplate : new ArrayList<>(customer.getDocumentTemplates()))
+        {
+            sqliteConnection.documentTemplateDao().deleteDocumentTemplate(documentTemplate);
         }
 
         // remove associated attribute definitions

@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="dal" />
     <orderEntry type="module" module-name="logic" />
+    <orderEntry type="module" module-name="invoice" />
   </component>
 </module>

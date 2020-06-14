@@ -43,6 +43,9 @@ public class QueryResult
                 {
                     switch (resultSetMetaData.getColumnType(i))
                     {
+                        case Types.BLOB:
+                            rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getBytes(i));
+                            break;
                         case Types.VARCHAR:
                         case Types.LONGVARCHAR:
                             rowMap.put(resultSetMetaData.getColumnLabel(i), resultSet.getString(i));

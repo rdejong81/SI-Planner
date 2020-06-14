@@ -2,14 +2,16 @@ package Windows;
 
 import Facade.IDataEntityPresenter;
 import Planning.Planning;
-import Timeregistration.Timeregistration;
+import Timeregistration.*;
 import com.calendarfx.model.*;
 
+import com.calendarfx.model.Calendar;
 import com.calendarfx.view.CalendarView;
 import com.calendarfx.view.DateControl;
 import Data.*;
 import Facade.AppFacade;
 import com.calendarfx.view.popover.EntryPopOverContentPane;
+import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -20,18 +22,21 @@ import javafx.scene.shape.Rectangle;
 import Projects.Project;
 import Projects.ProjectTask;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.time.*;
 import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static javafx.collections.ObservableList.*;
 
 import Calendar.EntryPopup;
+import javafx.stage.FileChooser;
 // calendar.CalendarView;
 
 public class MainWindowController extends Controller implements IDataEntityPresenter
@@ -49,10 +54,15 @@ public class MainWindowController extends Controller implements IDataEntityPrese
     private boolean updatingCalendar;
     private ArrayList<Project> availableProjects;
 
+    final private HashMap<Calendar,Project> calendarProjectHashMap;
+    final private HashMap<CalendarSource,Customer> calendarSourceCustomerHashMap;
+
     public MainWindowController()
     {
         super("MainWindow.fxml", "SI-Planner 0.1");
         availableProjects = new ArrayList<>();
+        calendarProjectHashMap = new HashMap<>();
+        calendarSourceCustomerHashMap = new HashMap<>();
 
         calendarView.getStylesheets().add(this.getClass().getResource("calendar.css").toExternalForm());
         calendarView.showWeekPage();
@@ -70,37 +80,11 @@ public class MainWindowController extends Controller implements IDataEntityPrese
                     !(taskTreeView.getSelectionModel().getSelectedItem().getValue() instanceof ProjectTask) ||
             employeeView.getSelectionModel().getSelectedItem()==null) return null;
             Employee employee =  employeeView.getSelectionModel().getSelectedItem();
-            DateControl control = param.getDateControl();
             ZonedDateTime time = param.getZonedDateTime();
             ProjectTask task = (ProjectTask)taskTreeView.getSelectionModel().getSelectedItem().getValue();
 
             AppFacade.appFacade.createPlanning(time.toLocalDateTime(),time.toLocalDateTime().plusHours(1),
                     task,employee);
-/*
-            Entry<DataEntity> entry = new Entry<>(String.format("%s - %s",task.getProject().getName(),task.getName()));
-
-            entry.setMinimumDuration(Duration.of(30,MINUTES));
-            entry.changeStartDate(time.toLocalDate(),true);
-            entry.changeStartTime(time.toLocalTime(),true);
-            entry.changeEndDate(time.toLocalDate(),false);
-            entry.changeEndTime(time.toLocalTime().plusHours(1),false);
-
-            //entry.getStyleClass().add("style2");
-
-            Planning planning = new Planning(AppFacade.appFacade.getDataSource().planningDao(),0,false,entry.getStartAsLocalDateTime(),entry.getEndAsLocalDateTime()
-            ,task,employee);
-             entry.setUserObject(planning);
-
-            for(Calendar calendar : calendarView.getCalendars())
-            {
-                if(calendar.getShortName().equals(planning.getProjectTask().getProject().getShortName()) &&
-                        calendar.getName().equals(planning.getProjectTask().getProject().getName()))
-                {
-                    calendar.addEntry(entry);
-                    AppFacade.appFacade.getDataSource().planningDao().insertPlanning(planning);
-                }
-
-            }*/
 
             return null;
         });
@@ -219,6 +203,38 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         }
     }
 
+    @FXML void generateInvoicesButtonClicked()
+    {
+        for(Invoice invoice : AppFacade.appFacade.generateInvoices(calendarView.getDate().withDayOfMonth(1),
+                calendarView.getDate().plusMonths(1).withDayOfMonth(1).minusDays(1)))
+        {
+            FileChooser fileChooser = new FileChooser();
+            String typeName=null;
+            for(Map.Entry<String,Integer> entry : AppFacade.appFacade.getInvoiceTypes().entrySet())
+            {
+                if(entry.getValue() == invoice.getDocumentTemplate().getType())
+                    typeName = entry.getKey();
+            }
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(
+                    typeName,"*."+AppFacade.appFacade.getInvoiceType(invoice.getDocumentTemplate().getType()).supportedFileExtension()));
+            byte work[] = invoice.getDocument();
+            if (work == null) continue;
+
+            File file = fileChooser.showSaveDialog(this.getStage());
+            if(file == null) return;
+            try
+            {
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                fileOutputStream.write(work);
+                fileOutputStream.close();
+
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     protected void onResize(double height, double width)
     {
@@ -251,19 +267,12 @@ public class MainWindowController extends Controller implements IDataEntityPrese
 
     private Calendar searchCalendar(Project project)
     {
-        for(CalendarSource calendarSource : calendarView.getCalendarSources())
+        for(Map.Entry<Calendar,Project> calendarProjectEntry : calendarProjectHashMap.entrySet())
         {
-            if (calendarSource.getName().equals(project.getCustomer().getName()))
-            {
-                for(Calendar calendar : calendarSource.getCalendars())
-                {
-                    if(calendar.getName().equals(project.getName())
-                    && calendar.getShortName().equals(project.getShortName()))
-                        return calendar;
-                }
-
-            }
+            if(calendarProjectEntry.getValue() == project)
+                return calendarProjectEntry.getKey();
         }
+
         return null;
     }
 
@@ -289,8 +298,19 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             customerItem.setExpanded(true);
             taskTreeList.getChildren().add(customerItem);
 
-            CalendarSource calendarSource = new CalendarSource(((Customer) dataEntity).getName());
-            calendarView.getCalendarSources().add(calendarSource);
+            if(!calendarSourceCustomerHashMap.containsValue(dataEntity))
+            {
+                CalendarSource calendarSource = new CalendarSource(((Customer) dataEntity).getName());
+                calendarView.getCalendarSources().add(calendarSource);
+                calendarSourceCustomerHashMap.put(calendarSource, (Customer) dataEntity);
+            } else {
+                for(java.util.Map.Entry<CalendarSource,Customer> entry : calendarSourceCustomerHashMap.entrySet())
+                {
+                    if(entry.getValue() == dataEntity)
+                        entry.getKey().setName(((Customer) dataEntity).getName());
+                }
+            }
+
         }
 
         if(dataEntity instanceof Project)
@@ -302,15 +322,19 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             treeItem.getChildren().add(projectItem);
 
 
+
             // search for calendar source
-            for(CalendarSource calendarSource : calendarView.getCalendarSources())
+            for(Map.Entry<CalendarSource,Customer> calendarSourceCustomerEntry : calendarSourceCustomerHashMap.entrySet())
             {
-                if(calendarSource.getName().equals(((Project) dataEntity).getCustomer().getName()))
+
+                if(calendarSourceCustomerEntry.getValue().equals(((Project) dataEntity).getCustomer()))
                 {
                     Calendar calendar = new Calendar(((Project) dataEntity).getName());
+                    calendarProjectHashMap.put(calendar, (Project) dataEntity);
+
                     calendar.setStyle(ProjectColor.fromId(((Project) dataEntity).getColor()).getType());
                     calendar.setShortName(((Project) dataEntity).getShortName());
-                    calendarSource.getCalendars().add(calendar);
+                    calendarSourceCustomerEntry.getKey().getCalendars().add(calendar);
                     calendar.addEventHandler(new EventHandler<CalendarEvent>()
                     {
                         @Override
@@ -451,8 +475,12 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             if(customerItem != null)
                 customerItem.getParent().getChildren().removeAll(customerItem);
 
-            calendarView.getCalendarSources().removeIf(
-                    calendarSource -> calendarSource.getName().equals(((Customer) dataEntity).getName()));
+            for(Map.Entry<CalendarSource,Customer> calendarSourceCustomerEntry : calendarSourceCustomerHashMap.entrySet())
+                if(calendarSourceCustomerEntry.getValue() == dataEntity)
+                {
+                    calendarView.getCalendarSources().remove(calendarSourceCustomerEntry.getKey());
+                    calendarSourceCustomerHashMap.remove(calendarSourceCustomerEntry.getKey());
+                }
         }
 
         if(dataEntity instanceof Project)
@@ -464,11 +492,11 @@ public class MainWindowController extends Controller implements IDataEntityPrese
 
 
             Calendar calendar = searchCalendar((Project) dataEntity);
+            calendarProjectHashMap.remove(calendar);
             // search for calendar source
             for(CalendarSource calendarSource : calendarView.getCalendarSources())
-            {
                 calendarSource.getCalendars().removeIf(sourceCalendar -> sourceCalendar == calendar);
-            }
+
         }
 
         if(dataEntity instanceof ProjectTask)

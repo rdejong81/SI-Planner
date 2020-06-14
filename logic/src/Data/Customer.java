@@ -13,6 +13,7 @@ public class Customer extends DataEntity
     private final ArrayList<Employee> employees;
     private final ArrayList<Project> projects;
     private final ArrayList<Attribute> attributeDefinitions;
+    private final ArrayList<DocumentTemplate> documentTemplates;
     private final ICustomerDAO customerDao;
 
     public Customer(ICustomerDAO customerDao, int id, String name, String shortName)
@@ -24,6 +25,7 @@ public class Customer extends DataEntity
         projects = new ArrayList<>();
         attributeDefinitions = new ArrayList<>();
         this.customerDao = customerDao;
+        documentTemplates = new ArrayList<>();
     }
 
     public String getName()
@@ -91,5 +93,20 @@ public class Customer extends DataEntity
     public boolean removeAttributeDefinition(Attribute attribute)
     {
         return attributeDefinitions.remove(attribute);
+    }
+
+    public boolean addDocumentTemplate(DocumentTemplate documentTemplate)
+    {
+        return documentTemplates.add(documentTemplate);
+    }
+
+    public boolean removeDocumentTemplate(DocumentTemplate documentTemplate)
+    {
+        return documentTemplates.remove(documentTemplate);
+    }
+
+    public List<DocumentTemplate> getDocumentTemplates()
+    {
+        return Collections.unmodifiableList(documentTemplates);
     }
 }

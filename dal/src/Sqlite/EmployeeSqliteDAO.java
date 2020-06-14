@@ -1,9 +1,6 @@
 package Sqlite;
 
-import Data.Customer;
-import Data.DaoResult;
-import Data.Employee;
-import Data.IEmployeeDAO;
+import Data.*;
 import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -52,7 +49,7 @@ public class EmployeeSqliteDAO implements IEmployeeDAO
             employeesUpdating.add(employee);
         }
 
-        // find employees linked to customer
+        // find customers linked to employee
         QueryResult childResults = new QueryResult(sqliteConnection, String.format("select * from employees_customers where employees_id=%d",
                 employee.getId()));
 
@@ -62,6 +59,14 @@ public class EmployeeSqliteDAO implements IEmployeeDAO
             if(customer != null && !employee.getCustomers().contains(customer))
                 employee.addCustomer(customer);
         }
+
+        // find attributes linked to employee.
+        for(Attribute attribute : sqliteConnection.attributeDao().findAll(employee))
+        {
+            employee.addAttribute(attribute);
+        }
+
+
         employeesUpdating.remove(employee);
         return employee;
     }

@@ -20,7 +20,7 @@ class EmployeeTest
     @BeforeAll
     private void init()
     {
-        appFacade = new AppFacade(new MockDBFactory());
+        appFacade = new AppFacade(new MockDBFactory(),null);
         appFacade.DoLogin("testlogin","","","","TEST");
     }
 

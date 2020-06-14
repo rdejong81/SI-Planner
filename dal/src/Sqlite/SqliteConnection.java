@@ -11,6 +11,7 @@ import Sql.SQLConnection;
 import Timeregistration.ITimeregistrationDAO;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
+import java.io.File;
 import java.io.InputStream;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -31,6 +32,7 @@ public class SqliteConnection extends SQLConnection
     private final TimeregistrationSqliteDAO timeregistrationMySQLDAO;
     private final AttributeDefinitionSqliteDAO attributeDefinitionMySQLDAO;
     private final AttributeSqliteDAO attributeMySQLDAO;
+    private final DocumentTemplateSqliteDAO documentTemplateSqliteDAO;
 
     public SqliteConnection(String server, String database, String user, String password) throws EDataSourceConnection
     {
@@ -52,6 +54,7 @@ public class SqliteConnection extends SQLConnection
         timeregistrationMySQLDAO = new TimeregistrationSqliteDAO(this);
         attributeDefinitionMySQLDAO = new AttributeDefinitionSqliteDAO(this);
         attributeMySQLDAO = new AttributeSqliteDAO(this);
+        documentTemplateSqliteDAO = new DocumentTemplateSqliteDAO(this);
     }
 
     @Override
@@ -97,7 +100,11 @@ public class SqliteConnection extends SQLConnection
     @Override
     public String getConnectString()
     {
-        return String.format("jdbc:sqlite:%s.db", this.getDatabase());
+        String userHome = System.getProperty("user.home");
+        File file = new File(String.format("%s/.siplanner",userHome));
+        if(!file.exists())
+            file.mkdir();
+        return String.format("jdbc:sqlite:%s/.siplanner/%s.db",userHome, this.getDatabase());
     }
 
 
@@ -146,6 +153,12 @@ public class SqliteConnection extends SQLConnection
     public IAttributeDAO attributeDefinitionDao()
     {
         return attributeDefinitionMySQLDAO;
+    }
+
+    @Override
+    public IDocumentTemplateDAO documentTemplateDao()
+    {
+        return documentTemplateSqliteDAO;
     }
 
     private boolean checkTableExists(String tableName,String database) throws SQLException

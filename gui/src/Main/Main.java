@@ -2,6 +2,8 @@ package Main;
 
 import Database.DatabaseFactory;
 import Facade.ISQLConnectionFactory;
+import Facade.InvoiceConnectionFactory;
+import Invoice.InvoiceFactory;
 import Windows.Controller;
 import Windows.MainWindowController;
 import javafx.application.Application;
@@ -20,6 +22,7 @@ public class Main extends Application
     {
 
         final ISQLConnectionFactory[] sqlConnectionFactory = new ISQLConnectionFactory[1];
+        final InvoiceConnectionFactory[] invoiceConnectionFactory = new InvoiceConnectionFactory[1];
 
         primaryStage.getIcons().add(new Image(Controller.class.getResourceAsStream("siplanner-small.png")));
         new SplashLoader(primaryStage,() -> {
@@ -38,8 +41,9 @@ public class Main extends Application
             switch(task)
             {
                 case 1: sqlConnectionFactory[0] = new DatabaseFactory();
+                invoiceConnectionFactory[0] = new InvoiceFactory();
                 return "Loading windows";
-                case 2: AppFacade.appFacade = new AppFacade(sqlConnectionFactory[0]);
+                case 2: AppFacade.appFacade = new AppFacade(sqlConnectionFactory[0],invoiceConnectionFactory[0]);
 
                     return "Loaded windows...";
                 case 3:

@@ -15,10 +15,12 @@ import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import java.io.File;
 import java.lang.reflect.AnnotatedType;
 import java.net.URL;
 import java.util.Arrays;
@@ -27,14 +29,12 @@ import java.util.ResourceBundle;
 
 public class ManageCustomersController extends Controller implements IDataEntityPresenter
 {
-    @FXML
-    private TableView<Customer> customerTableView;
+    @FXML private TableView<Customer> customerTableView;
+    @FXML private TableView<Attribute> attributeDefView,attributeView;
+    @FXML private TableView<DocumentTemplate> templateTableView;
+    @FXML private TableColumn<DocumentTemplate,String> templateNameColumn,templateSizeColumn;
 
-    @FXML
-    private TableView<Attribute> attributeDefView,attributeView;
-
-    @FXML
-    private TableColumn<Attribute,String> nameAttributeDefColumn,attributeColumn;
+    @FXML private TableColumn<Attribute,String> nameAttributeDefColumn,attributeColumn;
 
     @FXML private TableColumn<Attribute,Object> attributeValueColumn;
 
@@ -60,6 +60,10 @@ public class ManageCustomersController extends Controller implements IDataEntity
         getStage().initModality(Modality.WINDOW_MODAL);
         this.getStage().setResizable(false);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        templateNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        templateSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+
         attributeValueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
         attributeValueColumn.setCellFactory(ObjectTableCell.forTableColumn());
         attributeValueColumn.setOnEditCommit(value -> {
@@ -121,6 +125,12 @@ public class ManageCustomersController extends Controller implements IDataEntity
                     lastSelected = newSelection;
                     nameField.setText(newSelection.getName());
                     shortNameField.setText(newSelection.getShortName());
+
+                    templateTableView.getItems().clear();
+                    for(DocumentTemplate documentTemplate : newSelection.getDocumentTemplates())
+                    {
+                        templateTableView.getItems().add(documentTemplate);
+                    }
 
                     attributeDefView.getItems().clear();
                     for(Attribute attribute : newSelection.getAttributeDefinitions())
@@ -232,6 +242,25 @@ public class ManageCustomersController extends Controller implements IDataEntity
     @FXML private void removeAttrButtonClick(ActionEvent actionEvent)
     {
         AppFacade.appFacade.deleteAttributeDefinition(attributeDefView.getSelectionModel().getSelectedItem());
+    }
+
+    @FXML private void addTemplateButtonClick(ActionEvent actionEvent)
+    {
+        FileChooser fileChooser = new FileChooser();
+
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel","*.xlsx"));
+        fileChooser.setTitle("Choose template to load");
+        File file = fileChooser.showOpenDialog(this.getStage());
+        AppFacade.appFacade.addDocumentTemplate(
+                file,
+                customerTableView.getSelectionModel().getSelectedItem()
+        );
+    }
+
+    @FXML private void deleteTemplateButtonClick(ActionEvent actionEvent)
+    {
+        if(templateTableView.getSelectionModel().getSelectedItem() == null) return;
+        AppFacade.appFacade.removeDocumentTemplate(templateTableView.getSelectionModel().getSelectedItem());
     }
 
     @FXML

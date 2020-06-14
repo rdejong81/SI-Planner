@@ -169,6 +169,12 @@ public class MySQLConnection extends SQLConnection
         return attributeDefinitionMySQLDAO;
     }
 
+    @Override
+    public IDocumentTemplateDAO documentTemplateDao()
+    {
+        return null;
+    }
+
     private boolean checkTableExists(String tableName,String database) throws SQLException
     {
         boolean tExists = false;

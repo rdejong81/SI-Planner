@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public enum EntityType
 {
     CUSTOMER(0, Customer.class,true),
-    EMPLOYEE(1, Employee.class,false),
+    EMPLOYEE(1, Employee.class,true),
     PROJECT(2, Project.class,true),
     TASK(3, ProjectTask.class,false),
     PLANNING(4, Planning.class,true),

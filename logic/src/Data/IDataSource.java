@@ -23,5 +23,6 @@ public interface IDataSource
     ITimeregistrationDAO timeregistrationDao();
     IAttributeDAO attributeDao();
     IAttributeDAO attributeDefinitionDao();
+    IDocumentTemplateDAO documentTemplateDao();
 
 }
