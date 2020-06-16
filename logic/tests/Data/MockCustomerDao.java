@@ -15,6 +15,7 @@ public class MockCustomerDao implements ICustomerDAO
         customers = new ArrayList<>();
         customersUpdating = new ArrayList<>();
         customers.add(new Customer(this,1,"Customer A","CUA"));
+        customers.add(new Customer(this,2,"Customer B","CUB"));
         this.dataSource = dataSource;
     }
 

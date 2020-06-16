@@ -221,7 +221,14 @@ public class ExcelInvoiceIAO implements InvoiceIAO
         }
 
 
-        cellObj.setValue(10, variant);
+        try
+        {
+            cellObj.setValue(10, variant);
+        } catch (com4j.ComException e)
+        {
+            e.printStackTrace();
+        }
+
 
     }
 

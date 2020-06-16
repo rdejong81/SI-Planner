@@ -226,7 +226,8 @@ public class ManageCustomersController extends Controller implements IDataEntity
     @FXML
     private void removeButtonClick()
     {
-        AppFacade.appFacade.removeCustomer(customerTableView.getSelectionModel().getSelectedItem());
+        if(customerTableView.getSelectionModel().getSelectedItem() != null)
+            AppFacade.appFacade.removeCustomer(customerTableView.getSelectionModel().getSelectedItem());
     }
 
     @FXML private void addAttrButtonClick(ActionEvent actionEvent)
@@ -241,7 +242,8 @@ public class ManageCustomersController extends Controller implements IDataEntity
 
     @FXML private void removeAttrButtonClick(ActionEvent actionEvent)
     {
-        AppFacade.appFacade.deleteAttributeDefinition(attributeDefView.getSelectionModel().getSelectedItem());
+        if (attributeDefView.getSelectionModel().getSelectedItem() != null)
+            AppFacade.appFacade.deleteAttributeDefinition(attributeDefView.getSelectionModel().getSelectedItem());
     }
 
     @FXML private void addTemplateButtonClick(ActionEvent actionEvent)

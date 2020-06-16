@@ -18,31 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProjectTest
 {
     private AppFacade appFacade;
+    private Project[] project = new Project[1];
+    IDataEntityPresenter dataEntityPresenter;
 
     @BeforeAll
     private void init()
     {
         appFacade = new AppFacade(new MockDBFactory(),null);
         appFacade.DoLogin("testlogin","","","","TEST");
-    }
 
-
-    /**
-     * Test weird combinations of strings, and test handling of null
-     * @param name
-     */
-    @ParameterizedTest
-    @ValueSource(strings = {""," ","test project","proj123"})
-    @NullSource
-    void getName(String name)
-    {
-
-        //init
-        Project[] project = new Project[1];
         appFacade.getLoggedinEmployee().addCustomer(
                 appFacade.getDataSource().customerDao().findById(1));
 
-        IDataEntityPresenter dataEntityPresenter = new IDataEntityPresenter()
+        dataEntityPresenter = new IDataEntityPresenter()
         {
             @Override
             public void showDataEntity(DataEntity dataEntity)
@@ -60,11 +48,23 @@ class ProjectTest
             }
         };
         appFacade.subscribeDataEntityPresenter(dataEntityPresenter);
+    }
+
+
+    /**
+     * Test weird combinations of strings, and test handling of null
+     * @param name
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {""," ","test project","proj123"})
+    @NullSource
+    void getName(String name)
+    {
+
+        //init
         appFacade.addProject(name,name);
-        appFacade.unsubscribeDataEntityPresenter(dataEntityPresenter);
 
         assertNotNull(project[0],"Failed to create customer.");
-
 
         //act
         String testName = project[0].getName();
@@ -76,44 +76,137 @@ class ProjectTest
 
     }
 
-    @Test
-    void setName()
+    @ParameterizedTest
+    @ValueSource(strings = {""," ","test project","proj123"})
+    @NullSource
+    void setName(String name)
     {
+
+        //init
+        appFacade.addProject("settest"+name,"settest"+name);
+
+        assertNotNull(project[0],"Failed to create customer.");
+
+        //act
+        project[0].setName(name);
+        String testName = project[0].getName();
+
+        //assert
+
+        assertEquals(name == null ? "undefined" : name,testName);
+        assertNotNull(testName,"Failed to filter out null.");
+
     }
 
-    @Test
-    void getColor()
+    @ParameterizedTest
+    @ValueSource(ints = {0,1,5,10000,-1})
+    void getColor(int color)
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",color,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+        int testColor = project.getColor();
+
+        //assert
+        assertEquals(testColor,color);
     }
 
-    @Test
-    void setColor()
+    @ParameterizedTest
+    @ValueSource(ints = {0,1,5,10000,-1})
+    void setColor(int color)
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+        project.setColor(color);
+
+        //assert
+        assertEquals(project.getColor(),color);
     }
 
     @Test
     void isInvoice()
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+
+
+        //assert
+        assertEquals(project.isInvoice(),false);
     }
 
     @Test
     void setInvoice()
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+        project.setInvoice(true);
+
+
+        //assert
+        assertEquals(project.isInvoice(),true);
     }
 
     @Test
     void getCustomer()
     {
+        //init
+        Customer customer = appFacade.getDataSource().customerDao().findById(1);
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                customer);
+
+
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+        project.setInvoice(true);
+
+
+        //assert
+        assertEquals(project.getCustomer(),customer);
     }
 
     @Test
     void setCustomer()
     {
+        //init
+        Customer customer = appFacade.getDataSource().customerDao().findById(1);
+        Customer customerB = appFacade.getDataSource().customerDao().findById(2);
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                customer);
+
+        //act
+        project.setCustomer(customerB);
+
+
+        //assert
+        assertEquals(project.getCustomer(),customerB);
     }
 
     @Test
     void getShortName()
     {
+
     }
 
     @Test

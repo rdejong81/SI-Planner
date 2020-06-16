@@ -44,7 +44,7 @@ public class Invoice
             if(!project.isInvoice() || project.getProjectTasks().isEmpty()) continue;
 
             ArrayList<String> parametersUnfilled = new ArrayList<>();
-            List<LocalDate> dates = Arrays.asList(start.datesUntil(end).toArray(LocalDate[]::new));
+            List<LocalDate> dates = Arrays.asList(start.datesUntil(end.plusDays(1)).toArray(LocalDate[]::new));
 
             HashMap<String,String> parameterTasks = new HashMap<>(); // summary of tasks spent per day parameter.
             HashMap<String,Double> parameterTimeTotal = new HashMap<>(); // summary of total project time per day parameter.

@@ -39,6 +39,7 @@ public class AppFacade
         dataEntityPresenters = new ArrayList<>();
         shownDataEntities = new ArrayList<>();
         statusPresenters = new ArrayList<>();
+        appFacade = this;
     }
 
     public boolean subscribeStatusPresenter(IStatusPresenter statusPresenter)
@@ -160,6 +161,13 @@ public class AppFacade
             Project projectB = addProject("Example project B","PJB");
             projectA.setColor(1);
             projectB.setColor(2);
+            projectA.setInvoice(true);
+            projectB.setInvoice(true);
+            appFacade.createAttributeDefinition(customer,"Timesheet tel code",AttributeType.STRING,EntityType.EMPLOYEE);
+            appFacade.createAttributeDefinition(customer,"Purchase Order",AttributeType.STRING,EntityType.PROJECT);
+            appFacade.createAttributeDefinition(customer,"Project department",AttributeType.STRING,EntityType.PROJECT);
+            appFacade.createAttributeDefinition(customer,"Timesheet project signer",AttributeType.STRING,EntityType.PROJECT);
+            appFacade.createAttributeDefinition(customer,"Ticket",AttributeType.STRING,EntityType.TIMEREGISTRATION);
 
             ProjectTask projectTaskA = new ProjectTask(dataSource.taskDao(),0,"Prepare A",false,projectA);
             ProjectTask projectTaskB = new ProjectTask(dataSource.taskDao(),0,"Prepare B",false,projectB);
@@ -300,8 +308,9 @@ public class AppFacade
 
     public Project addProject(String name, String shortCode)
     {
+        if(shownCalendarEmployee.getCustomers().isEmpty()) return null;
         Customer customer = shownCalendarEmployee.getCustomers().iterator().next();
-        if(customer == null) return null;
+
         Project project = new Project(dataSource.projectDao(),0,name,0,false,shortCode,customer);
         dataSource.projectDao().insertProject(project);
         refreshData();

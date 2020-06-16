@@ -521,7 +521,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
             if(customerItem != null)
                 customerItem.getParent().getChildren().removeAll(customerItem);
 
-            for(Map.Entry<CalendarSource,Customer> calendarSourceCustomerEntry : calendarSourceCustomerHashMap.entrySet())
+            for(Map.Entry<CalendarSource,Customer> calendarSourceCustomerEntry : new HashSet<>(calendarSourceCustomerHashMap.entrySet()))
                 if(calendarSourceCustomerEntry.getValue() == dataEntity)
                 {
                     calendarView.getCalendarSources().remove(calendarSourceCustomerEntry.getKey());

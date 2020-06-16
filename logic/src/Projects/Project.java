@@ -38,7 +38,7 @@ public class Project extends DataEntity
 
     public void setName(String name)
     {
-        this.name = name;
+        this.name = name == null ? "undefined" : name;
         projectDao.updateProject(this);
     }
 
