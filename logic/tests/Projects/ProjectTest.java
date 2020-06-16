@@ -203,24 +203,74 @@ class ProjectTest
         assertEquals(project.getCustomer(),customerB);
     }
 
-    @Test
-    void getShortName()
+    @ParameterizedTest
+    @ValueSource(strings = {""," ","test project","proj123"})
+    void getShortName(String name)
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,name,0,false,name,
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
 
+        //act
+        String testName = project.getShortName();
+
+
+        //assert
+        assertEquals(testName,name);
     }
 
-    @Test
-    void setShortName()
+    @ParameterizedTest
+    @ValueSource(strings = {""," ","test project","proj123"})
+    void setShortName(String name)
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        assertNotNull(project,"Failed to create project.");
+
+        //act
+        project.setShortName(name);
+
+
+        //assert
+        assertEquals(project.getShortName(),name);
     }
 
     @Test
     void addTask()
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        ProjectTask projectTask = appFacade.getDataSource().taskDao().findById(1);
+
+        //act
+        project.addTask(projectTask);
+
+
+        //assert
+        assertEquals(true,project.getProjectTasks().contains(projectTask));
+
     }
 
     @Test
     void removeTask()
     {
+        //init
+        Project project = new Project(appFacade.getDataSource().projectDao(),
+                900,"test",0,false,"TEST",
+                appFacade.getDataSource().customerDao().findById(1));
+        ProjectTask projectTask = appFacade.getDataSource().taskDao().findById(1);
+        project.addTask(projectTask);
+
+        //act
+        project.removeTask(projectTask);
+
+        //assert
+        assertEquals(false,project.getProjectTasks().contains(projectTask));
     }
 }

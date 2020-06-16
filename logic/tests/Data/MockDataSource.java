@@ -2,10 +2,10 @@ package Data;
 
 import Facade.EDataSourceConnection;
 import Planning.IPlanningDAO;
-import Projects.IProjectDAO;
-import Projects.IProjectTaskDAO;
-import Projects.MockProjectDao;
+import Planning.MockPlanningDao;
+import Projects.*;
 import Timeregistration.ITimeregistrationDAO;
+import Timeregistration.MockTimeregistrationDao;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,11 +15,18 @@ public class MockDataSource implements IDataSource
     private final IEmployeeDAO employeeDAO;
     private final ICustomerDAO customerDAO;
     private final IProjectDAO projectDAO;
+    private final IProjectTaskDAO projectTaskDAO;
+    private final ITimeregistrationDAO timeregistrationDAO;
+    private final IPlanningDAO planningDAO;
+
     public MockDataSource()
     {
         employeeDAO = new MockEmployeeDao(this);
         customerDAO = new MockCustomerDao(this);
         projectDAO = new MockProjectDao(this);
+        projectTaskDAO = new MockProjectTaskDao(this);
+        timeregistrationDAO = new MockTimeregistrationDao(this);
+        planningDAO = new MockPlanningDao(this);
     }
 
     @Override
@@ -62,7 +69,7 @@ public class MockDataSource implements IDataSource
     @Override
     public IProjectTaskDAO taskDao()
     {
-        return null;
+        return projectTaskDAO;
     }
 
     @Override
@@ -74,7 +81,7 @@ public class MockDataSource implements IDataSource
     @Override
     public ITimeregistrationDAO timeregistrationDao()
     {
-        return null;
+        return timeregistrationDAO;
     }
 
     @Override

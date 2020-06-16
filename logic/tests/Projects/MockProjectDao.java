@@ -38,8 +38,11 @@ public class MockProjectDao implements IProjectDAO
     {
         projects = new ArrayList<>();
         projectsUpdating = new ArrayList<>();
-        projects.add(new Project(this,1,"Customer A",1,
+        projects.add(new Project(this,1,"Project A",1,
                 true,"CUA",dataSource.customerDao().findById(1)));
+        projects.add(new Project(this,2,"Project B",1,
+                true,"CUA",dataSource.customerDao().findById(1)));
+
         this.dataSource = dataSource;
     }
 
