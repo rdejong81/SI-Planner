@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="332.0" prefWidth="439.0" stylesheets="@about.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Windows.About">
+   <children>
+      <ImageView fitHeight="332.0" fitWidth="464.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../Splash/siplanner.png" />
+         </image>
+         <effect>
+            <DropShadow />
+         </effect></ImageView>
+      <Button cancelButton="true" defaultButton="true" layoutX="391.0" layoutY="8.0" mnemonicParsing="false" onAction="#onCloseBtn" text="Close" />
+      <TextArea fx:id="abouttxt" editable="false" layoutX="5.0" layoutY="9.0" prefHeight="123.0" prefWidth="342.0" text="System Integrations Planner&#10;SI-Planner version %s&#10;Copyright © 2020 Richard de Jong. All rights reserved.&#10;&#10;&#10;This is an experimental alpha version not for public release.">
+         <font>
+            <Font name="Calibri" size="12.0" />
+         </font></TextArea>
+      <TableView fx:id="features" layoutX="5.0" layoutY="181.0" prefHeight="148.0" prefWidth="431.0">
+        <columns>
+          <TableColumn fx:id="featureColumn" prefWidth="207.0" text="Feature" />
+          <TableColumn fx:id="statusColumn" prefWidth="211.0" text="Status" />
+        </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+   </children>
+</AnchorPane>

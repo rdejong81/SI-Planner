@@ -12,5 +12,5 @@ module gui {
     requires di;
     exports Main to javafx.graphics;
     opens Login to javafx.fxml;
-    opens Windows to javafx.fxml;
+    opens Windows to javafx.fxml, javafx.base;
 }

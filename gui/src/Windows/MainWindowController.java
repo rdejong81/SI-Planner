@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static Calendar.EntryDetails.showNewDataEntityEditor;
+import static Facade.AppFacade.APPVERSION;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static javafx.collections.ObservableList.*;
@@ -76,7 +77,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
 
     public MainWindowController()
     {
-        super("MainWindow.fxml", "SI-Planner 0.1");
+        super("MainWindow.fxml", "SI-Planner "+APPVERSION);
         availableProjects = new ArrayList<>();
         calendarProjectHashMap = new HashMap<>();
         calendarSourceCustomerHashMap = new HashMap<>();
@@ -848,7 +849,7 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         preferencesFx.show(true);
     }
 
-    @FXML public void onInboundSyncButtonClick(ActionEvent actionEvent)
+    @FXML private void onInboundSyncButtonClick(ActionEvent actionEvent)
     {
 
         Task task = new Task<>() {
@@ -865,6 +866,11 @@ public class MainWindowController extends Controller implements IDataEntityPrese
         th.setDaemon(true);
         th.start();
 
+    }
+
+    @FXML private void onAboutClick(ActionEvent actionEvent)
+    {
+        new About(this).showAndWait();
     }
 
 }
