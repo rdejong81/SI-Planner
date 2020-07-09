@@ -39,7 +39,10 @@ public class Attribute
 
     public DaoResult setValue(Object value)
     {
+        if(this.value.equals(value)) return DaoResult.OP_OK; // no change, update is expensive
         this.value = value;
+        if(parent != null)
+            parent.broadcastUpdate();
         return attributeDao.updateAttribute(this);
     }
 

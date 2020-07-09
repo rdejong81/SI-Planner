@@ -51,6 +51,7 @@ public class ManageProjectsController extends Controller implements IDataEntityP
     private Project lastSelected;
 
 
+
     protected ManageProjectsController(Controller owner)
     {
         super("ManageProjects.fxml", "Manage Projects");

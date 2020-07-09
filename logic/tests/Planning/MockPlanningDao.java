@@ -5,6 +5,7 @@ import Data.IDataSource;
 import Timeregistration.Timeregistration;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class MockPlanningDao implements IPlanningDAO
         plannings = new ArrayList<>();
         planningsUpdating = new ArrayList<>();
         plannings.add(new Planning(
-                this,1,false, LocalDateTime.now(),
-                LocalDateTime.now().plusHours(1),
+                this,1,false, ZonedDateTime.now(),
+                ZonedDateTime.now().plusHours(1),
                 dataSource.taskDao().findById(1),
                 dataSource.employeeDao().findById(1)
         ));

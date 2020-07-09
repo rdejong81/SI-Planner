@@ -8,13 +8,13 @@ import Planning.Planning;
 import Projects.ProjectTask;
 import Sql.QueryResult;
 
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Project Data Acccess Object
@@ -43,12 +43,13 @@ public class PlanningSqliteDAO implements IPlanningDAO
             {
                 planningsUpdating.add(currentPlanning);
                 currentPlanning.setStart(
-                        LocalDateTime.parse((String)row.get("start"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        ZonedDateTime.ofLocal((LocalDateTime)row.get("start"), ZoneId.of("UTC"),null));
                 currentPlanning.setEnd(
-                        LocalDateTime.parse((String)row.get("end"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        ZonedDateTime.ofLocal((LocalDateTime)row.get("end"),ZoneId.of("UTC"),null));
                 currentPlanning.setSynced((Boolean) row.get("synced"));
                 currentPlanning.setProjectTask(sqliteConnection.taskDao().findById((Integer)row.get("tasks_id")));
                 currentPlanning.setEmployee(sqliteConnection.employeeDao().findById((Integer)row.get("employeesid")));
+                currentPlanning.setSynckey((String)row.get("synckey"));
                 planning = currentPlanning;
             }
         }
@@ -58,10 +59,11 @@ public class PlanningSqliteDAO implements IPlanningDAO
             Employee employee = sqliteConnection.employeeDao().findById((Integer)row.get("employeesid"));
             planning = new Planning(this,(Integer) row.get("id"),
                     (Boolean) row.get("synced"),
-                    LocalDateTime.parse((String)row.get("start"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    LocalDateTime.parse((String)row.get("end"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    ZonedDateTime.ofLocal((LocalDateTime)row.get("start"), ZoneId.of("UTC"),null),
+                    ZonedDateTime.ofLocal((LocalDateTime)row.get("end"),ZoneId.of("UTC"),null),
                     projectTask,
-                    employee
+                    employee,
+                    (String)row.get("synckey")
             );
             planningInstances.add(planning);
             planningsUpdating.add(planning);
@@ -111,15 +113,41 @@ public class PlanningSqliteDAO implements IPlanningDAO
     @Override
     public DaoResult insertPlanning(Planning planning)
     {
-        QueryResult result = new QueryResult(sqliteConnection,String.format(
-                "insert into time (start,end,planned,synced,tasks_id,employeesid) values ('%s','%s',1,%d,%d,%d)",
-                planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                planning.isSynced() ? 1 : 0,
-                planning.getProjectTask().getId(),
-                planning.getEmployee().getId()
-        ));
-        planning.setId((int)result.getCreatedKey());
+        PreparedStatement preparedStatement;
+        long createdKey=-1;
+        try
+        {
+            preparedStatement = sqliteConnection.getConnection().prepareStatement(
+                    "insert into time (start,end,planned,synced,tasks_id,employeesid,synckey) values (?,?,1,?,?,?,?)");
+
+            preparedStatement.setTimestamp(1,new Timestamp(
+                            Instant.from(planning.getStart()).toEpochMilli()),
+                    Calendar.getInstance(TimeZone.getTimeZone(planning.getStart().getZone()))
+            );
+            preparedStatement.setTimestamp(2,new Timestamp(
+                            Instant.from(
+                                    planning.getEnd()).toEpochMilli()),
+                    Calendar.getInstance(TimeZone.getTimeZone(planning.getEnd().getZone())));
+            preparedStatement.setInt(3,planning.isSynced() ? 1 : 0);
+            preparedStatement.setInt(4,planning.getProjectTask().getId());
+            preparedStatement.setInt(5,planning.getEmployee().getId());
+            preparedStatement.setString(6,planning.getSynckey());
+
+            preparedStatement.executeUpdate();
+
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet != null && resultSet.next())
+            { // This is an insert result, get created result id.
+                createdKey = resultSet.getLong(1);
+            }
+
+        } catch (SQLException throwables)
+        {
+            throwables.printStackTrace();
+            return DaoResult.DAO_MISSING;
+        }
+
+        planning.setId((int)createdKey);
         planningInstances.add(planning);
         return DaoResult.OP_OK;
     }
@@ -127,16 +155,35 @@ public class PlanningSqliteDAO implements IPlanningDAO
     @Override
     public DaoResult updatePlanning(Planning planning)
     {
+        PreparedStatement preparedStatement;
+
         if(planningsUpdating.contains(planning)) return DaoResult.OP_OK; //already updating
-        QueryResult result = new QueryResult(sqliteConnection,String.format(
-                "update time set start='%s',end='%s',planned=1,synced=%d,tasks_id=%d,employeesid=%d where id=%d",
-                planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                planning.isSynced() ? 1 : 0,
-                planning.getProjectTask().getId(),
-                planning.getEmployee().getId(),
-                planning.getId()
-        ));
+
+        try
+        {
+            preparedStatement = sqliteConnection.getConnection().prepareStatement(
+                    "update time set start=?,end=?,planned=1,synced=?,tasks_id=?,employeesid=?,synckey=? where id=?");
+
+            preparedStatement.setTimestamp(1,
+                    new Timestamp(
+                            Instant.from(planning.getStart()).toEpochMilli()),
+                    Calendar.getInstance(TimeZone.getTimeZone(planning.getStart().getZone()))
+            );
+            preparedStatement.setTimestamp(2,
+                    new Timestamp(
+                            Instant.from(planning.getEnd()).toEpochMilli()),
+                    Calendar.getInstance(TimeZone.getTimeZone(planning.getEnd().getZone()))
+            );
+            preparedStatement.setInt(3,planning.isSynced() ? 1 : 0);
+            preparedStatement.setInt(4,planning.getProjectTask().getId());
+            preparedStatement.setInt(5,planning.getEmployee().getId());
+            preparedStatement.setString(6,planning.getSynckey());
+            preparedStatement.setInt(7,planning.getId());
+            preparedStatement.executeUpdate();
+        } catch (Exception e)
+        {
+            return DaoResult.DAO_MISSING;
+        }
         return DaoResult.OP_OK;
     }
 

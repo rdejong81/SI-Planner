@@ -1,0 +1,27 @@
+<component name="libraryTable">
+  <library name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" type="repository">
+    <properties maven-id="com.dlsc.preferencesfx:preferencesfx-core:11.6.0">
+      <exclude>
+        <dependency maven-id="org.openjfx:javafx-controls" />
+        <dependency maven-id="org.openjfx:javafx-base" />
+        <dependency maven-id="org.openjfx:javafx-graphics" />
+        <dependency maven-id="org.openjfx:javafx-fxml" />
+        <dependency maven-id="de.jensd:fontawesomefx-commons" />
+        <dependency maven-id="de.jensd:fontawesomefx-fontawesome" />
+      </exclude>
+    </properties>
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/dlsc/preferencesfx/preferencesfx-core/11.6.0/preferencesfx-core-11.6.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-web/12.0.2/javafx-web-12.0.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-web/12.0.2/javafx-web-12.0.2-win.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-media/12.0.2/javafx-media-12.0.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-media/12.0.2/javafx-media-12.0.2-win.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/controlsfx/controlsfx/11.0.0/controlsfx-11.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/dlsc/formsfx/formsfx-core/11.4.1/formsfx-core-11.4.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

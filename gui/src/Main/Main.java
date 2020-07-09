@@ -2,7 +2,9 @@ package Main;
 
 import Database.DatabaseFactory;
 import Facade.ISQLConnectionFactory;
+import Facade.InboundConnectionFactory;
 import Facade.InvoiceConnectionFactory;
+import Inbound.InboundFactory;
 import Invoice.InvoiceFactory;
 import Windows.Controller;
 import Windows.MainWindowController;
@@ -22,6 +24,7 @@ public class Main extends Application
     {
 
         final ISQLConnectionFactory[] sqlConnectionFactory = new ISQLConnectionFactory[1];
+        final InboundConnectionFactory[] inboundConnectionFactory = new InboundConnectionFactory[1];
         final InvoiceConnectionFactory[] invoiceConnectionFactory = new InvoiceConnectionFactory[1];
 
         primaryStage.getIcons().add(new Image(Controller.class.getResourceAsStream("siplanner-small.png")));
@@ -42,8 +45,9 @@ public class Main extends Application
             {
                 case 1: sqlConnectionFactory[0] = new DatabaseFactory();
                 invoiceConnectionFactory[0] = new InvoiceFactory();
+                inboundConnectionFactory[0] = new InboundFactory();
                 return "Loading windows";
-                case 2: AppFacade.appFacade = new AppFacade(sqlConnectionFactory[0],invoiceConnectionFactory[0]);
+                case 2: AppFacade.appFacade = new AppFacade(sqlConnectionFactory[0],invoiceConnectionFactory[0],inboundConnectionFactory[0]);
 
                     return "Loaded windows...";
                 case 3:

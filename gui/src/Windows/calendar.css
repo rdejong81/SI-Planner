@@ -12,6 +12,8 @@
     -style6-color: rgba(249.0, 132.0, 75.0, 0.9);
     -style7-color: rgba(174.0, 102.0, 62.0, 0.9);
     -style8-color: black;
+    -style9-color: rgba(43.0,27.0,23.0,0.9);
+    -style10-color: rgba(37.0,56.0,60.0,0.9);
 
     -weekend-fill-color: rgb(245.0, 245.0, 245.0);
     -today-fill-color: firebrick;
@@ -492,4 +494,122 @@
 
 .style8-calendar-header {
     -fx-background-color: derive(-style8-color, 70.0%);
+}
+
+
+/*
+ * --------------------------------------------------------------------------------------------------------------
+ * Styles needed for calendar type 9 (midnight).
+ */
+
+.style9-icon, .style9-icon-small {
+    -fx-fill: -style9-color;
+    -fx-stroke: -style9-color;
+}
+
+.style9-entry {
+    -fx-background-color: derive(-style9-color, 70.0%);
+    -fx-border-color: -style9-color;
+}
+
+.style9-entry:selected {
+    -fx-background-color: -style9-color;
+}
+
+.style9-entry-time-label, .style9-entry-title-label {
+    -fx-text-fill: derive(-style9-color, -50.0%);
+}
+
+.style9-entry-small:selected {
+    -fx-background-color: -style9-color;
+}
+
+.style9-entry-small-full-day {
+    -fx-background-color: derive(-style9-color, 70.0%);
+}
+
+.style9-entry-small-title-label-full-day {
+    -fx-text-fill: derive(-style9-color, -30.0%);
+}
+
+.style9-entry-small-full-day:selected {
+    -fx-background-color: -style9-color;
+}
+
+.style9-visibility-checkbox > .box,
+.style9-source-grid-item-box {
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border,
+    -fx-inner-border, derive(-style9-color, 70.0%);
+}
+
+.style9-visibility-checkbox:focused > .box {
+    -fx-background-color: -fx-focus-color, -fx-inner-border, -fx-body-color,
+    -fx-faint-focus-color, derive(-style9-color, 70.0%);
+}
+
+.style9-entry-popover-title {
+    -fx-text-fill: derive(-style9-color, -30.0%) !important;
+}
+
+.style9-calendar-header {
+    -fx-background-color: derive(-style9-color, 70.0%);
+}
+
+
+/*
+ * --------------------------------------------------------------------------------------------------------------
+ * Styles needed for calendar type 10 (dark slate grey).
+ */
+
+.style10-icon, .style10-icon-small {
+    -fx-fill: -style10-color;
+    -fx-stroke: -style10-color;
+}
+
+.style10-entry {
+    -fx-background-color: derive(-style10-color, 70.0%);
+    -fx-border-color: -style10-color;
+}
+
+.style10-entry:selected {
+    -fx-background-color: -style10-color;
+}
+
+.style10-entry-time-label, .style10-entry-title-label {
+    -fx-text-fill: derive(-style10-color, -50.0%);
+}
+
+.style10-entry-small:selected {
+    -fx-background-color: -style10-color;
+}
+
+.style10-entry-small-full-day {
+    -fx-background-color: derive(-style10-color, 70.0%);
+}
+
+.style10-entry-small-title-label-full-day {
+    -fx-text-fill: derive(-style10-color, -30.0%);
+}
+
+.style10-entry-small-full-day:selected {
+    -fx-background-color: -style10-color;
+}
+
+.style10-visibility-checkbox > .box,
+.style10-source-grid-item-box {
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border,
+    -fx-inner-border, derive(-style10-color, 70.0%);
+}
+
+.style10-visibility-checkbox:focused > .box {
+    -fx-background-color: -fx-focus-color, -fx-inner-border, -fx-body-color,
+    -fx-faint-focus-color, derive(-style10-color, 70.0%);
+}
+
+.style10-entry-popover-title {
+    -fx-text-fill: derive(-style10-color, -30.0%) !important;
+}
+
+.style10-calendar-header {
+    -fx-background-color: derive(-style10-color, 70.0%);
 }

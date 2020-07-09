@@ -14,11 +14,13 @@ public abstract class DataEntity
 {
     private int id;
     private final ArrayList<Attribute> attributes;
+    private final ArrayList<IEntityUpdateReceiver> entityUpdateReceivers;
 
     protected DataEntity(int id)
     {
         this.id = id;
         this.attributes = new ArrayList<>();
+        this.entityUpdateReceivers = new ArrayList<>();
     }
 
     public int getId()
@@ -87,6 +89,26 @@ public abstract class DataEntity
             }
 
         return Collections.unmodifiableList(attributes);
+    }
+
+    public IEntityUpdateReceiver addUpdateListener(IEntityUpdateReceiver entityUpdateReceiver)
+    {
+        entityUpdateReceivers.add(entityUpdateReceiver);
+        entityUpdateReceiver.processUpdate(this); // initial state update request
+        return entityUpdateReceiver; // used for tracking what to remove later on when lambda is used.
+    }
+
+    public void removeUpdateListener(IEntityUpdateReceiver entityUpdateReceiver)
+    {
+        entityUpdateReceivers.remove(entityUpdateReceiver);
+    }
+
+    public void broadcastUpdate()
+    {
+        for(IEntityUpdateReceiver entityUpdateReceiver : entityUpdateReceivers)
+        {
+            entityUpdateReceiver.processUpdate(this);
+        }
     }
 
 }

@@ -10,6 +10,7 @@ import Sql.QueryResult;
 import Sql.SQLConnection;
 import Timeregistration.ITimeregistrationDAO;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+import org.sqlite.SQLiteJDBCLoader;
 
 import java.io.File;
 import java.io.InputStream;
@@ -87,6 +88,8 @@ public class SqliteConnection extends SQLConnection
                 importSQL(schema);
 
             }
+
+
         } catch (CommunicationsException e)
         {
             throw new EDataSourceConnection(DaoResult.DAO_MISSING,e.getMessage());
@@ -160,6 +163,7 @@ public class SqliteConnection extends SQLConnection
     {
         return documentTemplateSqliteDAO;
     }
+
 
     private boolean checkTableExists(String tableName,String database) throws SQLException
     {

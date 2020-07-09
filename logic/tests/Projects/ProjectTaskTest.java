@@ -23,7 +23,7 @@ class ProjectTaskTest
     @BeforeAll
     private void init()
     {
-        appFacade = new AppFacade(new MockDBFactory(),null);
+        appFacade = new AppFacade(new MockDBFactory(),null,null);
         appFacade.DoLogin("testlogin","","","","TEST");
 
         appFacade.getLoggedinEmployee().addCustomer(

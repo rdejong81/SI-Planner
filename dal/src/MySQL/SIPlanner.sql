@@ -31,7 +31,8 @@ CREATE TABLE projects (
   PRIMARY KEY (id)) CHARACTER SET UTF8;
 CREATE TABLE time (
   id          int(10) NOT NULL AUTO_INCREMENT, 
-  tasks_id    int(11) NOT NULL, 
+  tasks_id    int(11) NOT NULL,
+  synckey     varchar(255),
   `start`     timestamp NOT NULL, 
   `end`       timestamp NOT NULL, 
   synced      tinyint(1) NOT NULL, 

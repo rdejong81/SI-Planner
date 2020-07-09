@@ -10,6 +10,7 @@ import Sql.QueryResult;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -20,9 +21,9 @@ import java.util.*;
  */
 public class PlanningMySQLDAO implements IPlanningDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<Planning> planningInstances;  // list of instances of Planning to prevent duplicate objects of the same database id.
-    private ArrayList<Planning> planningsUpdating;  // list of Planning instances that are being updated.
+    private final MySQLConnection mySQLConnection;
+    private final ArrayList<Planning> planningInstances;  // list of instances of Planning to prevent duplicate objects of the same database id.
+    private final ArrayList<Planning> planningsUpdating;  // list of Planning instances that are being updated.
 
     public PlanningMySQLDAO(MySQLConnection mySQLConnection)
     {
@@ -39,11 +40,12 @@ public class PlanningMySQLDAO implements IPlanningDAO
             if(currentPlanning.getId() == (Integer)row.get("id"))
             {
                 planningsUpdating.add(currentPlanning);
-                currentPlanning.setStart((LocalDateTime) row.get("start"));
-                currentPlanning.setEnd((LocalDateTime) row.get("end"));
+                currentPlanning.setStart(((LocalDateTime) row.get("start")).atZone(ZoneId.of("UTC")));
+                currentPlanning.setEnd(((LocalDateTime) row.get("end")).atZone(ZoneId.of("UTC")));
                 currentPlanning.setSynced((Boolean) row.get("synced"));
                 currentPlanning.setProjectTask(mySQLConnection.taskDao().findById((Integer)row.get("tasks_id")));
                 currentPlanning.setEmployee(mySQLConnection.employeeDao().findById((Integer)row.get("employeesid")));
+                currentPlanning.setSynckey((String)row.get("synckey"));
                 planning = currentPlanning;
             }
         }
@@ -53,10 +55,11 @@ public class PlanningMySQLDAO implements IPlanningDAO
             Employee employee = mySQLConnection.employeeDao().findById((Integer)row.get("employeesid"));
             planning = new Planning(this,(Integer) row.get("id"),
                     (Boolean) row.get("synced"),
-                    (LocalDateTime) row.get("start"),
-                    (LocalDateTime) row.get("end"),
+                    ((LocalDateTime) row.get("start")).atZone(ZoneId.of("UTC")),
+                    ((LocalDateTime) row.get("end")).atZone(ZoneId.of("UTC")),
                     projectTask,
-                    employee
+                    employee,
+                    (String)row.get("synckey")
             );
             planningInstances.add(planning);
             planningsUpdating.add(planning);
@@ -107,12 +110,13 @@ public class PlanningMySQLDAO implements IPlanningDAO
     public DaoResult insertPlanning(Planning planning)
     {
         QueryResult result = new QueryResult(mySQLConnection,String.format(
-                "insert into time (start,end,planned,synced,tasks_id,employeesid) values ('%s','%s',1,%d,%d,%d)",
+                "insert into time (start,end,planned,synced,tasks_id,employeesid,synckey) values ('%s','%s',1,%d,%d,%d,'%s')",
                 planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.isSynced() ? 1 : 0,
                 planning.getProjectTask().getId(),
-                planning.getEmployee().getId()
+                planning.getEmployee().getId(),
+                planning.getSynckey()
         ));
         planning.setId((int)result.getCreatedKey());
         planningInstances.add(planning);
@@ -124,12 +128,13 @@ public class PlanningMySQLDAO implements IPlanningDAO
     {
         if(planningsUpdating.contains(planning)) return DaoResult.OP_OK; //already updating
         QueryResult result = new QueryResult(mySQLConnection,String.format(
-                "update time set start='%s',end='%s',planned=1,synced=%d,tasks_id=%d,employeesid=%d where id=%d",
+                "update time set start='%s',end='%s',planned=1,synced=%d,tasks_id=%d,employeesid=%d,synckey='%s' where id=%d",
                 planning.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 planning.isSynced() ? 1 : 0,
                 planning.getProjectTask().getId(),
                 planning.getEmployee().getId(),
+                planning.getSynckey(),
                 planning.getId()
         ));
         return DaoResult.OP_OK;

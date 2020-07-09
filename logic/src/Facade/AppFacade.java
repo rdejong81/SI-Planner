@@ -4,6 +4,7 @@ import Data.CustomerList;
 import Data.EmployeeList;
 import Data.*;
 import Planning.Planning;
+import Planning.InboundIAO;
 import Projects.Project;
 import Projects.ProjectTask;
 import Timeregistration.*;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 public class AppFacade
@@ -26,20 +28,59 @@ public class AppFacade
     private final ArrayList<IDataEntityPresenter> dataEntityPresenters;
     private final ArrayList<DataEntity> shownDataEntities;
     private final InvoiceConnectionFactory invoiceConnectionFactory;
+    private final InboundConnectionFactory inboundConnectionFactory;
+    private final ArrayList<ConfigurationSetting> configurationSettings;
+    private final HashMap<Integer,InboundIAO> inboundDrivers;
 
     public Employee getLoggedinEmployee()
     {
         return loggedinEmployee;
     }
 
-    public AppFacade(ISQLConnectionFactory sqlConnectionFactory, InvoiceConnectionFactory invoiceConnectionFactory)
+    public AppFacade(ISQLConnectionFactory sqlConnectionFactory, InvoiceConnectionFactory invoiceConnectionFactory
+    , InboundConnectionFactory inboundConnectionFactory)
     {
         this.sqlConnectionFactory = sqlConnectionFactory;
         this.invoiceConnectionFactory = invoiceConnectionFactory;
+        this.inboundConnectionFactory = inboundConnectionFactory;
         dataEntityPresenters = new ArrayList<>();
         shownDataEntities = new ArrayList<>();
         statusPresenters = new ArrayList<>();
+        configurationSettings = new ArrayList<>();
         appFacade = this;
+        inboundDrivers = new HashMap<>();
+        for(Integer inbound : inboundConnectionFactory.getInboundDrivers().values())
+        {
+            InboundIAO inboundIAO = inboundConnectionFactory.InboundFactoryCreate(inbound);
+            inboundDrivers.put(inbound,inboundIAO);
+            inboundIAO.initialize();
+        }
+    }
+
+    public boolean addConfigurationSetting(ConfigurationSetting configurationSetting)
+    {
+        return configurationSettings.add(configurationSetting);
+    }
+
+    public List<ConfigurationSetting> getConfigurationSettings()
+    {
+        return Collections.unmodifiableList(configurationSettings);
+    }
+
+    public Object getConfigurationValue(String name)
+    {
+        for(ConfigurationSetting configurationSetting : configurationSettings)
+        {
+            if(configurationSetting.getName().equals(name))
+                return configurationSetting.getValue();
+        }
+
+        return null;
+    }
+
+    public Map<Integer,InboundIAO> getInboundDrivers()
+    {
+        return Collections.unmodifiableMap(inboundDrivers);
     }
 
     public boolean subscribeStatusPresenter(IStatusPresenter statusPresenter)
@@ -78,7 +119,7 @@ public class AppFacade
         return dataEntityPresenters.remove(dataEntityPresenter);
     }
 
-    private void broadcastShowDataEntity(DataEntity dataEntity)
+    public void broadcastShowDataEntity(DataEntity dataEntity)
     {
         if(!shownDataEntities.contains(dataEntity))
             shownDataEntities.add(dataEntity);
@@ -88,7 +129,7 @@ public class AppFacade
         }
     }
 
-    private void broadcastHideDataEntity(DataEntity dataEntity)
+    public void broadcastHideDataEntity(DataEntity dataEntity)
     {
         if(shownDataEntities.contains(dataEntity))
             shownDataEntities.remove(dataEntity);
@@ -176,9 +217,9 @@ public class AppFacade
             dataSource.taskDao().insertTask(projectTaskB);
             dataSource.taskDao().insertTask(projectTaskC);
 
-            createPlanning(LocalDateTime.now(),LocalDateTime.now().plusHours(1),projectTaskA,demoEmployeeB);
-            createPlanning(LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1), projectTaskB,demoEmployeeB);
-            createPlanning(LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1).plusHours(1), projectTaskC,demoEmployee);
+            createPlanning(ZonedDateTime.now(),ZonedDateTime.now().plusHours(1),projectTaskA,demoEmployeeB);
+            createPlanning(ZonedDateTime.now().minusDays(1),ZonedDateTime.now().minusDays(1).plusHours(1), projectTaskB,demoEmployeeB);
+            createPlanning(ZonedDateTime.now().minusDays(1),ZonedDateTime.now().minusDays(1).plusHours(1), projectTaskC,demoEmployee);
 
             return DaoResult.OP_OK;
         }
@@ -365,7 +406,7 @@ public class AppFacade
         return result;
     }
 
-    public DaoResult createPlanning(LocalDateTime start, LocalDateTime end, ProjectTask projectTask, Employee employee)
+    public DaoResult createPlanning(ZonedDateTime start, ZonedDateTime end, ProjectTask projectTask, Employee employee)
     {
         Planning planning = new Planning(dataSource.planningDao(),0,false,start,end
                 ,projectTask,employee);
@@ -446,9 +487,16 @@ public class AppFacade
         refreshData();
     }
 
+    public void refreshInbound(int type)
+    {
+        InboundIAO inboundIAO = inboundDrivers.get(type);
+        inboundIAO.parse();
+    }
+
     // refresh all data entity presenters based on existing being shown
     public void refreshData()
     {
+        if(employeeList == null) return;
         if(shownCalendarEmployee == null) shownCalendarEmployee = loggedinEmployee;  // default calendar to logged in user.
 
         // to detect deleted database objects

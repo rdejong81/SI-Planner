@@ -6,6 +6,7 @@ import Timeregistration.ITimeregistrationDAO;
 import Timeregistration.Timeregistration;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class MockTimeregistrationDao implements ITimeregistrationDAO
         timeregistrations = new ArrayList<>();
         timeregistrationsUpdating = new ArrayList<>();
         timeregistrations.add(new Timeregistration(
-                this,1,false, LocalDateTime.now(),
-                LocalDateTime.now().plusHours(1),
+                this,1,false, ZonedDateTime.now(),
+                ZonedDateTime.now().plusHours(1),
                 dataSource.taskDao().findById(1),
                 dataSource.employeeDao().findById(1)
         ));

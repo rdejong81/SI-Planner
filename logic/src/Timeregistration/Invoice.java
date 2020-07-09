@@ -53,8 +53,8 @@ public class Invoice
             //check to see if sheet generation is needed.
             for (ProjectTask projectTask : project.getProjectTasks())
                 for (Timeregistration timeregistration : projectTask.getTimeregistrations())
-                    if (timeregistration.getStart().isAfter(start.atStartOfDay())
-                    && timeregistration.getStart().isBefore(end.atStartOfDay()))
+                    if (timeregistration.getStart().toLocalDateTime().isAfter(start.atStartOfDay())
+                    && timeregistration.getStart().toLocalDateTime().isBefore(end.atStartOfDay()))
                         canContinue = true;
 
             if(canContinue)

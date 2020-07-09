@@ -51,6 +51,7 @@ public class Project extends DataEntity
     {
         this.color = color;
         projectDao.updateProject(this);
+        broadcastUpdate();
     }
 
     public boolean isInvoice()

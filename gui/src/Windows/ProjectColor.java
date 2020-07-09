@@ -16,7 +16,9 @@ public enum ProjectColor
     RED(4,"style5","Red",Color.rgb(208, 82, 95, 0.9)),
     ORANGE(5,"style6","Orange",Color.rgb(249, 132, 75, 0.9)),
     BROWN(6,"style7","Brown",Color.rgb(174, 102, 62, 0.9)),
-    BLACK(7,"style8","Black",Color.BLACK);
+    BLACK(7,"style8","Black",Color.BLACK),
+    MIDNIGHT(8,"style9","Midnight",Color.rgb(43,27,23,0.9)),
+    DARKSLATEGREY(9,"style10","Dark slate grey",Color.rgb(37,56,60,0.9));
 
 private int id;
 private String type,name;

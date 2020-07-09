@@ -99,7 +99,6 @@ public class MySQLConnection extends SQLConnection
             new QueryResult(this, "use " + getDatabase() + ";");
 
             //check schema
-
             if (!checkTableExists("employees", getDatabase()))
             {
                 //import schema
@@ -107,6 +106,11 @@ public class MySQLConnection extends SQLConnection
                 importSQL(schema);
 
             }
+            if(!checkColumnExists("time","synckey"))
+            {
+                getConnection().createStatement().execute("ALTER TABLE time ADD COLUMN synckey varchar(255);");
+            }
+
         } catch (CommunicationsException e)
         {
             throw new EDataSourceConnection(DaoResult.DAO_MISSING,e.getMessage());
@@ -175,6 +179,13 @@ public class MySQLConnection extends SQLConnection
     public IDocumentTemplateDAO documentTemplateDao()
     {
         return documentTemplateMySQLDAO;
+    }
+
+    private boolean checkColumnExists(String tableName, String column) throws SQLException
+    {
+        String query = String.format("SHOW COLUMNS FROM `%s` LIKE '%s';",tableName,column);
+        Statement statement = getConnection().createStatement();
+        return statement.execute(query);
     }
 
     private boolean checkTableExists(String tableName,String database) throws SQLException

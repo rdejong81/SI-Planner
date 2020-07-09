@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +26,7 @@ class TimeregistrationTest
     @BeforeAll
     private void init()
     {
-        appFacade = new AppFacade(new MockDBFactory(),null);
+        appFacade = new AppFacade(new MockDBFactory(),null,null);
         appFacade.DoLogin("testlogin","","","","TEST");
 
         appFacade.getLoggedinEmployee().addCustomer(
@@ -58,8 +59,8 @@ class TimeregistrationTest
         //init
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
-                900,true, LocalDateTime.now(),
-                LocalDateTime.now(),
+                900,true, ZonedDateTime.now(),
+                ZonedDateTime.now(),
                 appFacade.getDataSource().taskDao().findById(1),
                 appFacade.getDataSource().employeeDao().findById(1));
 
@@ -77,8 +78,8 @@ class TimeregistrationTest
         //init
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
-                900,true, LocalDateTime.now(),
-                LocalDateTime.now(),
+                900,true, ZonedDateTime.now(),
+                ZonedDateTime.now(),
                 appFacade.getDataSource().taskDao().findById(1),
                 appFacade.getDataSource().employeeDao().findById(1));
 
@@ -96,8 +97,8 @@ class TimeregistrationTest
         //init
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
-                900,true, LocalDateTime.now(),
-                LocalDateTime.now(),
+                900,true, ZonedDateTime.now(),
+                ZonedDateTime.now(),
                 appFacade.getDataSource().taskDao().findById(1),
                 appFacade.getDataSource().employeeDao().findById(1));
 
@@ -115,8 +116,8 @@ class TimeregistrationTest
         //init
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
-                900,true, LocalDateTime.now(),
-                LocalDateTime.now(),
+                900,true, ZonedDateTime.now(),
+                ZonedDateTime.now(),
                 appFacade.getDataSource().taskDao().findById(1),
                 appFacade.getDataSource().employeeDao().findById(1));
 
@@ -132,16 +133,16 @@ class TimeregistrationTest
     void getStart()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,
-                LocalDateTime.now().plusHours(1),
+                ZonedDateTime.now().plusHours(1),
                 appFacade.getDataSource().taskDao().findById(1),
                 appFacade.getDataSource().employeeDao().findById(1));
 
         //act
-        LocalDateTime start = timeregistration.getStart();
+        ZonedDateTime start = timeregistration.getStart();
 
 
         //assert
@@ -152,7 +153,7 @@ class TimeregistrationTest
     void setStart()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,
@@ -172,7 +173,7 @@ class TimeregistrationTest
     void getEnd()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,
@@ -181,7 +182,7 @@ class TimeregistrationTest
                 appFacade.getDataSource().employeeDao().findById(1));
 
         //act
-        LocalDateTime end = timeregistration.getEnd();
+        ZonedDateTime end = timeregistration.getEnd();
 
 
         //assert
@@ -192,7 +193,7 @@ class TimeregistrationTest
     void setEnd()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,
@@ -212,7 +213,7 @@ class TimeregistrationTest
     void getProjectTask()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,
@@ -232,7 +233,7 @@ class TimeregistrationTest
     void setProjectTask()
     {
         //init
-        LocalDateTime initialTime = LocalDateTime.now();
+        ZonedDateTime initialTime = ZonedDateTime.now();
         Timeregistration timeregistration = new Timeregistration(
                 appFacade.getDataSource().timeregistrationDao(),
                 900,true, initialTime,

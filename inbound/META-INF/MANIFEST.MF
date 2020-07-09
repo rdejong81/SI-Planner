@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Class-Path: lib\accessors-smart-1.2.jar lib\jackson-annotations-2.10.1.j
+ ar lib\jackson-core-2.10.1.jar lib\jackson-databind-2.10.1.jar lib\jcip
+ -annotations-1.0-1.jar lib\microsoft-graph-1.7.1.jar lib\microsoft-grap
+ h-core-1.0.0.jar lib\msal4j-1.6.1.jar lib\nimbus-jose-jwt-8.14.1.jar li
+ b\oauth2-oidc-sdk-7.4.jar lib\asm-5.0.4.jar lib\javax.mail-1.6.1.jar li
+ b\gson-2.8.2.jar lib\guava-20.0.jar lib\okhttp-3.12.1.jar lib\okio-1.15
+ .0.jar lib\jersey-core-1.19.4.jar lib\jersey-server-1.19.4.jar lib\comm
+ ons-math3-3.6.1.jar lib\json-simple-1.1.jar lib\json-smart-2.3.jar lib\
+ jsr311-api-1.1.1.jar lib\activation-1.1.jar lib\lang-tag-1.4.4.jar lib\
+ content-type-2.0.jar
+

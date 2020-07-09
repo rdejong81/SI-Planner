@@ -1,6 +1,7 @@
 package Calendar;
 
 import Data.Attribute;
+import Data.AttributeType;
 import Data.DaoResult;
 import Data.DataEntity;
 import Facade.AppFacade;
@@ -35,7 +36,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.StringConverter;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 public class EntryDetails extends EntryPopOverPane
@@ -43,8 +46,10 @@ public class EntryDetails extends EntryPopOverPane
 
     private final Label summaryLabel;
     private final MenuButton recurrenceButton;
+    public static DataEntity showNewDataEntityEditor=null;
 
-    public EntryDetails(Entry<DataEntity> entry, ObservableList<Project> projects, CalendarView calendarView) {
+    public EntryDetails(Entry<DataEntity> entry, ObservableList<Project> projects, CalendarView calendarView)
+    {
         super();
 
         getStyleClass().add("entry-details-view");
@@ -78,7 +83,8 @@ public class EntryDetails extends EntryPopOverPane
         endDatePicker.setValue(entry.getEndDate());
         endDatePicker.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
-        entry.intervalProperty().addListener(it -> {
+        entry.intervalProperty().addListener(it ->
+        {
             startTimeField.setValue(entry.getStartTime());
             endTimeField.setValue(entry.getEndTime());
             startDatePicker.setValue(entry.getStartDate());
@@ -100,9 +106,11 @@ public class EntryDetails extends EntryPopOverPane
 
         Set<String> availableZoneIds = ZoneId.getAvailableZoneIds();
         ObservableList<ZoneId> zoneIds = FXCollections.observableArrayList();
-        for (String id : availableZoneIds) {
+        for (String id : availableZoneIds)
+        {
             ZoneId zoneId = ZoneId.of(id);
-            if (!zoneIds.contains(zoneId)) {
+            if (!zoneIds.contains(zoneId))
+            {
                 zoneIds.add(zoneId);
             }
         }
@@ -113,15 +121,18 @@ public class EntryDetails extends EntryPopOverPane
 
         ComboBox<ZoneId> zoneBox = new ComboBox<>(zoneIds);
         zoneBox.disableProperty().bind(entry.getCalendar().readOnlyProperty());
-        zoneBox.setConverter(new StringConverter<ZoneId>() {
+        zoneBox.setConverter(new StringConverter<ZoneId>()
+        {
 
             @Override
-            public String toString(ZoneId object) {
+            public String toString(ZoneId object)
+            {
                 return object.getId();
             }
 
             @Override
-            public ZoneId fromString(String string) {
+            public ZoneId fromString(String string)
+            {
                 return null;
             }
         });
@@ -147,21 +158,51 @@ public class EntryDetails extends EntryPopOverPane
         recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
         // SI planner specific
+        Label syncLabel = new Label("Synchronise with inbound connection");
+        CheckBox sync = new CheckBox();
+        sync.setSelected(entry.getUserObject() instanceof Planning ? ((Planning) entry.getUserObject()).isSynced() :
+                ((Timeregistration)entry.getUserObject()).isSynced());
+        sync.setOnAction(evt ->
+        {
+            if (entry.getUserObject() instanceof Planning)
+            {
+                ((Planning) entry.getUserObject()).setSynced(sync.isSelected());
+            } else
+            {
+                ((Timeregistration) entry.getUserObject()).setSynced(sync.isSelected());
+            }
+        });
+
+        if(entry.getUserObject() instanceof Planning)
+            if(((Planning)entry.getUserObject()).getSynckey().length() < 2)
+                sync.setDisable(true);
+
+        if(entry.getUserObject() instanceof Timeregistration)
+            if(((Timeregistration)entry.getUserObject()).getSynckey().length() < 2)
+                sync.setDisable(true);
+
+
 
         Label projectLabel = new Label("Project");
         Label projectTaskLabel = new Label("Project task");
         ComboBox<ProjectTask> projectTaskBox = new ComboBox<>();
         ComboBox<Project> projectBox = new ComboBox<>(projects);
-        projectBox.setCellFactory(param -> {
-            return new ListCell<>() {
-                @Override protected void updateItem(Project item, boolean empty) {
+        projectBox.setCellFactory(param ->
+        {
+            return new ListCell<>()
+            {
+                @Override
+                protected void updateItem(Project item, boolean empty)
+                {
                     super.updateItem(item, empty);
 
-                    if (item == null || empty) {
+                    if (item == null || empty)
+                    {
                         setGraphic(null);
-                    } else {
+                    } else
+                    {
                         setText(item.getName());
-                        setGraphic(new Rectangle(10,10,
+                        setGraphic(new Rectangle(10, 10,
                                 ProjectColor.fromId(item.getColor()).getColor()));
                     }
                 }
@@ -170,14 +211,20 @@ public class EntryDetails extends EntryPopOverPane
         });
         projectBox.setButtonCell(projectBox.getCellFactory().call(null));
         // project task cell factory (Text only for now)
-        projectTaskBox.setCellFactory(param -> {
-            return new ListCell<>() {
-                @Override protected void updateItem(ProjectTask item, boolean empty) {
+        projectTaskBox.setCellFactory(param ->
+        {
+            return new ListCell<>()
+            {
+                @Override
+                protected void updateItem(ProjectTask item, boolean empty)
+                {
                     super.updateItem(item, empty);
 
-                    if (item == null || empty) {
+                    if (item == null || empty)
+                    {
                         setGraphic(null);
-                    } else {
+                    } else
+                    {
                         setText(item.getName());
                         setGraphic(null);
                     }
@@ -187,37 +234,41 @@ public class EntryDetails extends EntryPopOverPane
         projectTaskBox.setButtonCell(projectTaskBox.getCellFactory().call(null));
 
         if (entry.getUserObject() instanceof Planning)
-            projectBox.getSelectionModel().select(((Planning) entry.getUserObject()).getProjectTask().getProject()); else
+            projectBox.getSelectionModel().select(((Planning) entry.getUserObject()).getProjectTask().getProject());
+        else
             projectBox.getSelectionModel().select(((Timeregistration) entry.getUserObject()).getProjectTask().getProject());
 
         // add project tasks.
-        for(ProjectTask projectTask : projectBox.getSelectionModel().getSelectedItem().getProjectTasks())
+        for (ProjectTask projectTask : projectBox.getSelectionModel().getSelectedItem().getProjectTasks())
         {
             projectTaskBox.getItems().add(projectTask);
         }
         // select project task
-        if(entry.getUserObject() instanceof Planning)
-            projectTaskBox.getSelectionModel().select(((Planning) entry.getUserObject()).getProjectTask()); else
+        if (entry.getUserObject() instanceof Planning)
+            projectTaskBox.getSelectionModel().select(((Planning) entry.getUserObject()).getProjectTask());
+        else
             projectTaskBox.getSelectionModel().select(((Timeregistration) entry.getUserObject()).getProjectTask());
 
         // project change event
-        projectBox.valueProperty().addListener((obs, oldValue, newValue) -> {
+        projectBox.valueProperty().addListener((obs, oldValue, newValue) ->
+        {
             ProjectTask newTask = newValue.getProjectTasks().iterator().next();
-            if(entry.getUserObject() instanceof Planning)
-                ((Planning) entry.getUserObject()).setProjectTask(newTask); else
+            if (entry.getUserObject() instanceof Planning)
+                ((Planning) entry.getUserObject()).setProjectTask(newTask);
+            else
                 ((Timeregistration) entry.getUserObject()).setProjectTask(newTask);
             // update tasks box
             projectTaskBox.getItems().clear();
-            for(ProjectTask projectTask : newValue.getProjectTasks())
+            for (ProjectTask projectTask : newValue.getProjectTasks())
             {
                 projectTaskBox.getItems().add(projectTask);
             }
             projectTaskBox.getSelectionModel().select(newTask);
 
             // switch calendar
-            for(Calendar calendar : calendarView.getCalendars())
+            for (Calendar calendar : calendarView.getCalendars())
             {
-                if(calendar.getShortName().equals(newValue.getShortName()) &&
+                if (calendar.getShortName().equals(newValue.getShortName()) &&
                         calendar.getName().equals(newValue.getName()))
                 {
                     entry.setCalendar(calendar);
@@ -227,13 +278,17 @@ public class EntryDetails extends EntryPopOverPane
             }
         });
         // project task change event
-        projectTaskBox.valueProperty().addListener((obs,oldValue,newValue) -> {
-            if(newValue == null) return;
+        projectTaskBox.valueProperty().addListener((obs, oldValue, newValue) ->
+        {
+            if (newValue == null) return;
             // update task and entry title
             if (entry.getUserObject() instanceof Planning)
-                ((Planning) entry.getUserObject()).setProjectTask(newValue); else
+                ((Planning) entry.getUserObject()).setProjectTask(newValue);
+            else
                 ((Timeregistration) entry.getUserObject()).setProjectTask(newValue);
-            entry.setTitle(String.format("%s - %s",newValue.getProject().getName(),newValue.getName()));
+            entry.setTitle(String.format("%s - %s\n%s", newValue.getProject().getName(), newValue.getName(),getAdditionalInfo(
+                    entry.getUserObject()
+            )));
         });
 
 
@@ -244,45 +299,66 @@ public class EntryDetails extends EntryPopOverPane
 
         RadioButton spentBtn = new RadioButton("Spent");
         spentBtn.setToggleGroup(timeGroup);
-        if(entry.getUserObject() instanceof Planning)
-            planningBtn.setSelected(true); else
-                spentBtn.setSelected(true);
+        if (entry.getUserObject() instanceof Planning)
+            planningBtn.setSelected(true);
+        else
+            spentBtn.setSelected(true);
 
         TableView<Attribute> attributeTableView = new TableView<>();
         // switch time type listener
-        timeGroup.selectedToggleProperty().addListener((obs,oldValue,newValue) -> {
-            if(newValue == planningBtn) {
+        timeGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) ->
+        {
+            List<Attribute> oldAttributes = null;
+            DataEntity newObj = null;
+            if (newValue == planningBtn)
+            {
                 // convert from Timeregistration to Planning
-                Timeregistration t = (Timeregistration)entry.getUserObject();
+                Timeregistration t = (Timeregistration) entry.getUserObject();
+                oldAttributes = t.getAttributes();
                 Planning n = new Planning(AppFacade.appFacade.getDataSource().planningDao(),
-                        0,false,
-                        t.getStart(),t.getEnd(),t.getProjectTask(),t.getEmployee());
-                if(AppFacade.appFacade.getDataSource().timeregistrationDao().deleteTimeregistration(t) == DaoResult.OP_OK)
+                        0, t.isSynced(),
+                        t.getStart(), t.getEnd(), t.getProjectTask(), t.getEmployee(), t.getSynckey());
+                if (AppFacade.appFacade.getDataSource().timeregistrationDao().deleteTimeregistration(t) == DaoResult.OP_OK)
                 {
                     AppFacade.appFacade.getDataSource().planningDao().insertPlanning(n);
-                    entry.setUserObject(n);
+                    //entry.setUserObject(n);
+                    //showNewDataEntityEditor = n;
+                    AppFacade.appFacade.broadcastHideDataEntity(t);
+                    AppFacade.appFacade.broadcastShowDataEntity(n);
+                    newObj = n;
+
                 }
 
-            } else {
+            } else
+            {
                 // convert from Planning to Timeregistration
                 Planning n = (Planning) entry.getUserObject();
+                oldAttributes = n.getAttributes();
                 Timeregistration t = new Timeregistration(AppFacade.appFacade.getDataSource().timeregistrationDao(),
-                        0,false,
-                        n.getStart(),n.getEnd(),n.getProjectTask(),n.getEmployee());
+                        0, n.isSynced(),
+                        n.getStart(), n.getEnd(), n.getProjectTask(), n.getEmployee(), n.getSynckey());
 
-                if(AppFacade.appFacade.getDataSource().planningDao().deletePlanning(n) == DaoResult.OP_OK)
+                if (AppFacade.appFacade.getDataSource().planningDao().deletePlanning(n) == DaoResult.OP_OK)
                 {
                     AppFacade.appFacade.getDataSource().timeregistrationDao().insertTimeregistration(t);
-                    entry.setUserObject(t);
+                    //entry.setUserObject(t);
+                    //showNewDataEntityEditor = t;
+                    AppFacade.appFacade.broadcastHideDataEntity(n);
+                    AppFacade.appFacade.broadcastShowDataEntity(t);
+                    newObj = t;
+
                 }
 
 
+
             }
-            attributeTableView.getItems().clear();
-            for(Attribute attribute : entry.getUserObject().getAttributes())
+            migrateProperties(oldAttributes, newObj.getAttributes());
+            /*attributeTableView.getItems().clear();
+            for (Attribute attribute : entry.getUserObject().getAttributes())
             {
-                attributeTableView.getItems().add(attribute);
-            }
+
+                //attributeTableView.getItems().add(attribute);
+            }*/
 
         });
 
@@ -291,8 +367,8 @@ public class EntryDetails extends EntryPopOverPane
         attributeTableView.setMaxWidth(400.0);
         attributeTableView.setEditable(true);
 
-        TableColumn<Attribute,String> attributeStringTableColumn = new TableColumn<>("Attribute name");
-        TableColumn<Attribute,Object> attributeObjectTableColumn = new TableColumn<>("Value");
+        TableColumn<Attribute, String> attributeStringTableColumn = new TableColumn<>("Attribute name");
+        TableColumn<Attribute, Object> attributeObjectTableColumn = new TableColumn<>("Value");
         attributeTableView.getColumns().clear();
         attributeTableView.getColumns().add(attributeStringTableColumn);
         attributeTableView.getColumns().add(attributeObjectTableColumn);
@@ -301,36 +377,40 @@ public class EntryDetails extends EntryPopOverPane
         attributeStringTableColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         attributeObjectTableColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
         attributeObjectTableColumn.setCellFactory(ObjectTableCell.forTableColumn());
-        attributeObjectTableColumn.setOnEditCommit(value -> {
+        attributeObjectTableColumn.setOnEditCommit(value ->
+        {
             value.getRowValue().setValue(value.getNewValue());
         });
 
-        for(Attribute attribute : entry.getUserObject().getAttributes())
+        for (Attribute attribute : entry.getUserObject().getAttributes())
         {
             attributeTableView.getItems().add(attribute);
         }
 
         GridPane box = new GridPane();
         box.getStyleClass().add("content"); //$NON-NLS-1$
-        box.add(fullDayLabel, 0, 0);
-        box.add(fullDay, 1, 0);
+        //box.add(fullDayLabel, 0, 0);
+        //box.add(fullDay, 1, 0);
+        box.add(syncLabel,0,0,2,1);
+        box.add(sync,2,0);
         box.add(startDateLabel, 0, 1);
         box.add(startDateBox, 1, 1);
         box.add(endDateLabel, 0, 2);
         box.add(endDateBox, 1, 2);
-        box.add(projectLabel,0,3);
-        box.add(projectBox,1,3);
-        box.add(projectTaskLabel,0,4);
-        box.add(projectTaskBox,1,4);
-  //      box.add(zoneLabel, 0, 3);
-  //      box.add(zoneBox, 1, 3);
- //       box.add(recurrentLabel, 0, 4);
-  //      box.add(recurrenceButton, 1, 4);
-        box.add(timeLabel,0,5,1,2);
-        box.add(planningBtn,1,5);
-        box.add(spentBtn,1,6);
+        box.add(projectLabel, 0, 3);
+        box.add(projectBox, 1, 3);
+        box.add(projectTaskLabel, 0, 4);
+        box.add(projectTaskBox, 1, 4);
+        //box.add(zoneLabel, 0, 11);
+        //
+        // +box.add(zoneBox, 1, 11);
+        //       box.add(recurrentLabel, 0, 4);
+        //      box.add(recurrenceButton, 1, 4);
+        box.add(timeLabel, 0, 5, 1, 2);
+        box.add(planningBtn, 1, 5);
+        box.add(spentBtn, 1, 6);
 
-        box.add(attributeTableView,0,7,2,3);
+        box.add(attributeTableView, 0, 7, 2, 3);
 
         box.add(summaryLabel, 1, 10);
 
@@ -371,22 +451,26 @@ public class EntryDetails extends EntryPopOverPane
         entry.recurrenceRuleProperty().addListener(it -> updateSummaryLabel(entry));
     }
 
-    private void updateSummaryLabel(Entry<?> entry) {
+    private void updateSummaryLabel(Entry<?> entry)
+    {
         String rule = entry.getRecurrenceRule();
         String text = Util.convertRFC2445ToText(rule,
                 entry.getStartDate());
         summaryLabel.setText(text);
     }
 
-    private void showRecurrenceEditor(Entry<?> entry) {
+    private void showRecurrenceEditor(Entry<?> entry)
+    {
         RecurrencePopup popup = new RecurrencePopup();
         RecurrenceView recurrenceView = popup.getRecurrenceView();
         String recurrenceRule = entry.getRecurrenceRule();
-        if (recurrenceRule == null || recurrenceRule.trim().equals("")) { //$NON-NLS-1$
+        if (recurrenceRule == null || recurrenceRule.trim().equals(""))
+        { //$NON-NLS-1$
             recurrenceRule = "RRULE:FREQ=DAILY;"; //$NON-NLS-1$
         }
         recurrenceView.setRecurrenceRule(recurrenceRule);
-        popup.setOnOkPressed(evt -> {
+        popup.setOnOkPressed(evt ->
+        {
             String rrule = recurrenceView.getRecurrenceRule();
             entry.setRecurrenceRule(rrule);
         });
@@ -396,16 +480,21 @@ public class EntryDetails extends EntryPopOverPane
         popup.show(recurrenceButton, anchor.getX(), anchor.getY());
     }
 
-    private void updateRecurrenceRule(Entry<?> entry, String rule) {
+    private void updateRecurrenceRule(Entry<?> entry, String rule)
+    {
         entry.setRecurrenceRule(rule);
     }
 
-    private void updateRecurrenceRuleButton(Entry<?> entry) {
+    private void updateRecurrenceRuleButton(Entry<?> entry)
+    {
         String rule = entry.getRecurrenceRule();
-        if (rule == null) {
+        if (rule == null)
+        {
             recurrenceButton.setText(Messages.getString("EntryDetailsView.NONE")); //$NON-NLS-1$
-        } else {
-            switch (rule.trim().toUpperCase()) {
+        } else
+        {
+            switch (rule.trim().toUpperCase())
+            {
                 case "RRULE:FREQ=DAILY": //$NON-NLS-1$
                     recurrenceButton.setText(Messages.getString("EntryDetailsView.DAILY")); //$NON-NLS-1$
                     break;
@@ -423,5 +512,29 @@ public class EntryDetails extends EntryPopOverPane
                     break;
             }
         }
+    }
+
+    public void migrateProperties(List<Attribute> oldPropertes, List<Attribute> properties)
+    {
+        for (Attribute oldAttribute : oldPropertes)
+        {
+            for (Attribute property : properties)
+            {
+                if (property.getName().equals(oldAttribute.getName())
+                        && property.getAttributeType() == oldAttribute.getAttributeType())
+                    property.setValue(oldAttribute.getValue());
+            }
+
+        }
+    }
+
+    public String getAdditionalInfo(DataEntity dataEntity)
+    {
+        String result = "";
+        for(Attribute attribute : dataEntity.getAttributes())
+            if(attribute.getName().equalsIgnoreCase("remarks") && attribute.getAttributeType() == AttributeType.STRING)
+                result = (String)attribute.getValue();
+
+        return result;
     }
 }

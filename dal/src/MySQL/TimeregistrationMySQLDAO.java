@@ -3,7 +3,6 @@ package MySQL;
 import Data.Attribute;
 import Data.DaoResult;
 import Data.Employee;
-import Planning.Planning;
 import Projects.ProjectTask;
 import Sql.QueryResult;
 import Timeregistration.ITimeregistrationDAO;
@@ -11,6 +10,7 @@ import Timeregistration.Timeregistration;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +24,9 @@ import java.util.List;
  */
 public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
 {
-    private MySQLConnection mySQLConnection;
-    private ArrayList<Timeregistration> timeregistrationInstances;  // list of instances of Timeregistration to prevent duplicate objects of the same database id.
-    private ArrayList<Timeregistration> timeregistrationsUpdating;  // list of Timeregistration instances that are being updated.
+    private final MySQLConnection mySQLConnection;
+    private final ArrayList<Timeregistration> timeregistrationInstances;  // list of instances of Timeregistration to prevent duplicate objects of the same database id.
+    private final ArrayList<Timeregistration> timeregistrationsUpdating;  // list of Timeregistration instances that are being updated.
 
     public TimeregistrationMySQLDAO(MySQLConnection mySQLConnection)
     {
@@ -43,11 +43,12 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
             if(currentTimeregistration.getId() == (Integer)row.get("id"))
             {
                 timeregistrationsUpdating.add(currentTimeregistration);
-                currentTimeregistration.setStart((LocalDateTime) row.get("start"));
-                currentTimeregistration.setEnd((LocalDateTime) row.get("end"));
+                currentTimeregistration.setStart(((LocalDateTime) row.get("start")).atZone(ZoneId.of("UTC")));
+                currentTimeregistration.setEnd(((LocalDateTime) row.get("end")).atZone(ZoneId.of("UTC")));
                 currentTimeregistration.setSynced((Boolean) row.get("synced"));
                 currentTimeregistration.setProjectTask(mySQLConnection.taskDao().findById((Integer)row.get("tasks_id")));
                 currentTimeregistration.setEmployee(mySQLConnection.employeeDao().findById((Integer)row.get("employeesid")));
+                currentTimeregistration.setSynckey((String)row.get("synckey"));
                 timeregistration = currentTimeregistration;
             }
         }
@@ -57,10 +58,11 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
             Employee employee = mySQLConnection.employeeDao().findById((Integer)row.get("employeesid"));
             timeregistration = new Timeregistration(this,(Integer) row.get("id"),
                     (Boolean) row.get("synced"),
-                    (LocalDateTime) row.get("start"),
-                    (LocalDateTime) row.get("end"),
+                    ((LocalDateTime) row.get("start")).atZone(ZoneId.of("UTC")),
+                    ((LocalDateTime) row.get("end")).atZone(ZoneId.of("UTC")),
                     projectTask,
-                    employee
+                    employee,
+                    (String)row.get("synckey")
             );
             timeregistrationInstances.add(timeregistration);
             timeregistrationsUpdating.add(timeregistration);
@@ -111,12 +113,14 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
     public DaoResult insertTimeregistration(Timeregistration timeregistration)
     {
         QueryResult result = new QueryResult(mySQLConnection,String.format(
-                "insert into time (start,end,planned,synced,tasks_id,employeesid) values ('%s','%s',0,%d,%d,%d)",
+                "insert into time (start,end,planned,synced,tasks_id,employeesid,synckey) values ('%s','%s',0,%d,%d,%d,'%s')",
                 timeregistration.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 timeregistration.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 timeregistration.isSynced() ? 1 : 0,
                 timeregistration.getProjectTask().getId(),
-                timeregistration.getEmployee().getId()
+                timeregistration.getEmployee().getId(),
+                timeregistration.getSynckey()
+
         ));
         timeregistration.setId((int)result.getCreatedKey());
         timeregistrationInstances.add(timeregistration);
@@ -128,12 +132,13 @@ public class TimeregistrationMySQLDAO implements ITimeregistrationDAO
     {
         if(timeregistrationsUpdating.contains(timeregistration)) return DaoResult.OP_OK; //already updating
         QueryResult result = new QueryResult(mySQLConnection,String.format(
-                "update time set start='%s',end='%s',planned=0,synced=%d,tasks_id=%d,employeesid=%d where id=%d",
+                "update time set start='%s',end='%s',planned=0,synced=%d,tasks_id=%d,employeesid=%d,synckey='%s' where id=%d",
                 timeregistration.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 timeregistration.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 timeregistration.isSynced() ? 1 : 0,
                 timeregistration.getProjectTask().getId(),
                 timeregistration.getEmployee().getId(),
+                timeregistration.getSynckey(),
                 timeregistration.getId()
         ));
         return DaoResult.OP_OK;

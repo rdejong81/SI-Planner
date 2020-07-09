@@ -4,6 +4,7 @@
     <root id="root">
       <element id="archive" name="gui.jar">
         <element id="module-output" name="gui" />
+        <element id="module-output" name="de.jensd.fx.fontawesomefx.commons" />
       </element>
       <element id="archive" name="dal.jar">
         <element id="module-output" name="dal" />
@@ -17,6 +18,10 @@
         <element id="library" level="project" name="org.openjfx:javafx-fxml:13.0.1" />
         <element id="library" level="project" name="sqlite-jdbc" />
         <element id="library" level="project" name="com4j" />
+        <element id="library" level="project" name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" />
+        <element id="library" level="project" name="fontawesome" />
+        <element id="library" level="project" name="com.microsoft.azure:msal4j:1.6.1" />
+        <element id="library" level="project" name="com.microsoft.graph:microsoft-graph:1.7.1" />
       </element>
       <element id="archive" name="di.jar">
         <element id="directory" name="META-INF">
@@ -28,6 +33,12 @@
         <element id="module-output" name="invoice" />
         <element id="directory" name="META-INF">
           <element id="file-copy" path="$PROJECT_DIR$/invoice/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
+      <element id="archive" name="inbound.jar">
+        <element id="module-output" name="inbound" />
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/inbound/META-INF/MANIFEST.MF" />
         </element>
       </element>
     </root>
