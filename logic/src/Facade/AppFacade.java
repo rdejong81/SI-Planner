@@ -35,7 +35,7 @@ import java.util.*;
 public class AppFacade
 {
     static public AppFacade appFacade; // instantiated in main.
-    static public final String APPVERSION = "0.1.48";
+    static public final String APPVERSION = "0.1.51";
     private IDataSource dataSource;
     private final ISQLConnectionFactory sqlConnectionFactory;
     private CustomerList customerList;
