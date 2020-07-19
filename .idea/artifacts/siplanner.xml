@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="siplanner">
+    <output-path>$PROJECT_DIR$/out/artifacts/siplanner</output-path>
+    <root id="root">
+      <element id="archive" name="siplanner.jar">
+        <element id="module-output" name="siplanner" />
+      </element>
+    </root>
+  </artifact>
+</component>

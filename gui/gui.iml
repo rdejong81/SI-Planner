@@ -9,7 +9,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="logic" />
     <orderEntry type="module" module-name="di" />
     <orderEntry type="library" name="com.calendarfx:view:11.8.3" level="project" />
     <orderEntry type="library" name="org.openjfx:javafx-fxml:13.0.1" level="project" />
@@ -29,8 +28,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="logic" />
     <orderEntry type="library" name="com.dlsc.preferencesfx:preferencesfx-core:11.6.0" level="project" />
-    <orderEntry type="module" module-name="de.jensd.fx.fontawesomefx.commons" />
     <orderEntry type="library" name="fontawesome" level="project" />
+    <orderEntry type="module" module-name="de.jensd.fx.fontawesomefx.commons" />
   </component>
 </module>
